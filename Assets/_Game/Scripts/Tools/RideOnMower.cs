@@ -1,5 +1,6 @@
 using Fields.Grass;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Fields.Tools
 {
@@ -120,8 +121,25 @@ namespace Fields.Tools
 
         void ReadInput()
         {
-            _driveInput = Input.GetAxisRaw("Vertical");
-            _turnInput  = Input.GetAxisRaw("Horizontal");
+            // Prefer new Input System; fall back to legacy axis if neither device active
+            var kb  = Keyboard.current;
+            var gp  = Gamepad.current;
+
+            float drive = 0f, turn = 0f;
+            if (gp != null)
+            {
+                drive = gp.leftStick.y.ReadValue();
+                turn  = gp.leftStick.x.ReadValue();
+            }
+            if (kb != null)
+            {
+                if (kb.wKey.isPressed || kb.upArrowKey.isPressed)   drive += 1f;
+                if (kb.sKey.isPressed || kb.downArrowKey.isPressed) drive -= 1f;
+                if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) turn  -= 1f;
+                if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) turn  += 1f;
+            }
+            _driveInput = Mathf.Clamp(drive, -1f, 1f);
+            _turnInput  = Mathf.Clamp(turn,  -1f, 1f);
         }
 
         void DriveAndSteer()

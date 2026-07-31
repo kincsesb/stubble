@@ -86,10 +86,13 @@ namespace Fields.Hay
                 EjectBale();
         }
 
+        int _totalBalesEjected;
+
         void EjectBale()
         {
             _compressing = false;
             _hayAccumulated -= _hayRequired;
+            _totalBalesEjected++;
 
             // Feel
             feedbackThunk?.PlayFeedbacks(transform.position);
@@ -100,9 +103,22 @@ namespace Fields.Hay
             if (prefab == null) { Debug.LogWarning("[Baler] No bale prefab assigned"); return; }
 
             var spawnPos = ejectPoint != null ? ejectPoint.position : transform.position + transform.forward;
-            var bale = Instantiate(prefab, spawnPos, ejectPoint != null ? ejectPoint.rotation : Quaternion.identity);
+            var spawnRot = ejectPoint != null ? ejectPoint.rotation : Quaternion.identity;
+
+            // P2-04: co-op host must call NetworkServer.Spawn() here — deferred to Mirror integration
+            Instantiate(prefab, spawnPos, spawnRot);
 
             feedbackEject?.PlayFeedbacks(spawnPos);
+
+            // Steam achievements
+            var steam = Fields.Core.SteamManager.Instance;
+            if (steam != null)
+            {
+                if (_totalBalesEjected == 1)  steam.OnFirstBale();
+                if (isRound)                  steam.OnRoundBale();
+                if (_totalBalesEjected == 10) steam.UnlockAchievement(Fields.Core.SteamManager.Achievements.TEN_BALES);
+                if (_totalBalesEjected == 100) steam.UnlockAchievement(Fields.Core.SteamManager.Achievements.HUNDRED_BALES);
+            }
 
             // Start another compression if enough hay is still buffered
             if (_hayAccumulated >= _hayRequired)

@@ -86,6 +86,17 @@ namespace Fields.Network
         }
     }
 #else
-    public class EconomyNetSync : UnityEngine.MonoBehaviour { }
+    // Stub — compiles without Mirror; spawns directly (single-player behaviour)
+    public class EconomyNetSync : UnityEngine.MonoBehaviour
+    {
+        public void ServerSpawnHayPile(UnityEngine.Vector3 pos, UnityEngine.GameObject prefab)
+        {
+            if (prefab != null) UnityEngine.Object.Instantiate(prefab, pos, UnityEngine.Quaternion.identity);
+        }
+        public void ServerSpawnBale(UnityEngine.Vector3 pos, UnityEngine.Quaternion rot, UnityEngine.GameObject prefab)
+        {
+            if (prefab != null) UnityEngine.Object.Instantiate(prefab, pos, rot);
+        }
+    }
 #endif
 }
