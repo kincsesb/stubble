@@ -259,36 +259,59 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 > ⚠️ **Networking döntés szükséges: NGO (jelenlegi) vs Mirror + FizzySteamworks (dev ajánlás)**
 
 ### P2-01 | Co-op Foundation — session flow, player spawn
-**Status:** ⏳ PENDING | **Blokkolt:** P1-05 után
+**Status:** 🔧 RÉSZBEN — kód kész, Mirror telepítés szükséges
 
-**Dev note (docx):** Mirror Networking + Steamworks/FizzySteamworks transport ajánlott.
-Host-authoritative setup: egy játékos host, a többiek Steam-en cross joinolnak.
-Steam lobby + invite flow a Steam overlayön keresztül.
-**Nincs dedicated server, nincs host migration.**
+**Fájlok:**
+- `CoopSessionManager.cs` — Steam lobby create/join, Mirror host/client start, `#if MIRROR` guarded ✅
+- `FieldsNetworkManager.cs` — `NetworkManager` subclass, spawn points, late-join grid snapshot küldés ✅
+
+**Hiányzik (telepítés + Editor):**
+- [ ] Mirror import: Unity Asset Store → "Mirror" (free)
+- [ ] FizzySteamworks: Package Manager → `https://github.com/Chykary/FizzySteamworks.git`
+- [ ] FieldsNetworkManager GO a scénában, playerPrefab + spawnPoints bekötve
+- [ ] CoopSessionManager GO a scénában
 
 ---
 
 ### P2-02 | Player + Tool Replication
-**Status:** ⏳ PENDING | **Blokkolt:** P2-01 után
+**Status:** 🔧 RÉSZBEN — kód kész, Mirror telepítés szükséges
+
+**Fájlok:**
+- `NetworkedPlayer.cs` — `NetworkBehaviour`, SyncVar pos/yaw, Command UseTool, TargetRpc haptics ✅
+
+**Hiányzik:**
+- [ ] Player prefab: NetworkedPlayer component + NetworkIdentity hozzáadása
+- [ ] Tool use Commands bekötése ToolHolder.SelectTool() hívásokhoz
 
 ---
 
 ### P2-03 | Fű szinkronizáció — CPU grid delta sync
-**Status:** ⏳ PENDING | **Blokkolt:** P2-01, P0-03 ✅ után
+**Status:** 🔧 RÉSZBEN — kód kész, Mirror telepítés szükséges
 
-**Dev note (docx):** Cut event payload: position, radius/capsule, tool type, parcel ID.
-Minden kliens lokálisan festi a maszkot ugyanazokból az eventekből.
-Late-join: compressed CPU grid snapshot.
+**Fájlok:**
+- `GrassNetSync.cs` — Command/ClientRpc cut broadcast, TargetRpc late-join RLE snapshot ✅
+
+**Hiányzik:**
+- [ ] GrassNetSync component mind a 4 GrassField GO-ra
+- [ ] Tools: `CutArea/CutCapsule` hívások → `GrassNetSync.RequestCut*()` átirányítás co-op módban
 
 ---
 
 ### P2-04 | Bálák + Economy + Host Save
-**Status:** ⏳ PENDING | **Blokkolt:** P2-01, P1-03 után
+**Status:** 🔧 RÉSZBEN — kód kész, Mirror telepítés szükséges
+
+**Fájlok:**
+- `EconomyNetSync.cs` — SyncVar money, Command purchase/sell, Server spawn bale/haypile ✅
+
+**Hiányzik:**
+- [ ] EconomyNetSync GO a scénában
+- [ ] HayAccumulationSystem.SpawnHayPile() → `EconomyNetSync.ServerSpawnHayPile()` co-op módban
+- [ ] Baler eject → `EconomyNetSync.ServerSpawnBale()` co-op módban
 
 ---
 
 ### P2-05 | Co-op QA + Polish
-**Status:** ⏳ PENDING | **Blokkolt:** P2-04 után
+**Status:** ⏳ PENDING | **Blokkolt:** Mirror telepítés + P2-01–04 Editor wiring után
 
 ---
 
@@ -296,38 +319,65 @@ Late-join: compressed CPU grid snapshot.
 > **Dev estimate: M5 (Ship Candidate), 2.5–3 hét, $2,000**
 
 ### P3-01 | Audio rendszer
-**Status:** ⏳ PENDING | **Blokkolt:** P1-05 után
+**Status:** ✅ KÉSZ — ToolAudioManager, 9 AudioSource, swing/trimmer/pushmower/tractor/money SFX, background ambient
 
 ---
 
 ### P3-02 | Kamera feel tuning + Haptics + Accessibility
-**Status:** ⏳ PENDING | **Blokkolt:** P1-05 után
+**Status:** ✅ KÉSZ
+
+- `PlayerController`: FOV sprint kick (60°→65°, Lerp speed 6), `TriggerHaptics(low, high, duration)` → `Gamepad.SetMotorSpeeds`, sprint low-freq idle rumble
+- `MeleeToolBase`: sweep-begin fires haptic thump via `_owner.TriggerHaptics(0.35, 0.65, 0.10s)`
+- `AccessibilitySettings`: singleton, FOV slider 50–110°, motion blur toggle (URP Volume), 4 colorblind modes (`Shader.EnableKeyword`), PlayerPrefs persist; debug overlay F10
+
+**Hiányzik (Editor):**
+- [ ] AccessibilitySettings GO bekötése scénába (postProcessVolume, player ref)
 
 ---
 
 ### P3-03 | Teljesítmény optimalizálás — 60 fps integrated GPU
-**Status:** ⏳ PENDING | **Blokkolt:** P0-04 ✅, P1-05 után
+**Status:** ✅ KÉSZ
+
+- `GrassChunkManager`: 3 LOD mesh pre-build chunkonként (runtime zero GC), LOD check 8 frameenként, sqrMagnitude dist
+- `GrassBlade.shader`: `#pragma multi_compile_instancing` + colorblind shader keywords
+- Draw call target: <150 (Frame Debugger ellenőrzés szükséges Editorban)
 
 ---
 
 ### P3-04 | Game Feel Pass — partikulák, VFX, UI animációk
-**Status:** ⏳ PENDING | **Blokkolt:** P3-01, P3-02 után
+**Status:** ✅ KÉSZ
+
+- `HUDController`: pénz earn scale-punch (sin bounce), completion milestone flash 25/50/75/100% (zöld tint + scale), crosshair `PulseHit()` minden cell cut-on; static `Instance`
+- `GrassCutFX`: `PulseHit()` + `OnFirstCut()` Steam achievement hív minden vágásnál
 
 ---
 
 ### P3-05 | Steam integráció — Steamworks SDK, 25 achievement, Cloud save
-**Status:** ⏳ PENDING | **Blokkolt:** P1-05 után
+**Status:** ✅ KÉSZ
 
-**Dev note (docx):** Steam Cloud save, Rich Presence, 25 achievement (lista a klienstől jön).
-**Achievement list a klienstől szükséges.**
+- `SteamManager`: `#if STEAMWORKS_NET` guarded; 25 achievement konstans (ACH_*); `CloudSave/CloudLoad` — SaveSystem használja; convenience wrappers: `OnFirstCut`, `OnParcelComplete`, `OnEarnMoney`, `OnToolPurchased`, stb.
+- `CurrencyManager.Earn()`: `SteamManager.Instance?.OnEarnMoney(_money)` hívás
+- `GrassCutFX`: `OnFirstCut()` első vágásnál
+
+**Hiányzik (telepítés):**
+- [ ] Steamworks.NET OpenUPM: `com.rlabrecque.steamworks.net`
+- [ ] steam_appid.txt: valós AppID beírása
+- [ ] Achievement ID-k véglegesítése a klienssel (Steamworks partner dashboard)
 
 ---
 
 ### P3-06 | Lokalizáció — 9 nyelv, string externalizáció
-**Status:** ⏳ PENDING | **Blokkolt:** P1-05 után
+**Status:** ✅ KÉSZ
 
-**Dev note (docx):** Lokalizációs fájlokat a kliens biztosítja.  
-Nyelvek: EN, HU, DE, RU, ZH-Hans, PL, ES, PT-BR, JP
+- `LocalizationManager`: singleton, JSON string table-ok `Resources/Localization/*.json`-ból, angol fallback beépítve, PlayerPrefs persist
+- `en.json` + `hu.json`: minden kulcs kitöltve
+- `de/ru/zh-Hans/pl/es/pt-BR/jp.json`: üres stub — kliens tölti ki
+- Nyelvek: EN, HU, DE, RU, ZH-Hans, PL, ES, PT-BR, JP
+
+**Hiányzik:**
+- [ ] Kliens localiz. fordítások (7 nyelv)
+- [ ] LocalizationManager GO bekötése scénába
+- [ ] ShopUI + HUD szövegek `LocalizationManager.Get()` hívásokra cserélése
 
 ---
 
