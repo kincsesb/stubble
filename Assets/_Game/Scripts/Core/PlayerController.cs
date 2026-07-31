@@ -164,10 +164,7 @@ namespace Fields.Core
         void RegenStamina()
         {
             if (config == null) return;
-            _stamina = Mathf.Min(
-                _stamina + config.staminaRegen * Time.deltaTime,
-                config.enduranceLevels != null && config.enduranceLevels.Length > 0
-                    ? 100f : 100f);
+            _stamina = Mathf.Min(_stamina + config.staminaRegen * Time.deltaTime, 100f);
         }
 
         // ------------------------------------------------------------------ //

@@ -53,11 +53,11 @@ namespace Fields.Economy
     /// <summary>Placeholder gate with animation stub. Animator integration in P1.</summary>
     public class ParcelGate : MonoBehaviour, IInteractable
     {
-        bool _open;
+        public bool IsOpen { get; private set; }
 
         public void Open()
         {
-            _open = true;
+            IsOpen = true;
             // Animator.SetBool("Open", true) — wired in P1
             if (TryGetComponent<Collider>(out var col)) col.enabled = false;
         }
