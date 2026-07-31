@@ -29,8 +29,9 @@ namespace Fields.Core
 
         void Start()
         {
-            var col = GetComponent<Collider>();
-            col.isTrigger = true;
+            // TerrainCollider cannot be a trigger — use the dedicated BoxCollider
+            var box = GetComponent<BoxCollider>();
+            if (box != null) box.isTrigger = true;
         }
 
         void Update()
