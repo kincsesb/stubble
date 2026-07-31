@@ -138,6 +138,9 @@ namespace Fields.Grass
         public int GridCols => _gridCols;
         public int GridRows => _gridRows;
 
+        /// <summary>Converts a grid cell to world-space centre position.</summary>
+        public Vector3 CellToWorld(int col, int row) => GridToWorld(col, row);
+
         // ------------------------------------------------------------------ //
         // Internals
         // ------------------------------------------------------------------ //
@@ -240,24 +243,33 @@ namespace Fields.Grass
 
         void WorldToGrid(Vector3 worldPos, out int col, out int row)
         {
+            // Field origin = GO's local (0,0) — matches Unity Terrain's bottom-left convention.
             Vector3 local = transform.InverseTransformPoint(worldPos);
-            col = Mathf.RoundToInt((local.x + fieldSize.x * 0.5f) / config.gridCellSize);
-            row = Mathf.RoundToInt((local.z + fieldSize.y * 0.5f) / config.gridCellSize);
+            col = Mathf.RoundToInt(local.x / config.gridCellSize);
+            row = Mathf.RoundToInt(local.z / config.gridCellSize);
         }
 
         Vector2 WorldToUV(Vector3 worldPos)
         {
             Vector3 local = transform.InverseTransformPoint(worldPos);
-            float u = (local.x + fieldSize.x * 0.5f) / fieldSize.x;
-            float v = (local.z + fieldSize.y * 0.5f) / fieldSize.y;
+            float u = local.x / fieldSize.x;
+            float v = local.z / fieldSize.y;
             return new Vector2(u, v);
         }
 
         Vector3 GridToWorld(int col, int row)
         {
-            float lx = col * config.gridCellSize - fieldSize.x * 0.5f;
-            float lz = row * config.gridCellSize - fieldSize.y * 0.5f;
+            float lx = col * config.gridCellSize;
+            float lz = row * config.gridCellSize;
             return transform.TransformPoint(new Vector3(lx, 0f, lz));
+        }
+
+        /// <summary>Returns true if the world position lies within this field's bounds.</summary>
+        public bool ContainsWorldPoint(Vector3 worldPos)
+        {
+            Vector3 local = transform.InverseTransformPoint(worldPos);
+            return local.x >= 0f && local.x <= fieldSize.x
+                && local.z >= 0f && local.z <= fieldSize.y;
         }
 
         bool InGrid(int col, int row) =>
@@ -283,7 +295,10 @@ namespace Fields.Grass
             if (config == null) return;
             Gizmos.color = new Color(0.2f, 0.9f, 0.2f, 0.3f);
             Gizmos.matrix = transform.localToWorldMatrix;
-            Gizmos.DrawWireCube(Vector3.zero, new Vector3(fieldSize.x, 0.1f, fieldSize.y));
+            // Field starts at local (0,0) — draw cube centred at half-size
+            Gizmos.DrawWireCube(
+                new Vector3(fieldSize.x * 0.5f, 0f, fieldSize.y * 0.5f),
+                new Vector3(fieldSize.x, 0.1f, fieldSize.y));
 
             if (_cutGrid == null) return;
             Gizmos.color = new Color(1f, 0.3f, 0.1f, 0.4f);
@@ -292,8 +307,8 @@ namespace Fields.Grass
                 for (int col = 0; col < _gridCols; col++)
                     if (!_cutGrid[col, row])
                     {
-                        float lx = col * cs - fieldSize.x * 0.5f;
-                        float lz = row * cs - fieldSize.y * 0.5f;
+                        float lx = col * cs;
+                        float lz = row * cs;
                         Gizmos.DrawCube(new Vector3(lx, 0f, lz), new Vector3(cs, 0.05f, cs));
                     }
         }

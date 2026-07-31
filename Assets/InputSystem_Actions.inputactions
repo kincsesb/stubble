@@ -24,7 +24,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Attack",
+                    "name": "UsePrimary",
                     "type": "Button",
                     "id": "6c2ab1b8-8984-453a-af3d-a3c78ae1679a",
                     "expectedControlType": "Button",
@@ -38,7 +38,7 @@
                     "id": "852140f2-7766-474d-8707-702459ba45f3",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "Hold",
+                    "interactions": "",
                     "initialStateCheck": false
                 },
                 {
@@ -82,6 +82,33 @@
                     "type": "Button",
                     "id": "641cd816-40e6-41b4-8c3d-04687c349290",
                     "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Drop",
+                    "type": "Button",
+                    "id": "c75ab9df-5703-4d9b-bd28-e220ec5b9bf9",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToolSelect",
+                    "type": "Value",
+                    "id": "7fcb5b04-ecf6-4645-9182-43a7624b818d",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ScrollTool",
+                    "type": "Value",
+                    "id": "e438fbe8-a0f8-4f50-be62-843f55e63fd0",
+                    "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -260,7 +287,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Attack",
+                    "action": "UsePrimary",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -271,7 +298,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Attack",
+                    "action": "UsePrimary",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -282,7 +309,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Touch",
-                    "action": "Attack",
+                    "action": "UsePrimary",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -293,7 +320,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Joystick",
-                    "action": "Attack",
+                    "action": "UsePrimary",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -304,7 +331,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "XR",
-                    "action": "Attack",
+                    "action": "UsePrimary",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -315,7 +342,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Attack",
+                    "action": "UsePrimary",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -470,6 +497,105 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Crouch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1673d0db-83b5-44d1-a9a2-2a797dbe4269",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Drop",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e75213cc-e76d-4fa0-bb72-66bf3efec217",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Drop",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4ba95e71-1d4b-473e-993e-4b319890d5e9",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "Scale(factor=1.0)",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToolSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "49bf588d-b118-4995-8ab5-00c051bddf71",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "Scale(factor=2.0)",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToolSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b0662d9e-3884-4368-94c5-6c105654dc93",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "Scale(factor=3.0)",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToolSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c559bcae-f681-4bb5-a8d2-a7cef0051e8d",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "Scale(factor=4.0)",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToolSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "651ca7a7-f930-4715-b9ec-80a449fd07e3",
+                    "path": "<Keyboard>/5",
+                    "interactions": "",
+                    "processors": "Scale(factor=5.0)",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToolSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fc6c26f5-0377-4148-ad90-eb14e141f463",
+                    "path": "<Mouse>/scroll/y",
+                    "interactions": "",
+                    "processors": "Normalize",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ScrollTool",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ae3b77c5-f10b-4c87-b8f0-fb96ca824dfb",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "ScrollTool",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
