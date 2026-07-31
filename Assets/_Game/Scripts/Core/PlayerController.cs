@@ -221,6 +221,9 @@ namespace Fields.Core
             return true;
         }
 
+        public List<Fields.Hay.SquareBale> GetCarriedSquareBales() =>
+            new List<Fields.Hay.SquareBale>(_carriedSquareBales);
+
         public void DropSquareBales()
         {
             for (int i = _carriedSquareBales.Count - 1; i >= 0; i--)
@@ -228,6 +231,17 @@ namespace Fields.Core
                 var b = _carriedSquareBales[i];
                 _carriedSquareBales.RemoveAt(i);
                 b.OnDrop(transform.position + transform.forward * 1.2f);
+            }
+        }
+
+        public void DropAllHayPiles(bool destroy = false)
+        {
+            for (int i = _carriedBales.Count - 1; i >= 0; i--)
+            {
+                var pile = _carriedBales[i];
+                _carriedBales.RemoveAt(i);
+                if (destroy) { Object.Destroy(pile.gameObject); }
+                else { pile.OnDrop(transform.position + transform.forward * 1.2f); }
             }
         }
 
