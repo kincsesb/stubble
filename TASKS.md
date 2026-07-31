@@ -195,7 +195,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P0-10 | Alap HUD + Mentési rendszer váz
-**Status:** ✅ KÉSZ
+**Status:** ✅ KÉSZ — HUD_Canvas jelenetben bekötve, EndScreen_Canvas elkészítve
 
 **Fájlok:**
 - `Assets/_Game/Scripts/Save/SaveData.cs` — versioned schema (v1) ✅
@@ -213,7 +213,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 > **Dev estimate: M1 vége + M2 + M3, 4–5 hét, $3,000**
 
 ### P1-01 | Swing Feel System — Hit/Whiff, kamera kick, partikulák
-**Status:** ⏳ PENDING | **Blokkolt:** P0-06 ✅ után
+**Status:** ✅ KÉSZ
 
 **Tervezett fájlok:**
 - `SwingResultCalculator.cs` — arc cell intersection counting (Full >60%, Partial 15-60%, Whiff <15%)
@@ -224,7 +224,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P1-02 | Mind az 5 szerszám implementálva
-**Status:** ⏳ PENDING | **Blokkolt:** P0-06 ✅, P1-01 után
+**Status:** 🔧 RÉSZBEN — LongScythe/StringTrimmer/PushMower ✅, RideOnMower ⏳
 
 **Tervezett fájlok:**
 - `LongScythe.cs` — 1.4–2.4m arc, lassabb swing
@@ -245,7 +245,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P1-04 | Shop UI, Upgrade rendszer, Parcel unlock flow
-**Status:** ⏳ PENDING | **Blokkolt:** P0-09 ✅, P1-02 után
+**Status:** 🔧 RÉSZBEN — ShopUI.cs + Shop_Canvas jelenetben ✅, SaleStand bekötve ✅, ToolData/ParcelData listák inspector-ban szükségesek
 
 ---
 
