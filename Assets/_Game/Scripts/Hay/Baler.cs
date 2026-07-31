@@ -26,6 +26,12 @@ namespace Fields.Hay
         public MMF_Player feedbackThunk;
         public MMF_Player feedbackEject;
 
+        /// <summary>
+        /// Co-op hook: set by EconomyNetSync on non-host clients.
+        /// Returns true → intercepted (host will spawn via NetworkServer.Spawn).
+        /// </summary>
+        public System.Func<Vector3, Quaternion, GameObject, bool> SpawnBaleInterceptor;
+
         float _hayAccumulated;
         float _hayRequired;
         bool _compressing;
@@ -105,8 +111,8 @@ namespace Fields.Hay
             var spawnPos = ejectPoint != null ? ejectPoint.position : transform.position + transform.forward;
             var spawnRot = ejectPoint != null ? ejectPoint.rotation : Quaternion.identity;
 
-            // P2-04: co-op host must call NetworkServer.Spawn() here — deferred to Mirror integration
-            Instantiate(prefab, spawnPos, spawnRot);
+            if (SpawnBaleInterceptor == null || !SpawnBaleInterceptor(spawnPos, spawnRot, prefab))
+                Instantiate(prefab, spawnPos, spawnRot);
 
             feedbackEject?.PlayFeedbacks(spawnPos);
 

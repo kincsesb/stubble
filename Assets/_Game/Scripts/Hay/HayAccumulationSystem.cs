@@ -37,6 +37,12 @@ namespace Fields.Hay
 
         public event Action<Vector3, float> OnHayPileSpawned; // worldPos, leftover
 
+        /// <summary>
+        /// Co-op hook: set by EconomyNetSync on non-host clients.
+        /// Returns true → intercepted (local Instantiate suppressed; host will spawn via NetworkServer.Spawn).
+        /// </summary>
+        public System.Func<Vector3, bool> SpawnHayPileInterceptor;
+
         void Awake()
         {
             _grassField = GetComponent<GrassField>();
@@ -97,9 +103,15 @@ namespace Fields.Hay
 
             if (hayPilePrefab != null)
             {
-                // Host/server authority checked by caller in co-op (NetworkObject)
-                var pile = Instantiate(hayPilePrefab, cellCenter, Quaternion.identity);
-                OnHayPileSpawned?.Invoke(cellCenter, leftover);
+                if (SpawnHayPileInterceptor != null && SpawnHayPileInterceptor(cellCenter))
+                {
+                    OnHayPileSpawned?.Invoke(cellCenter, leftover);
+                }
+                else
+                {
+                    Instantiate(hayPilePrefab, cellCenter, Quaternion.identity);
+                    OnHayPileSpawned?.Invoke(cellCenter, leftover);
+                }
             }
 
             UpdateDecal(cc, cr);

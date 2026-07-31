@@ -250,7 +250,10 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P1-05 | Teljes eladási loop, parcel completion, végképernyő
-**Status:** ✅ KÉSZ — SaleStand (hay+bale eladás, multiplier), EndScreen_Canvas wired
+**Status:** ✅ KÉSZ — SaleStand (hay+bale eladás, multiplier), EndScreen.cs (stats, Play Again/Quit, speed-run achievement), end.* lokalizáció kulcsok
+
+**Fájlok:**
+- `EndScreen.cs` — OnEnable stats, lokalizált gombok, speed-run (sub-30 min) achievement, SceneManager.LoadScene play again ✅
 
 ---
 
@@ -301,12 +304,14 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 **Status:** 🔧 RÉSZBEN — kód kész, Mirror telepítés szükséges
 
 **Fájlok:**
-- `EconomyNetSync.cs` — SyncVar money, Command purchase/sell, Server spawn bale/haypile ✅
+- `EconomyNetSync.cs` — SyncVar money, Command purchase/sell, Server spawn bale/haypile; OnStartClient interceptors ✅
+- `HayAccumulationSystem.cs` — `SpawnHayPileInterceptor` delegate ✅
+- `Baler.cs` — `SpawnBaleInterceptor` delegate ✅
+- `FieldsNetworkManager.cs` — `balePrefab` + `hayPilePrefab` fields for Command-based spawning ✅
 
 **Hiányzik:**
 - [ ] EconomyNetSync GO a scénában
-- [ ] HayAccumulationSystem.SpawnHayPile() → `EconomyNetSync.ServerSpawnHayPile()` co-op módban
-- [ ] Baler eject → `EconomyNetSync.ServerSpawnBale()` co-op módban
+- [ ] FieldsNetworkManager `balePrefab` + `hayPilePrefab` bekötése Inspector-ban
 
 ---
 

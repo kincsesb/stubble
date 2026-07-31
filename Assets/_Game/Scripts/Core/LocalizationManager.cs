@@ -140,11 +140,18 @@ namespace Fields.Core
             { "parcel.2.name", "Hillside" },
             { "parcel.3.name", "South Plateau" },
 
-            // End screen
+            // Per-parcel completion pop
             { "endscreen.title",    "Parcel Complete!" },
             { "endscreen.earned",   "Earned: ${0}" },
             { "endscreen.time",     "Time: {0}:{1:D2}" },
             { "endscreen.continue", "Continue" },
+
+            // Final end screen (all 4 parcels done)
+            { "end.title",    "All Fields Cleared!" },
+            { "end.earnings", "Total earnings: ${0}" },
+            { "end.time",     "Time: {0:00}:{1:00}" },
+            { "end.playagain","Play Again" },
+            { "end.quit",     "Quit" },
 
             // Hints (max 5 per spec §8.11)
             { "hint.0", "Hold primary to use your tool." },
