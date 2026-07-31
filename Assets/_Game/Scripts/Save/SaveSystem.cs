@@ -14,7 +14,7 @@ namespace Fields.Save
     {
         public static SaveSystem Instance { get; private set; }
 
-        [Header("Scene references")]
+        [Header("Scene references (match parcel order 0-3)")]
         public GrassField[] grassFields = new GrassField[4];
         public HayAccumulationSystem[] hayAccumulationSystems = new HayAccumulationSystem[4];
 
@@ -117,20 +117,36 @@ namespace Fields.Save
                 parcelsUnlocked = pm != null ? pm.GetUnlockedArray() : new bool[4],
             };
 
-            // Grass grids
+            // Grass + hay grids
             data.fields = new FieldSaveData[grassFields.Length];
             for (int i = 0; i < grassFields.Length; i++)
             {
                 var gf = grassFields[i];
                 if (gf == null) continue;
                 var grid = gf.GetCutGrid();
-                data.fields[i] = new FieldSaveData
+                var fd = new FieldSaveData
                 {
                     parcelIndex = i,
-                    gridCols = gf.GridCols,
-                    gridRows = gf.GridRows,
-                    cutGridRLE = RLEEncoder.Encode(grid, gf.GridCols, gf.GridRows)
+                    gridCols    = gf.GridCols,
+                    gridRows    = gf.GridRows,
+                    cutGridRLE  = RLEEncoder.Encode(grid, gf.GridCols, gf.GridRows)
                 };
+
+                var hay = i < hayAccumulationSystems.Length ? hayAccumulationSystems[i] : null;
+                if (hay != null)
+                {
+                    float[,] hayGrid = hay.GetHayGrid();
+                    int cols = hayGrid.GetLength(0);
+                    int rows = hayGrid.GetLength(1);
+                    fd.hayCollCols = cols;
+                    fd.hayCollRows = rows;
+                    fd.hayGrid = new float[cols * rows];
+                    for (int r = 0; r < rows; r++)
+                        for (int c = 0; c < cols; c++)
+                            fd.hayGrid[c + r * cols] = hayGrid[c, r];
+                }
+
+                data.fields[i] = fd;
             }
 
             return data;
@@ -144,12 +160,27 @@ namespace Fields.Save
 
             for (int i = 0; i < grassFields.Length; i++)
             {
-                var gf = grassFields[i];
-                if (gf == null || data.fields == null || i >= data.fields.Length) continue;
+                if (data.fields == null || i >= data.fields.Length) continue;
                 var fd = data.fields[i];
-                if (fd?.cutGridRLE == null) continue;
-                var grid = RLEEncoder.Decode(fd.cutGridRLE, fd.gridCols, fd.gridRows);
-                gf.LoadCutGrid(grid);
+                if (fd == null) continue;
+
+                var gf = i < grassFields.Length ? grassFields[i] : null;
+                if (gf != null && fd.cutGridRLE != null)
+                {
+                    var grid = RLEEncoder.Decode(fd.cutGridRLE, fd.gridCols, fd.gridRows);
+                    gf.LoadCutGrid(grid);
+                }
+
+                var hay = i < hayAccumulationSystems.Length ? hayAccumulationSystems[i] : null;
+                if (hay != null && fd.hayGrid != null && fd.hayCollCols > 0 && fd.hayCollRows > 0)
+                {
+                    int cols = fd.hayCollCols, rows = fd.hayCollRows;
+                    var hayGrid = new float[cols, rows];
+                    for (int r = 0; r < rows; r++)
+                        for (int c = 0; c < cols; c++)
+                            hayGrid[c, r] = fd.hayGrid[c + r * cols];
+                    hay.LoadHayGrid(hayGrid);
+                }
             }
         }
 

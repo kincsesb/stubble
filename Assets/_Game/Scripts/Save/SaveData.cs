@@ -29,6 +29,10 @@ namespace Fields.Save
         public int gridRows;
         /// <summary>RLE encoded cut grid. Each entry: (value << 24 | count).</summary>
         public int[] cutGridRLE;
+        // Hay accumulation grid (col-major flattened float[], size = collCols * collRows)
+        public int hayCollCols;
+        public int hayCollRows;
+        public float[] hayGrid;
     }
 
     [Serializable]
