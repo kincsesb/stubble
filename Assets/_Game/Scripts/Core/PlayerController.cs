@@ -154,6 +154,16 @@ namespace Fields.Core
 
         void HandleMovement()
         {
+            bool moving = _moveInput.sqrMagnitude > 0.01f && _cc.isGrounded;
+            bool running = moving && _sprintHeld;
+            var audio = Fields.Audio.ToolAudioManager.Instance;
+            if (audio != null)
+            {
+                if (running)       { audio.StopFootstepsWalk(); audio.StartFootstepsRun(); }
+                else if (moving)   { audio.StopFootstepsRun();  audio.StartFootstepsWalk(); }
+                else               { audio.StopFootstepsWalk(); audio.StopFootstepsRun(); }
+            }
+
             float targetSpeed = _sprintHeld
                 ? config.baseSprintSpeed
                 : config.baseWalkSpeed;

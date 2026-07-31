@@ -55,7 +55,7 @@ namespace Fields.UI
             // Speed-run achievement (sub-30 minutes)
             if (elapsed < 1800f)
                 Fields.Core.SteamManager.Instance?.UnlockAchievement(
-                    Fields.Core.SteamManager.Achievements.ACH_SPEED_RUN);
+                    Fields.Core.SteamManager.Achievements.SPEED_RUN);
 
             // Button labels
             SetButtonLabel(playAgainButton, "end.playagain", "Play Again");

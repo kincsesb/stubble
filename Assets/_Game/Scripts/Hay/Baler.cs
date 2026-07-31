@@ -80,7 +80,8 @@ namespace Fields.Hay
             float speed = balerData != null && balerData.compressionSpeedLevels.Length > upgradeLevel
                 ? balerData.compressionSpeedLevels[upgradeLevel]
                 : 1f;
-            _compressionTimer = 2f / speed; // base 2 seconds, halved at max upgrade
+            _compressionTimer = 2f / speed;
+            Fields.Audio.ToolAudioManager.Instance?.StartBaler();
         }
 
         void Update()
@@ -99,6 +100,7 @@ namespace Fields.Hay
             _compressing = false;
             _hayAccumulated -= _hayRequired;
             _totalBalesEjected++;
+            Fields.Audio.ToolAudioManager.Instance?.StopBaler();
 
             // Feel
             feedbackThunk?.PlayFeedbacks(transform.position);
