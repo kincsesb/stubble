@@ -22,11 +22,21 @@ namespace Fields.Economy
         [Tooltip("Parcel quality multiplier (set per stand in Inspector)")]
         public float parcelMultiplier = 1f;
 
+        bool _firstSaleDone;
+
         public void Interact(PlayerController player)
         {
+            int baleCountBefore = player.CarriedBaleCount;
             int earned = SellBales(player);
             if (earned > 0)
+            {
                 CurrencyManager.Instance?.Earn(earned);
+                if (!_firstSaleDone)
+                {
+                    _firstSaleDone = true;
+                    Fields.Core.SteamManager.Instance?.OnFirstSale();
+                }
+            }
 
             shop?.Open();
         }

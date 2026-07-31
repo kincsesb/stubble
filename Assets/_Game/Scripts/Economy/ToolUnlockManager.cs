@@ -46,6 +46,8 @@ namespace Fields.Economy
             if (!CurrencyManager.Instance.TrySpend(data.purchaseCost)) return false;
             _toolsOwned[toolIndex] = true;
             OnToolUnlocked?.Invoke(toolIndex);
+            if (data != null)
+                Fields.Core.SteamManager.Instance?.OnToolPurchased(data.toolName);
             return true;
         }
 

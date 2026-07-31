@@ -34,14 +34,15 @@ namespace Fields.Core
 
         void OnParcelCompleted(ParcelBoundary parcel)
         {
+            int idx = System.Array.IndexOf(parcels, parcel);
             _completedParcels++;
             saveSystem?.SaveGame();
 
-            // When all 4 parcels done → end screen
+            SteamManager.Instance?.OnParcelComplete(idx);
             if (_completedParcels >= 4)
             {
+                SteamManager.Instance?.OnAllParcelsComplete();
                 if (endScreenRoot != null) endScreenRoot.SetActive(true);
-                // P1-05 will add stats table population
             }
         }
     }

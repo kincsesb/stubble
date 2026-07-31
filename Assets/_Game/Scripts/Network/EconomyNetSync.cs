@@ -48,14 +48,13 @@ namespace Fields.Network
         [Command(requiresAuthority = false)]
         public void CmdRequestPurchaseTool(int toolIndex)
         {
-            // Host validates and executes
-            ToolUnlockManager.Instance?.PurchaseTool(toolIndex);
+            ToolUnlockManager.Instance?.TryPurchase(toolIndex);
         }
 
         [Command(requiresAuthority = false)]
         public void CmdRequestUpgradeTool(int toolIndex)
         {
-            ToolUnlockManager.Instance?.UpgradeTool(toolIndex);
+            ToolUnlockManager.Instance?.TryUpgrade(toolIndex);
         }
 
         [Command(requiresAuthority = false)]
