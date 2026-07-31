@@ -5,7 +5,7 @@ namespace Fields.Tools
 {
     /// <summary>
     /// Base class for all tools. Manages equip/unequip and delegates to subclasses.
-    /// NGO NetworkBehaviour wiring deferred to P2.
+    /// Mirror NetworkBehaviour wiring deferred to P2.
     /// </summary>
     public abstract class BaseTool : MonoBehaviour
     {

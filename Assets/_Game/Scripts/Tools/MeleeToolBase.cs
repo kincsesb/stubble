@@ -1,5 +1,5 @@
 using Fields.Core;
-using Fields.Core.Data;
+using Fields.Feel;
 using UnityEngine;
 
 namespace Fields.Tools
@@ -32,6 +32,8 @@ namespace Fields.Tools
         float _stamina;
         float _maxStamina;
 
+        // Feel
+        protected SwingFeelController _feelController;
         PlayerController _owner;
 
         // ------------------------------------------------------------------ //
@@ -41,6 +43,7 @@ namespace Fields.Tools
             base.OnEquip();
             _maxStamina = CurrentEndurance;
             _stamina = _maxStamina;
+            _feelController = GetComponentInParent<SwingFeelController>();
         }
 
         void Update()

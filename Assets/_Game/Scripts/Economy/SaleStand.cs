@@ -1,18 +1,19 @@
 using Fields.Core;
 using Fields.Hay;
+using Fields.UI;
 using UnityEngine;
 
 namespace Fields.Economy
 {
     /// <summary>
     /// Stand trigger — sells carried bales and opens the shop.
-    /// Player walks into trigger zone; Interact key opens shop or sells bales.
+    /// Player walks into trigger zone; Interact key sells bales then opens ShopUI.
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class SaleStand : MonoBehaviour, IInteractable
     {
         [Header("References")]
-        public ShopPlaceholder shop;
+        public ShopUI shop;
 
         [Header("Economy")]
         [Tooltip("Base value per hay unit in a bale")]
@@ -20,9 +21,8 @@ namespace Fields.Economy
 
         public void Interact(PlayerController player)
         {
-            // Sell carried bales first, then open shop
             SellBales(player);
-            shop?.ToggleOpen();
+            shop?.Open();
         }
 
         void SellBales(PlayerController player)

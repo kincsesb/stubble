@@ -1,3 +1,4 @@
+using Fields.Core;
 using Fields.Grass;
 using UnityEngine;
 
@@ -62,8 +63,11 @@ namespace Fields.Tools
         protected override void OnSweepEnd()
         {
             _sweepActive = false;
+            // Classify + trigger Feel
+            int cellsInArc = Mathf.Max(1, Mathf.RoundToInt(baseCutRadius * CurrentPower / 0.4f * 2f));
+            var result = SwingResultCalculator.Classify(_cellsCutThisSwing, cellsInArc);
+            _feelController?.TriggerSwingFeel(result);
             _targetField = null;
-            // P1 will read _cellsCutThisSwing for hit/whiff classification
         }
 
         // ------------------------------------------------------------------ //

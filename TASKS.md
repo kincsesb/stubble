@@ -21,8 +21,11 @@ míg az eredeti spec és az eddigi kódváz **Unity Netcode for GameObjects (NGO
 | Kódmennyiség | Kevesebb boilerplate | Több, de Steam-native |
 | Dev recommendation | ✗ | ✅ |
 
-**→ Döntés szükséges a kliens részéről: NGO marad vagy váltunk Mirror-ra?**  
-Az eddigi kódvázak NetworkBehaviour stub-ok, váltás P2 előtt elvégezhető.
+**→ Döntés: Mirror + FizzySteamworks (kliens jóváhagyta)**  
+NGO eltávolítva a manifest-ből. Mirror manuális telepítés szükséges P2 előtt:
+1. Unity Asset Store → "Mirror" → ingyenes import
+2. Package Manager → Add from git URL: `https://github.com/Chykary/FizzySteamworks.git`
+3. Steamworks.NET: OpenUPM-en keresztül automatikus (`com.rlabrecque.steamworks.net`)
 
 ### Asset felelősség (docx)
 A fejlesztő azt feltételezi, hogy a kliens biztosítja:
