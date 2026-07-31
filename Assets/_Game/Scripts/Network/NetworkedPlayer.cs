@@ -5,6 +5,7 @@ using Mirror;
 
 using UnityEngine;
 using Fields.Core;
+using Fields.Tools;
 
 namespace Fields.Network
 {
@@ -24,28 +25,41 @@ namespace Fields.Network
 
         PlayerController _pc;
         CharacterController _cc;
+        ToolHolder _toolHolder;
         float _lerpSpeed = 15f;
 
         void Awake()
         {
             _pc = GetComponent<PlayerController>();
             _cc = GetComponent<CharacterController>();
+            _toolHolder = GetComponentInChildren<ToolHolder>();
         }
 
         public override void OnStartLocalPlayer()
         {
-            // Enable local PlayerController input only for owner
             _pc.enabled = true;
-            Camera.main.gameObject.SetActive(true); // main cam follows local player
+            Camera.main.gameObject.SetActive(true);
+
+            // Route local tool use → Command so all clients see it
+            if (_toolHolder != null)
+                _toolHolder.OnToolAction += OnLocalToolAction;
+        }
+
+        void OnDestroy()
+        {
+            if (_toolHolder != null)
+                _toolHolder.OnToolAction -= OnLocalToolAction;
+        }
+
+        void OnLocalToolAction(int toolIndex, bool pressed)
+        {
+            CmdUseTool((byte)toolIndex, pressed);
         }
 
         public override void OnStartClient()
         {
             if (!isLocalPlayer)
-            {
-                // Remote players: disable local input, enable name tag
                 _pc.enabled = false;
-            }
         }
 
         void Update()
@@ -94,8 +108,9 @@ namespace Fields.Network
         [ClientRpc(excludeOwner = true)]
         void RpcUseTool(byte toolIndex, bool pressed)
         {
-            // Remote player's visual-only tool animation
-            // Actual grass cutting is handled by GrassNetSync authority
+            // Replay on remote players — visual animation only
+            // Grass cutting authority handled by GrassNetSync interceptors
+            _toolHolder?.ForceUsePrimary(toolIndex, pressed);
         }
 
         // ------------------------------------------------------------------ //

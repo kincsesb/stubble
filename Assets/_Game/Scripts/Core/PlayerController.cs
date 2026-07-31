@@ -131,9 +131,16 @@ namespace Fields.Core
         {
             Vector2 look = _lookInput;
 
-            // Scale based on input device — Input System provides pixels for mouse,
-            // normalised for gamepad; distinguish by magnitude.
             bool isGamepad = look.sqrMagnitude <= 1.01f && !Mouse.current.delta.IsActuated();
+            if (isGamepad)
+            {
+                // Apply circular dead-zone for gamepad sticks
+                if (look.sqrMagnitude < gamepadDeadZone * gamepadDeadZone)
+                    look = Vector2.zero;
+                else
+                    look = look.normalized * ((look.magnitude - gamepadDeadZone) / (1f - gamepadDeadZone));
+            }
+
             float scale = isGamepad ? gamepadSensitivity * Time.deltaTime : mouseSensitivity;
 
             _yaw += look.x * scale;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,6 +13,9 @@ namespace Fields.Tools
     {
         [Header("Tool Slots (assign in inspector, ordered 1-5)")]
         public List<BaseTool> tools = new List<BaseTool>(5);
+
+        /// <summary>Fired on local player: (toolIndex, isPressed). Consumed by NetworkedPlayer to send CmdUseTool.</summary>
+        public event Action<int, bool> OnToolAction;
 
         int _activeIndex = -1;
 
@@ -43,7 +47,17 @@ namespace Fields.Tools
 
         public void OnUsePrimary(InputValue value)
         {
-            ActiveTool?.OnUsePrimary(value.isPressed);
+            bool pressed = value.isPressed;
+            ActiveTool?.OnUsePrimary(pressed);
+            OnToolAction?.Invoke(_activeIndex, pressed);
+        }
+
+        /// <summary>Remote replay: equip slot then trigger use — called by NetworkedPlayer RpcUseTool.</summary>
+        public void ForceUsePrimary(int toolIndex, bool pressed)
+        {
+            if (toolIndex >= 0 && toolIndex < tools.Count && toolIndex != _activeIndex)
+                EquipSlot(toolIndex);
+            ActiveTool?.OnUsePrimary(pressed);
         }
 
         // ------------------------------------------------------------------ //
