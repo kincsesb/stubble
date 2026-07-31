@@ -146,7 +146,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P0-07 | Világ váz — 4 parcel terrain, kerítések, stand + bálázó pozíciók
-**Status:** 🔧 RÉSZBEN
+**Status:** ✅ KÉSZ
 
 > **Döntés:** Nincs gate! Egy összenyitott nagy mező, a 4 parcella csak logikai egység (completion tracking + achievements). ParcelGate.cs törölve.
 
@@ -154,12 +154,12 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 - `ParcelBoundary.cs` — trigger, completion check (100% cut + 0 HayPile), player enter/exit event ✅
 - `WorldBootstrap.cs` — load-on-start, save-on-parcel-complete, end screen ✅
 
-**Hiányzik (Unity Editor):**
-- [ ] Unity Terrain helyes méretekkel (összefüggő nagy mező, 4 logikai zónával)
-- [ ] 12°-os lejtő a 4. zónán
-- [ ] Parcel boundary colliderek + trigger komponens (invisible trigger, nem fizikai fal)
-- [ ] Stand + Baler placeholder cube + InteractTrigger
-- [ ] GrassField komponens mind a 4 parcellára
+**Scénában:**
+- 4× 100×100m Terrain (összesen 200×200m) ✅
+- 12°-os lejtő Terrain_Parcel_3-on (west→east, max 21.3m magassági különbség) ✅
+- 4× ParcelBoundary BoxCollider trigger ✅
+- GrassField + HayAccumulationSystem mind a 4 parcellán ✅
+- SaleStand, Baler, RideOnMower GO-k scénában ✅
 
 ---
 
