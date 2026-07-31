@@ -72,10 +72,18 @@ namespace Fields.Tools
             _cc = GetComponent<CharacterController>();
             _prevDeckPos = deckCenter != null ? deckCenter.position : transform.position;
 
-            // Snap player onto mower seat and lock their own movement
             _mounted = true;
-            _mountedCamera = GetComponentInParent<Fields.Feel.SwingFeelController>()
-                ?.transform.GetComponentInChildren<Camera>()?.transform;
+
+            // Lock player movement and teleport them to mower seat
+            var player = Fields.Core.PlayerController.Instance;
+            if (player != null)
+            {
+                player.IsMounted = true;
+                player.transform.position = transform.position;
+            }
+
+            // Shift camera to seated offset
+            _mountedCamera = Camera.main?.transform;
             if (_mountedCamera != null)
             {
                 _origCamLocalPos = _mountedCamera.localPosition;
@@ -87,6 +95,10 @@ namespace Fields.Tools
         {
             base.OnUnequip();
             _mounted = false;
+
+            var player = Fields.Core.PlayerController.Instance;
+            if (player != null) player.IsMounted = false;
+
             if (_mountedCamera != null)
                 _mountedCamera.localPosition = _origCamLocalPos;
             if (_engineRunning) StopEngine();
@@ -105,6 +117,10 @@ namespace Fields.Tools
             base.Update(); // fuel drain
 
             if (!_isEquipped || !_mounted) return;
+
+            // Keep player position synced to mower seat
+            var player = Fields.Core.PlayerController.Instance;
+            if (player != null) player.transform.position = transform.position;
 
             ReadInput();
 

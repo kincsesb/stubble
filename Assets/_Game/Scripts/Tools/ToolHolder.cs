@@ -40,8 +40,13 @@ namespace Fields.Tools
         {
             float scroll = value.Get<float>();
             if (Mathf.Abs(scroll) < 0.01f) return;
-            int next = _activeIndex + (scroll > 0 ? 1 : -1);
-            next = (next + tools.Count) % tools.Count;
+            int dir = scroll > 0 ? 1 : -1;
+            int next = _activeIndex;
+            for (int i = 0; i < tools.Count; i++)
+            {
+                next = (next + dir + tools.Count) % tools.Count;
+                if (IsOwned(next)) break;
+            }
             EquipSlot(next);
         }
 
@@ -65,11 +70,19 @@ namespace Fields.Tools
         void EquipSlot(int index)
         {
             if (index == _activeIndex) return;
+            if (!IsOwned(index)) return;
+
             if (_activeIndex >= 0 && _activeIndex < tools.Count)
                 tools[_activeIndex]?.OnUnequip();
 
             _activeIndex = index;
             ActiveTool?.OnEquip();
+        }
+
+        bool IsOwned(int index)
+        {
+            var mgr = Fields.Economy.ToolUnlockManager.Instance;
+            return mgr == null || mgr.IsOwned(index);
         }
 
         public BaseTool ActiveTool =>

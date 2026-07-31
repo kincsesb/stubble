@@ -109,7 +109,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P0-05 | Player Controller — FP mozgás, kézrendszer
-**Status:** 🔧 RÉSZBEN
+**Status:** ✅ KÉSZ
 
 **Fájlok:** `Assets/_Game/Scripts/Core/PlayerController.cs`
 - CharacterController mozgás ✅
@@ -119,12 +119,19 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 - Stamina soft-limit (soha nem hard-lockout) ✅
 - IInteractable raycast ✅
 - HayPile pickup/drop ✅
+- PlayerController.Instance singleton ✅
+- IsMounted flag (HandleMovement/Bob/FOV suppressed while riding mower) ✅
+- Stamina init bug fix (100f, nem hayUnitsPerCollectionCell) ✅
 
-**Hiányzik:**
-- [ ] PlayerPrefab összerakása: CameraRoot, HandsRoot, ToolHolder child transform
-- [ ] PlayerInput component bekötése
+**Scénában:**
+- Player GO: CharacterController, PlayerController, SwingFeelController, ToolHolder, PlayerInput ✅
+- CameraRoot → [MainCamera, HandsRoot → [HandSickle, LongScythe, StringTrimmer, PushMower]] ✅
+- _Feel → [Feel_FullHit, Feel_Partial, Feel_Whiff, Feel_Obstacle] ✅
+- PlayerInput: InputSystem_Actions, SendMessages mode ✅
+- Gamepad circular dead-zone + sensitivity: `gamepadDeadZone=0.1`, `gamepadSensitivity=180` ✅
+
+**P2-ben szükséges:**
 - [ ] NGO NetworkBehaviour → P2-ben
-- [ ] Gamepad dead-zone és sensitivity beállítás
 - [ ] Co-op: más játékos névjegy (TMPro) → P2
 
 ---
@@ -244,7 +251,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P1-04 | Shop UI, Upgrade rendszer, Parcel unlock flow
-**Status:** 🔧 RÉSZBEN — ShopUI.cs + Shop_Canvas jelenetben ✅, SaleStand bekötve ✅, ToolData/ParcelData listák inspector-ban szükségesek
+**Status:** ✅ KÉSZ — ShopUI.cs + Shop_Canvas jelenetben ✅, SaleStand bekötve ✅, ShopUI.allTools[5] + allParcels[4] bekötve ✅, ToolUnlockManager.allTools[5] bekötve ✅, ParcelManager.parcels[4] bekötve ✅
 
 ---
 

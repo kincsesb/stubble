@@ -14,6 +14,8 @@ namespace Fields.Core
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
+        public static PlayerController Instance { get; private set; }
+
         [Header("References")]
         public GameConfig config;
         public Transform cameraRoot;
@@ -77,12 +79,17 @@ namespace Fields.Core
         // External velocity (applied next move frame)
         Vector3 _externalVelocity;
 
+        // When true, HandleMovement/Bob/FOV are suppressed (e.g. riding mower)
+        public bool IsMounted { get; set; }
+
         // ------------------------------------------------------------------ //
 
         void Awake()
         {
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            Instance = this;
             _cc = GetComponent<CharacterController>();
-            _stamina = config != null ? config.hayUnitsPerCollectionCell : 100f;
+            _stamina = 100f;
             _camera = Camera.main;
         }
 
@@ -154,6 +161,7 @@ namespace Fields.Core
 
         void HandleMovement()
         {
+            if (IsMounted) return;
             bool moving = _moveInput.sqrMagnitude > 0.01f && _cc.isGrounded;
             bool running = moving && _sprintHeld;
             var audio = Fields.Audio.ToolAudioManager.Instance;
@@ -191,6 +199,7 @@ namespace Fields.Core
 
         void HandleBob()
         {
+            if (IsMounted) return;
             if (_moveInput.sqrMagnitude > 0.01f && _cc.isGrounded)
             {
                 _bobTimer += Time.deltaTime * bobFrequency * Mathf.PI * 2f;
@@ -211,7 +220,7 @@ namespace Fields.Core
 
         void HandleFOV()
         {
-            if (_camera == null) return;
+            if (IsMounted || _camera == null) return;
             bool moving = _moveInput.sqrMagnitude > 0.01f;
             float targetFOV = (_sprintHeld && moving) ? sprintFOV : baseFOV;
             _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, targetFOV, Time.deltaTime * fovLerpSpeed);
