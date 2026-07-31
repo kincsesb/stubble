@@ -1,10 +1,5 @@
 # This .gitignore file should be placed at the root of your Unity project directory
 
-# Large third-party plugin directories (re-import from Asset Store as needed)
-/[Aa]ssets/Feel/
-/[Aa]ssets/Feel.meta
-/[Aa]ssets/TripoModels/
-/[Aa]ssets/TripoModels.meta
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
