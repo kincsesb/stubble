@@ -53,6 +53,10 @@ namespace Fields.Core
 
         // Carry
         List<HayPile> _carriedBales = new List<HayPile>(3);
+        List<Fields.Hay.SquareBale> _carriedSquareBales = new List<Fields.Hay.SquareBale>(3);
+
+        // External velocity (applied next move frame)
+        Vector3 _externalVelocity;
 
         // ------------------------------------------------------------------ //
 
@@ -124,9 +128,9 @@ namespace Fields.Core
                 ? config.baseSprintSpeed
                 : config.baseWalkSpeed;
 
-            // Carry penalty
-            int baleCount = Mathf.Clamp(_carriedBales.Count, 0, 3);
-            if (baleCount > 0)
+            // Carry penalty (combined hay piles + square bales)
+            int baleCount = Mathf.Clamp(CarriedBaleCount, 0, 3);
+            if (baleCount > 0 && config != null && config.baleCarrySpeedPenalties.Length >= baleCount)
             {
                 float penalty = config.baleCarrySpeedPenalties[baleCount - 1];
                 targetSpeed *= (1f - penalty);
@@ -137,6 +141,10 @@ namespace Fields.Core
 
             // Gravity
             if (!_cc.isGrounded) move.y -= 9.81f * Time.deltaTime;
+
+            // External impulse (round bale push, etc.)
+            move += _externalVelocity;
+            _externalVelocity = Vector3.MoveTowards(_externalVelocity, Vector3.zero, 10f * Time.deltaTime);
 
             _cc.Move(move * Time.deltaTime);
         }
@@ -202,7 +210,31 @@ namespace Fields.Core
             top.OnDrop(transform.position + transform.forward * 1.2f);
         }
 
-        public int CarriedBaleCount => _carriedBales.Count;
+        public int CarriedBaleCount => _carriedBales.Count + _carriedSquareBales.Count;
+
+        public bool PickupBale(Fields.Hay.SquareBale bale)
+        {
+            if (_carriedSquareBales.Count + _carriedBales.Count >= 3) return false;
+            if (!bale.CanPickup(transform)) return false;
+            _carriedSquareBales.Add(bale);
+            bale.OnPickup(toolHolder != null ? toolHolder : transform);
+            return true;
+        }
+
+        public void DropSquareBales()
+        {
+            for (int i = _carriedSquareBales.Count - 1; i >= 0; i--)
+            {
+                var b = _carriedSquareBales[i];
+                _carriedSquareBales.RemoveAt(i);
+                b.OnDrop(transform.position + transform.forward * 1.2f);
+            }
+        }
+
+        public void ExternalPush(Vector3 force)
+        {
+            _externalVelocity += force;
+        }
 
         // ------------------------------------------------------------------ //
         // Interact

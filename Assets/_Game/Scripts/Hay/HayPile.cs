@@ -48,6 +48,14 @@ namespace Fields.Hay
             if (TryGetComponent<Rigidbody>(out var rb))
                 rb.isKinematic = false;
         }
+
+        public float HayUnits => hayUnits;
+
+        public void ConsumeAll()
+        {
+            hayUnits = 0;
+            Destroy(gameObject);
+        }
     }
 
     public interface IPickupable
