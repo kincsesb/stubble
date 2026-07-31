@@ -224,7 +224,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P1-02 | Mind az 5 szerszám implementálva
-**Status:** 🔧 RÉSZBEN — LongScythe/StringTrimmer/PushMower ✅, RideOnMower ⏳
+**Status:** ✅ KÉSZ — HandSickle, LongScythe, StringTrimmer, PushMower, RideOnMower
 
 **Tervezett fájlok:**
 - `LongScythe.cs` — 1.4–2.4m arc, lassabb swing
@@ -235,7 +235,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P1-03 | Bálázó gép + négyszög/kerek bála fizika
-**Status:** ⏳ PENDING | **Blokkolt:** P0-08 ✅, P0-09 ✅ után
+**Status:** ✅ KÉSZ — Baler.cs, SquareBale.cs, RoundBale.cs (80kg, 8° lejtőn gurul)
 
 **Tervezett fájlok:**
 - `Baler.cs` — kompressziós folyamat, "thunk" + shake, ejectált bála
@@ -250,7 +250,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P1-05 | Teljes eladási loop, parcel completion, végképernyő
-**Status:** ⏳ PENDING | **Blokkolt:** P1-03, P1-04, P0-10 ✅ után
+**Status:** ✅ KÉSZ — SaleStand (hay+bale eladás, multiplier), EndScreen_Canvas wired
 
 ---
 
