@@ -97,6 +97,11 @@ namespace Fields.UI
         // Tab builders
         // ------------------------------------------------------------------ //
 
+        static string L(string key, params object[] args) =>
+            Fields.Core.LocalizationManager.Instance != null
+                ? Fields.Core.LocalizationManager.Instance.Get(key, args)
+                : (args.Length > 0 ? string.Format(key, args) : key);
+
         void BuildToolsTab()
         {
             for (int i = 0; i < allTools.Count; i++)
@@ -104,11 +109,11 @@ namespace Fields.UI
                 var data = allTools[i];
                 bool owned = _toolMgr != null && _toolMgr.IsOwned(i);
                 int price = data.purchaseCost;
-                bool canBuy = !owned && (_currency?.Money ?? 0) >= price;
 
-                var row = AddRow(data.toolName,
-                    owned ? "Megvan" : $"$ {price}",
-                    owned ? string.Empty : "Megvesz");
+                var row = AddRow(
+                    data.toolName,
+                    owned ? L("shop.owned") : $"$ {price}",
+                    owned ? string.Empty    : L("shop.buy", price));
 
                 if (!owned)
                 {
@@ -128,9 +133,9 @@ namespace Fields.UI
                 if (_toolMgr == null || !_toolMgr.IsOwned(i)) continue;
                 var data = allTools[i];
                 int level = _toolMgr.GetLevel(i);
-                if (level >= 3) { AddRow(data.toolName, "Max szint", string.Empty); continue; }
+                if (level >= 3) { AddRow(data.toolName, L("shop.maxlevel"), string.Empty); continue; }
                 int price = data.upgradeCosts[level];
-                var row = AddRow(data.toolName, $"Szint {level + 1} → {level + 2}   $ {price}", "Fejleszt");
+                var row = AddRow(data.toolName, $"Lv {level + 1}→{level + 2}  $ {price}", L("shop.upgrade", price));
                 int idx = i;
                 row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                 {
@@ -146,9 +151,10 @@ namespace Fields.UI
                 var data = allParcels[i];
                 bool unlocked = _parcelMgr != null && _parcelMgr.IsUnlocked(i);
                 int price = data.unlockCost;
-                var row = AddRow(data.parcelName,
-                    unlocked ? "Megnyitva" : $"$ {price}",
-                    unlocked ? string.Empty : "Megnyit");
+                var row = AddRow(
+                    L($"parcel.{i}.name"),
+                    unlocked ? L("shop.owned") : $"$ {price}",
+                    unlocked ? string.Empty     : L("shop.unlock", price));
                 if (!unlocked)
                 {
                     int idx = i;

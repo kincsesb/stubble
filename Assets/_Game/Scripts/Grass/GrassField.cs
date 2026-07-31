@@ -35,6 +35,14 @@ namespace Fields.Grass
 
         public RenderTexture MaskRenderTexture => _maskRT;
 
+        /// <summary>
+        /// Co-op hook: set by GrassNetSync on non-host clients to route cuts through the network.
+        /// Returns true → cut was intercepted (local apply suppressed).
+        /// Null → single-player / host, cut applies locally.
+        /// </summary>
+        public Func<Vector3, float, bool>         CutAreaInterceptor;
+        public Func<Vector3, Vector3, float, bool> CutCapsuleInterceptor;
+
         // ------------------------------------------------------------------ //
 
         void Awake()
@@ -56,6 +64,7 @@ namespace Fields.Grass
         /// <summary>Cut a circle at world position with given radius.</summary>
         public void CutArea(Vector3 worldPos, float radius)
         {
+            if (CutAreaInterceptor != null && CutAreaInterceptor(worldPos, radius)) return;
             // CPU
             WorldToGrid(worldPos, out int cx, out int cz);
             int cellRadius = Mathf.CeilToInt(radius / config.gridCellSize);
@@ -82,6 +91,7 @@ namespace Fields.Grass
         /// <summary>Cut a capsule between two world positions.</summary>
         public void CutCapsule(Vector3 from, Vector3 to, float radius)
         {
+            if (CutCapsuleInterceptor != null && CutCapsuleInterceptor(from, to, radius)) return;
             // CPU — rasterise the capsule onto the grid
             WorldToGrid(from, out int fx, out int fz);
             WorldToGrid(to, out int tx, out int tz);

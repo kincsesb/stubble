@@ -29,15 +29,35 @@ namespace Fields.Network
 
         public void SetParcelIndex(int idx) => _parcelIndex = idx;
 
+        public override void OnStartClient()
+        {
+            if (!isServer && _field != null)
+            {
+                // Non-host clients: intercept local cuts and route through network
+                _field.CutAreaInterceptor     = (pos, r)       => { CmdCutArea(pos, r);       return true; };
+                _field.CutCapsuleInterceptor  = (f, t, r)      => { CmdCutCapsule(f, t, r);   return true; };
+            }
+        }
+
+        void OnDestroy()
+        {
+            // Clear interceptors so GrassField doesn't hold dead delegates
+            if (_field != null)
+            {
+                _field.CutAreaInterceptor    = null;
+                _field.CutCapsuleInterceptor = null;
+            }
+        }
+
         // ------------------------------------------------------------------ //
         // Cut broadcast
         // ------------------------------------------------------------------ //
 
-        /// <summary>Called by local tools — sends cut command to host.</summary>
+        /// <summary>Direct request — used by tools that want explicit net routing.</summary>
         public void RequestCutArea(Vector3 worldPos, float radius)
         {
-            if (isServer) ApplyCutArea(worldPos, radius);       // host: apply immediately
-            else          CmdCutArea(worldPos, radius);         // client: ask host
+            if (isServer) ApplyCutArea(worldPos, radius);
+            else          CmdCutArea(worldPos, radius);
         }
 
         public void RequestCutCapsule(Vector3 from, Vector3 to, float radius)

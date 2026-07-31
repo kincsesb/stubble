@@ -17,27 +17,41 @@ namespace Fields.UI
         [Header("Settings")]
         public bool visibleOnStart = true;
 
-        const string HINTS =
-            "<b>Irányítás</b>\n" +
-            "WASD / Bal joystick — Mozgás\n" +
-            "Egér / Jobb joystick — Nézés\n" +
+        // Control layout is language-independent — kept as-is.
+        // Game mechanic hints (max 5 per spec §8.11) pulled from LocalizationManager.
+        const string CONTROLS =
+            "<b>Controls</b>\n" +
+            "WASD / L-Stick — Move\n" +
+            "Mouse / R-Stick — Look\n" +
             "Shift / RT — Sprint\n" +
-            "\n" +
-            "<b>Eszközök</b>\n" +
-            "LMB / RT — Vágás / Használat\n" +
-            "Scroll / LB–RB — Eszköz váltás\n" +
-            "1–5 — Gyors eszköz kiválasztás\n" +
-            "\n" +
-            "<b>Objektumok</b>\n" +
-            "E / X gomb — Interakció / Felvétel\n" +
-            "Q / O gomb — Bála lerakás\n" +
-            "\n" +
-            "Tab / Select — Súgó bezárás";
+            "LMB / RT — Use tool\n" +
+            "Scroll / LB–RB — Switch tool\n" +
+            "E / X — Interact\n" +
+            "Q / O — Drop bale\n" +
+            "Tab / Select — Close";
 
         void Start()
         {
-            if (tooltipText != null) tooltipText.text = HINTS;
+            RefreshText();
             SetVisible(visibleOnStart);
+            if (Fields.Core.LocalizationManager.Instance != null)
+                Fields.Core.LocalizationManager.Instance.OnLanguageChanged += RefreshText;
+        }
+
+        void OnDestroy()
+        {
+            if (Fields.Core.LocalizationManager.Instance != null)
+                Fields.Core.LocalizationManager.Instance.OnLanguageChanged -= RefreshText;
+        }
+
+        void RefreshText()
+        {
+            if (tooltipText == null) return;
+            var loc = Fields.Core.LocalizationManager.Instance;
+            string hints = loc != null
+                ? $"{loc.Get("hint.0")}\n{loc.Get("hint.1")}\n{loc.Get("hint.2")}\n{loc.Get("hint.3")}\n{loc.Get("hint.4")}"
+                : string.Empty;
+            tooltipText.text = CONTROLS + (hints.Length > 0 ? "\n\n<b>Tips</b>\n" + hints : string.Empty);
         }
 
         void Update()
