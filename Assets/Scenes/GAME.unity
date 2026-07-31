@@ -192,7 +192,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Hay.HayAccumulationSystem
   config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
-  hayPilePrefab: {fileID: 0}
+  hayPilePrefab: {fileID: 8664197915596646720, guid: aabdba71c19294f45be2d5125482c4a0, type: 3}
   decalPhaseMaterials:
   - {fileID: 2100000, guid: cd10dafe086f4447ead7f0e124caf856, type: 2}
   - {fileID: 2100000, guid: f80f4570edb2d4dd882940cee5a41984, type: 2}
@@ -432,7 +432,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Hay.HayAccumulationSystem
   config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
-  hayPilePrefab: {fileID: 0}
+  hayPilePrefab: {fileID: 8664197915596646720, guid: aabdba71c19294f45be2d5125482c4a0, type: 3}
   decalPhaseMaterials:
   - {fileID: 2100000, guid: cd10dafe086f4447ead7f0e124caf856, type: 2}
   - {fileID: 2100000, guid: f80f4570edb2d4dd882940cee5a41984, type: 2}
@@ -5301,7 +5301,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Hay.HayAccumulationSystem
   config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
-  hayPilePrefab: {fileID: 0}
+  hayPilePrefab: {fileID: 8664197915596646720, guid: aabdba71c19294f45be2d5125482c4a0, type: 3}
   decalPhaseMaterials:
   - {fileID: 2100000, guid: cd10dafe086f4447ead7f0e124caf856, type: 2}
   - {fileID: 2100000, guid: f80f4570edb2d4dd882940cee5a41984, type: 2}
@@ -8578,7 +8578,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Hay.HayAccumulationSystem
   config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
-  hayPilePrefab: {fileID: 0}
+  hayPilePrefab: {fileID: 8664197915596646720, guid: aabdba71c19294f45be2d5125482c4a0, type: 3}
   decalPhaseMaterials:
   - {fileID: 2100000, guid: cd10dafe086f4447ead7f0e124caf856, type: 2}
   - {fileID: 2100000, guid: f80f4570edb2d4dd882940cee5a41984, type: 2}
