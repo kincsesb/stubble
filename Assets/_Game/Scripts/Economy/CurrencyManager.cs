@@ -35,6 +35,8 @@ namespace Fields.Economy
             int old = _money;
             _money += amount;
             OnMoneyChanged?.Invoke(old, _money);
+            Fields.Audio.ToolAudioManager.Instance?.PlayMoney();
+            Fields.Core.SteamManager.Instance?.OnEarnMoney(_money);
         }
 
         public bool TrySpend(int amount)

@@ -30,6 +30,8 @@ Shader "Fields/GrassBlade"
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_fog
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ COLORBLIND_DEUTERANOPIA COLORBLIND_PROTANOPIA COLORBLIND_TRITANOPIA
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
@@ -108,6 +110,16 @@ Shader "Fields/GrassBlade"
                 col.rgb *= NdotL * mainLight.color;
 
                 col.rgb = MixFog(col.rgb, IN.fogFactor);
+
+                // Colorblind compensation — shift hue of stubble to visually separate it from grass
+#if defined(COLORBLIND_DEUTERANOPIA) || defined(COLORBLIND_PROTANOPIA)
+                // Add blue tint proportional to stubble amount so it reads distinct from green
+                col.b = saturate(col.b + stubbleFrac * 0.4);
+#elif defined(COLORBLIND_TRITANOPIA)
+                // Boost luminance difference instead of hue shift
+                col.rgb = lerp(col.rgb, half3(0.9, 0.9, 0.9) * dot(col.rgb, half3(0.299, 0.587, 0.114)), stubbleFrac * 0.5);
+#endif
+
                 return col;
             }
             ENDHLSL

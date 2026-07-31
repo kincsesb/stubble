@@ -16,6 +16,14 @@ namespace Fields.Tools
         [Tooltip("Full swing duration in seconds")]
         public float swingDuration = 0.55f;
 
+        [Header("Swing Animation")]
+        [Tooltip("Local Euler angles at rest")]
+        public Vector3 animRestRotation     = new Vector3(  0f,   0f,   0f);
+        [Tooltip("Local Euler angles at wind-up peak (pulled back to right)")]
+        public Vector3 animWindUpRotation   = new Vector3(-10f,  70f,  10f);
+        [Tooltip("Local Euler angles at sweep follow-through (sweeps right→left)")]
+        public Vector3 animSweepEndRotation = new Vector3(  8f, -85f, -12f);
+
         // Spec proportions
         const float WINDUP_END = 0.25f;
         const float SWEEP_END = 0.55f;  // 25% + 30%
@@ -34,7 +42,7 @@ namespace Fields.Tools
 
         // Feel
         protected SwingFeelController _feelController;
-        PlayerController _owner;
+        protected Fields.Core.PlayerController _owner;
 
         // ------------------------------------------------------------------ //
 
@@ -44,12 +52,14 @@ namespace Fields.Tools
             _maxStamina = CurrentEndurance;
             _stamina = _maxStamina;
             _feelController = GetComponentInParent<SwingFeelController>();
+            _owner = GetComponentInParent<Fields.Core.PlayerController>();
         }
 
         void Update()
         {
             if (!_isEquipped) return;
             TickSwing();
+            TickAnimation();
             RegenStamina();
         }
 
@@ -77,7 +87,16 @@ namespace Fields.Tools
             _phase = SwingPhase.WindUp;
             _swingTimer = 0f;
             _inputQueued = false;
+            Fields.Audio.ToolAudioManager.Instance?.PlaySwing();
             OnWindUpBegin();
+        }
+
+        // Called internally when sweep phase begins — override to extend
+        void OnSweepPhaseBegin()
+        {
+            // Haptic: strong thump when blade enters grass
+            _owner?.TriggerHaptics(0.35f, 0.65f, 0.10f);
+            OnSweepBegin();
         }
 
         void TickSwing()
@@ -92,7 +111,7 @@ namespace Fields.Tools
                     if (_swingTimer >= WINDUP_END)
                     {
                         _phase = SwingPhase.Sweep;
-                        OnSweepBegin();
+                        OnSweepPhaseBegin();
                     }
                     break;
 
@@ -109,6 +128,7 @@ namespace Fields.Tools
                     if (_swingTimer >= 1f)
                     {
                         _phase = SwingPhase.Idle;
+                        Fields.Audio.ToolAudioManager.Instance?.StopSwing();
                         OnSwingComplete();
                         if (_inputQueued)
                         {
@@ -139,6 +159,49 @@ namespace Fields.Tools
 
         public float StaminaNormalized => _maxStamina > 0 ? _stamina / _maxStamina : 0f;
         public SwingPhase CurrentPhase => _phase;
+
+        // ------------------------------------------------------------------ //
+        // Swing Animation — drives tool's localRotation through the arc
+        // ------------------------------------------------------------------ //
+
+        void TickAnimation()
+        {
+            Quaternion target;
+            switch (_phase)
+            {
+                case SwingPhase.WindUp:
+                {
+                    float t = Mathf.Clamp01(_swingTimer / WINDUP_END);
+                    target = Quaternion.Slerp(
+                        Quaternion.Euler(animRestRotation),
+                        Quaternion.Euler(animWindUpRotation), t);
+                    break;
+                }
+                case SwingPhase.Sweep:
+                {
+                    float t = Mathf.Clamp01((_swingTimer - WINDUP_END) / (SWEEP_END - WINDUP_END));
+                    // ease-in: fast sweep start
+                    float ease = 1f - (1f - t) * (1f - t);
+                    target = Quaternion.Slerp(
+                        Quaternion.Euler(animWindUpRotation),
+                        Quaternion.Euler(animSweepEndRotation), ease);
+                    break;
+                }
+                case SwingPhase.Recovery:
+                {
+                    float t = Mathf.Clamp01((_swingTimer - SWEEP_END) / (1f - SWEEP_END));
+                    target = Quaternion.Slerp(
+                        Quaternion.Euler(animSweepEndRotation),
+                        Quaternion.Euler(animRestRotation), t);
+                    break;
+                }
+                default:
+                    target = Quaternion.Euler(animRestRotation);
+                    break;
+            }
+
+            transform.localRotation = Quaternion.Slerp(transform.localRotation, target, Time.deltaTime * 25f);
+        }
 
         // ------------------------------------------------------------------ //
         // Overrideable hooks

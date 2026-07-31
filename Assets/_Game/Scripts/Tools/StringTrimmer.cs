@@ -19,19 +19,36 @@ namespace Fields.Tools
         [Tooltip("Camera vibration amplitude while running")]
         public float vibrationAmplitude = 0.3f;
 
+        [Header("Pendulum Animation")]
+        [Tooltip("Max yaw swing each side in degrees")]
+        public float swingAngle = 38f;
+        [Tooltip("Swings per second")]
+        public float swingSpeed = 2.2f;
+
         GrassField _targetField;
         bool _primaryHeld;
-        float _rpm = 1f;      // 0-1 normalised RPM
-        float _bogFactor = 1f; // 1 = no bog, 0.8 = full bog (-20% cut rate)
+        float _rpm = 1f;
+        float _bogFactor = 1f;
+        Quaternion _restLocalRotation;
 
         Fields.Feel.SwingFeelController _feelController;
 
-        protected override void OnEngineStarted() => _rpm = 1f;
-        protected override void OnEngineStopped() => _rpm = 0f;
+        protected override void OnEngineStarted()
+        {
+            _rpm = 1f;
+            Fields.Audio.ToolAudioManager.Instance?.StartStringTrimmer();
+        }
+
+        protected override void OnEngineStopped()
+        {
+            _rpm = 0f;
+            Fields.Audio.ToolAudioManager.Instance?.StopStringTrimmer();
+        }
 
         public override void OnEquip()
         {
             base.OnEquip();
+            _restLocalRotation = transform.localRotation;
             _feelController = GetComponentInParent<Fields.Feel.SwingFeelController>();
         }
 
@@ -68,7 +85,16 @@ namespace Fields.Tools
             float targetRpm = _bogFactor;
             _rpm = Mathf.MoveTowards(_rpm, targetRpm, 2f * Time.deltaTime);
 
-            // Vibration feel: idle — no per-frame call needed; P3-02 adds proper MMF loop
+            // Pendulum roll — tilts the head sideways left↔right relative to equip pose
+            float roll = Mathf.Sin(Time.time * swingSpeed * Mathf.PI * 2f) * swingAngle * _rpm;
+            transform.localRotation = _restLocalRotation * Quaternion.Euler(0f, 0f, roll);
+        }
+
+        void LateUpdate()
+        {
+            if (!_isEquipped || _engineRunning) return;
+            transform.localRotation = Quaternion.Slerp(
+                transform.localRotation, _restLocalRotation, Time.deltaTime * 6f);
         }
 
         bool IsCuttingUncut(Vector3 pos)
@@ -80,6 +106,8 @@ namespace Fields.Tools
         GrassField FindNearestField(Vector3 near)
         {
             var fields = UnityEngine.Object.FindObjectsByType<GrassField>(UnityEngine.FindObjectsSortMode.None);
+            foreach (var f in fields)
+                if (f.ContainsWorldPoint(near)) return f;
             GrassField best = null; float bestDist = float.MaxValue;
             foreach (var f in fields) { float d = (f.transform.position - near).sqrMagnitude; if (d < bestDist) { bestDist = d; best = f; } }
             return best;

@@ -19,7 +19,7 @@ namespace Fields.Grass
         [Header("Chunk settings")]
         public float chunkSize = 10f;
         [Tooltip("Grass blades per metre² at full density")]
-        public float bladeDensity = 16f;
+        public float bladeDensity = 48f;
 
         [Header("LOD distances")]
         public float lod1Distance = 15f;
@@ -27,14 +27,25 @@ namespace Fields.Grass
 
         GrassField _grassField;
         List<GrassChunk> _chunks = new List<GrassChunk>();
+        Material _matInstance; // per-terrain instance so each field binds its own RT
 
         Transform _camera;
+        int _lodUpdateFrame;
+        const int LOD_UPDATE_INTERVAL = 8; // check every N frames
 
         // ------------------------------------------------------------------ //
 
         void Awake()
         {
             _grassField = GetComponent<GrassField>();
+        }
+
+        void OnDestroy()
+        {
+            if (_matInstance != null) Destroy(_matInstance);
+            foreach (var c in _chunks)
+                if (c.lodMeshes != null)
+                    foreach (var m in c.lodMeshes) if (m != null) Destroy(m);
         }
 
         void Start()
@@ -45,7 +56,9 @@ namespace Fields.Grass
 
         void Update()
         {
-            UpdateChunkLODs();
+            // Stagger LOD updates across frames to avoid per-frame mesh swaps
+            if (++_lodUpdateFrame % LOD_UPDATE_INTERVAL == 0)
+                UpdateChunkLODs();
         }
 
         // ------------------------------------------------------------------ //
@@ -55,22 +68,26 @@ namespace Fields.Grass
             foreach (var c in _chunks) if (c.go != null) Destroy(c.go);
             _chunks.Clear();
 
+            // Create one material instance per terrain with the RT already bound,
+            // so all chunks inherit the correct mask without auto-copying the source material.
+            if (_matInstance != null) Destroy(_matInstance);
+            _matInstance = new Material(grassMaterial);
+            if (_grassField.MaskRenderTexture != null)
+                _matInstance.SetTexture("_GrassMask", _grassField.MaskRenderTexture);
+
             int cols = Mathf.CeilToInt(_grassField.fieldSize.x / chunkSize);
             int rows = Mathf.CeilToInt(_grassField.fieldSize.y / chunkSize);
 
             for (int r = 0; r < rows; r++)
                 for (int c = 0; c < cols; c++)
                     _chunks.Add(BuildChunk(c, r));
-
-            // Bind the shared RenderTexture mask to the material
-            if (grassMaterial != null && _grassField.MaskRenderTexture != null)
-                grassMaterial.SetTexture("_GrassMask", _grassField.MaskRenderTexture);
         }
 
         GrassChunk BuildChunk(int col, int row)
         {
-            float ox = col * chunkSize - _grassField.fieldSize.x * 0.5f;
-            float oz = row * chunkSize - _grassField.fieldSize.y * 0.5f;
+            // Field origin = GO's local (0,0) — bottom-left, matching Unity Terrain convention.
+            float ox = col * chunkSize;
+            float oz = row * chunkSize;
             Vector3 origin = transform.TransformPoint(new Vector3(ox, 0f, oz));
 
             var go = new GameObject($"GrassChunk_{col}_{row}");
@@ -79,19 +96,26 @@ namespace Fields.Grass
 
             var mf = go.AddComponent<MeshFilter>();
             var mr = go.AddComponent<MeshRenderer>();
-            mr.material = grassMaterial;
+            mr.sharedMaterial = _matInstance; // share per-terrain instance, not the source asset
             mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
-            mf.sharedMesh = BuildBladeMesh(chunkSize, chunkSize, 1f);
+            // Pre-build all 3 LOD meshes once; swap refs at runtime (zero GC)
+            var lodMeshes = new Mesh[3];
+            lodMeshes[0] = BuildBladeMesh(chunkSize, chunkSize, 1.0f, ox, oz);
+            lodMeshes[1] = BuildBladeMesh(chunkSize, chunkSize, 0.5f, ox, oz);
+            lodMeshes[2] = BuildBladeMesh(chunkSize, chunkSize, 0.2f, ox, oz);
+            mf.sharedMesh = lodMeshes[0];
 
-            return new GrassChunk { go = go, mr = mr, mf = mf, col = col, row = row };
+            return new GrassChunk { go = go, mr = mr, mf = mf, col = col, row = row,
+                                    originX = ox, originZ = oz, lodMeshes = lodMeshes };
         }
 
         /// <summary>
         /// Generates a flat quad mesh for grass blades at given density fraction.
         /// Each "blade" is a vertical quad; final geometry is shaped in the vertex shader.
+        /// originX/Z = chunk's local offset within the field (0-based, bottom-left convention).
         /// </summary>
-        Mesh BuildBladeMesh(float width, float depth, float densityFraction)
+        Mesh BuildBladeMesh(float width, float depth, float densityFraction, float originX = 0f, float originZ = 0f)
         {
             int totalBlades = Mathf.RoundToInt(width * depth * bladeDensity * densityFraction);
             totalBlades = Mathf.Min(totalBlades, 65000 / 4); // stay under 16-bit index limit
@@ -105,8 +129,9 @@ namespace Fields.Grass
             {
                 float rx = Random.Range(0f, width);
                 float rz = Random.Range(0f, depth);
-                float maskU = (rx + _grassField.fieldSize.x * 0.5f - verts[0].x) / _grassField.fieldSize.x;
-                float maskV = (rz + _grassField.fieldSize.y * 0.5f) / _grassField.fieldSize.y;
+                // UV into the full field mask RT (0-based bottom-left)
+                float maskU = (originX + rx) / _grassField.fieldSize.x;
+                float maskV = (originZ + rz) / _grassField.fieldSize.y;
 
                 int v = i * 4;
                 float hw = 0.04f;
@@ -147,17 +172,14 @@ namespace Fields.Grass
             foreach (var chunk in _chunks)
             {
                 if (chunk.go == null) continue;
-                float dist = Vector3.Distance(camPos, chunk.go.transform.position);
+                float sqDist = (camPos - chunk.go.transform.position).sqrMagnitude;
 
-                float densityFraction = dist < lod1Distance ? 1f :
-                                        dist < lod2Distance ? 0.5f : 0.2f;
-
-                // Rebuild mesh only if LOD band changed
-                int band = dist < lod1Distance ? 0 : dist < lod2Distance ? 1 : 2;
+                float d1 = lod1Distance, d2 = lod2Distance;
+                int band = sqDist < d1 * d1 ? 0 : sqDist < d2 * d2 ? 1 : 2;
                 if (band != chunk.lastLODBand)
                 {
                     chunk.lastLODBand = band;
-                    chunk.mf.sharedMesh = BuildBladeMesh(chunkSize, chunkSize, densityFraction);
+                    chunk.mf.sharedMesh = chunk.lodMeshes[band]; // zero GC — just swap ref
                 }
             }
         }
@@ -170,7 +192,9 @@ namespace Fields.Grass
             public MeshRenderer mr;
             public MeshFilter mf;
             public int col, row;
+            public float originX, originZ;
             public int lastLODBand = -1;
+            public Mesh[] lodMeshes; // pre-built, swapped at runtime
         }
     }
 }

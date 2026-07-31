@@ -76,10 +76,12 @@ namespace Fields.Tools
 
         GrassField FindAnyGrassField(Vector3 near)
         {
-            // Simple overlap check — finds nearest GrassField component
             var fields = FindObjectsByType<GrassField>(FindObjectsSortMode.None);
-            GrassField best = null;
-            float bestDist = float.MaxValue;
+            // Prefer the field whose bounds actually contain the point
+            foreach (var f in fields)
+                if (f.ContainsWorldPoint(near)) return f;
+            // Fallback: nearest origin
+            GrassField best = null; float bestDist = float.MaxValue;
             foreach (var f in fields)
             {
                 float d = (f.transform.position - near).sqrMagnitude;

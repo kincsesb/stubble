@@ -55,18 +55,32 @@ namespace Fields.Save
         public void SaveGame()
         {
             var data = BuildSaveData();
+            string json = JsonUtility.ToJson(data, prettyPrint: false);
             string path = SavePath();
-            File.WriteAllText(path, JsonUtility.ToJson(data, prettyPrint: false));
+            File.WriteAllText(path, json);
+            Fields.Core.SteamManager.Instance?.CloudSave(json); // mirror to Steam Cloud
             Debug.Log($"[SaveSystem] Saved to {path}");
         }
 
         public bool LoadGame()
         {
-            string path = SavePath();
-            if (!File.Exists(path)) return false;
+            // Try Steam Cloud first
+            string cloudJson = Fields.Core.SteamManager.Instance?.CloudLoad();
+            string json = null;
+
+            if (!string.IsNullOrEmpty(cloudJson))
+            {
+                json = cloudJson;
+            }
+            else
+            {
+                string path = SavePath();
+                if (!File.Exists(path)) return false;
+                json = File.ReadAllText(path);
+            }
 
             SaveData data;
-            try { data = JsonUtility.FromJson<SaveData>(File.ReadAllText(path)); }
+            try { data = JsonUtility.FromJson<SaveData>(json); }
             catch { Debug.LogWarning("[SaveSystem] Failed to parse save file."); return false; }
 
             if (data.version != 1)

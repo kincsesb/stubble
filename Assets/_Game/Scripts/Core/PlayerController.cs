@@ -28,12 +28,26 @@ namespace Fields.Core
         [Tooltip("Gamepad stick dead-zone")]
         public float gamepadDeadZone = 0.1f;
 
-        [Header("Head Bob (placeholder values, tuned in P3)")]
+        [Header("Head Bob")]
         public float bobAmplitude = 0.03f;
         public float bobFrequency = 1.8f;
 
+        [Header("FOV")]
+        public float baseFOV = 60f;
+        public float sprintFOV = 65f;
+        public float fovLerpSpeed = 6f;
+
+        [Header("Haptics")]
+        [Tooltip("Duration of swing impact rumble in seconds")]
+        public float hapticSwingDuration = 0.12f;
+        public float hapticSwingLow = 0.3f;
+        public float hapticSwingHigh = 0.6f;
+        [Tooltip("Light rumble while sprinting")]
+        public float hapticSprintLow = 0.05f;
+
         // Components
         CharacterController _cc;
+        Camera _camera;
 
         // Input state
         Vector2 _moveInput;
@@ -47,6 +61,11 @@ namespace Fields.Core
         // Bob
         float _bobTimer;
         Vector3 _bobOffset;
+
+        // Haptics
+        float _hapticTimer;
+        float _hapticLow;
+        float _hapticHigh;
 
         // Stamina
         float _stamina = 100f;
@@ -64,12 +83,14 @@ namespace Fields.Core
         {
             _cc = GetComponent<CharacterController>();
             _stamina = config != null ? config.hayUnitsPerCollectionCell : 100f;
+            _camera = Camera.main;
         }
 
         void Start()
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            if (_camera != null) _camera.fieldOfView = baseFOV;
         }
 
         void Update()
@@ -77,6 +98,8 @@ namespace Fields.Core
             HandleLook();
             HandleMovement();
             HandleBob();
+            HandleFOV();
+            HandleHaptics();
             RegenStamina();
         }
 
@@ -167,6 +190,42 @@ namespace Fields.Core
 
             if (cameraRoot != null)
                 cameraRoot.localPosition = new Vector3(0f, 1.65f, 0f) + _bobOffset;
+        }
+
+        void HandleFOV()
+        {
+            if (_camera == null) return;
+            bool moving = _moveInput.sqrMagnitude > 0.01f;
+            float targetFOV = (_sprintHeld && moving) ? sprintFOV : baseFOV;
+            _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, targetFOV, Time.deltaTime * fovLerpSpeed);
+        }
+
+        void HandleHaptics()
+        {
+#if ENABLE_INPUT_SYSTEM
+            var pad = UnityEngine.InputSystem.Gamepad.current;
+            if (pad == null) return;
+
+            if (_hapticTimer > 0f)
+            {
+                _hapticTimer -= Time.deltaTime;
+                pad.SetMotorSpeeds(_hapticLow, _hapticHigh);
+            }
+            else
+            {
+                // Light sprint rumble
+                bool sprinting = _sprintHeld && _moveInput.sqrMagnitude > 0.01f && _cc.isGrounded;
+                pad.SetMotorSpeeds(sprinting ? hapticSprintLow : 0f, 0f);
+            }
+#endif
+        }
+
+        /// <summary>Triggers a one-shot gamepad rumble (called from tool hit events).</summary>
+        public void TriggerHaptics(float low, float high, float duration)
+        {
+            _hapticLow   = low;
+            _hapticHigh  = high;
+            _hapticTimer = duration;
         }
 
         void RegenStamina()

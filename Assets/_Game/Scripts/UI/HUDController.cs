@@ -15,6 +15,7 @@ namespace Fields.UI
     /// </summary>
     public class HUDController : MonoBehaviour
     {
+        public static HUDController Instance { get; private set; }
         [Header("Bars")]
         public Image staminaBar;
         public Image fuelBar;
@@ -30,6 +31,11 @@ namespace Fields.UI
         [Header("Carry indicator")]
         public TextMeshProUGUI baleCountText;
 
+        [Header("Crosshair")]
+        public Image crosshair;
+        [Tooltip("Crosshair pulse scale when tool hits grass")]
+        public float crosshairPulseScale = 1.4f;
+
         [Header("Runtime references (assigned in scene)")]
         public PlayerController player;
         public ToolHolder toolHolder;
@@ -40,6 +46,20 @@ namespace Fields.UI
         float _targetMoney;
         float _moneyVelocity;
 
+        // Money punch
+        float _moneyPunchTimer;
+        const float MONEY_PUNCH_DURATION = 0.25f;
+
+        // Crosshair pulse
+        float _crosshairPulseTimer;
+        const float CROSSHAIR_PULSE_DURATION = 0.18f;
+
+        // Completion milestones
+        int _lastMilestone;
+        float _milestoneFlashTimer;
+        const float MILESTONE_FLASH_DURATION = 1.2f;
+        static readonly int[] MILESTONES = { 25, 50, 75, 100 };
+
         // Bar fade
         float _staminaFadeTimer;
         float _fuelFadeTimer;
@@ -47,6 +67,12 @@ namespace Fields.UI
         const float FADE_DURATION = 0.4f;
 
         // ------------------------------------------------------------------ //
+
+        void Awake()
+        {
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            Instance = this;
+        }
 
         void Start()
         {
@@ -69,6 +95,14 @@ namespace Fields.UI
             AnimateMoney();
             UpdateCompletion();
             UpdateBaleCount();
+            TickMoneyPunch();
+            TickCrosshairPulse();
+        }
+
+        /// <summary>Called by tools when blade connects with grass.</summary>
+        public void PulseHit()
+        {
+            _crosshairPulseTimer = CROSSHAIR_PULSE_DURATION;
         }
 
         // ------------------------------------------------------------------ //
@@ -142,7 +176,30 @@ namespace Fields.UI
         void UpdateCompletion()
         {
             if (completionText == null || activeGrassField == null) return;
-            completionText.text = $"{activeGrassField.GetCompletionPercent():F0}%";
+            float pct = activeGrassField.GetCompletionPercent();
+            completionText.text = $"{pct:F0}%";
+
+            // Milestone flash
+            int milestone = 0;
+            foreach (int m in MILESTONES) if (pct >= m) milestone = m;
+            if (milestone > _lastMilestone)
+            {
+                _lastMilestone = milestone;
+                _milestoneFlashTimer = MILESTONE_FLASH_DURATION;
+            }
+
+            if (_milestoneFlashTimer > 0f)
+            {
+                _milestoneFlashTimer -= Time.deltaTime;
+                float t = _milestoneFlashTimer / MILESTONE_FLASH_DURATION;
+                completionText.color = Color.Lerp(Color.white, new Color(0.3f, 1f, 0.3f), t);
+                completionText.transform.localScale = Vector3.one * Mathf.Lerp(1f, 1.25f, t);
+            }
+            else
+            {
+                completionText.color = Color.white;
+                completionText.transform.localScale = Vector3.one;
+            }
         }
 
         void UpdateBaleCount()
@@ -153,6 +210,36 @@ namespace Fields.UI
             baleCountText.gameObject.SetActive(count > 0);
         }
 
-        void OnMoneyChanged(int oldVal, int newVal) => _targetMoney = newVal;
+        void TickMoneyPunch()
+        {
+            if (moneyText == null || _moneyPunchTimer <= 0f) return;
+            _moneyPunchTimer -= Time.deltaTime;
+            float t = _moneyPunchTimer / MONEY_PUNCH_DURATION;
+            // Bounce: up then back
+            float scale = 1f + Mathf.Sin(t * Mathf.PI) * 0.25f;
+            moneyText.transform.localScale = Vector3.one * scale;
+        }
+
+        void TickCrosshairPulse()
+        {
+            if (crosshair == null) return;
+            if (_crosshairPulseTimer > 0f)
+            {
+                _crosshairPulseTimer -= Time.deltaTime;
+                float t = _crosshairPulseTimer / CROSSHAIR_PULSE_DURATION;
+                float s = Mathf.Lerp(1f, crosshairPulseScale, t);
+                crosshair.transform.localScale = Vector3.one * s;
+            }
+            else
+            {
+                crosshair.transform.localScale = Vector3.one;
+            }
+        }
+
+        void OnMoneyChanged(int oldVal, int newVal)
+        {
+            _targetMoney = newVal;
+            if (newVal > oldVal) _moneyPunchTimer = MONEY_PUNCH_DURATION;
+        }
     }
 }

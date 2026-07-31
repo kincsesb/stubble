@@ -18,21 +18,42 @@ namespace Fields.Tools
         [Tooltip("Movement penalty multiplier when in uncut grass")]
         public float uncutMovePenalty = 0.80f;
 
+        [Header("Running Animation")]
+        [Tooltip("Handle oscillation angle while running")]
+        public float handleOscillationAngle = 0.8f;
+        [Tooltip("Oscillation frequency Hz")]
+        public float oscillationHz = 12f;
+
         bool _deckEngaged;
         bool _primaryHeld;
         GrassField _targetField;
         Vector3 _prevDeckPos;
+        Quaternion _restLocalRotation;
 
         public override void OnEquip()
         {
             base.OnEquip();
+            _restLocalRotation = transform.localRotation;
             _prevDeckPos = deckCenter != null ? deckCenter.position : transform.position;
+        }
+
+        protected override void OnEngineStarted()
+        {
+            _deckEngaged = true;
+            Fields.Audio.ToolAudioManager.Instance?.StartPushMower();
+        }
+
+        protected override void OnEngineStopped()
+        {
+            _deckEngaged = false;
+            Fields.Audio.ToolAudioManager.Instance?.StopPushMower();
         }
 
         public override void OnUsePrimary(bool pressed)
         {
             _primaryHeld = pressed;
             if (pressed && !_engineRunning) StartEngine();
+            else if (!pressed && _engineRunning) StopEngine();
         }
 
         public void OnDeckToggle(InputValue value)
@@ -60,11 +81,24 @@ namespace Fields.Tools
             }
 
             _prevDeckPos = deckPos;
+
+            // Subtle handle vibration while deck is engaged
+            float osc = Mathf.Sin(Time.time * oscillationHz * Mathf.PI * 2f) * handleOscillationAngle;
+            transform.localRotation = _restLocalRotation * Quaternion.Euler(osc, 0f, 0f);
+        }
+
+        void LateUpdate()
+        {
+            if (!_isEquipped || (_engineRunning && _deckEngaged)) return;
+            transform.localRotation = Quaternion.Slerp(
+                transform.localRotation, _restLocalRotation, Time.deltaTime * 8f);
         }
 
         GrassField FindNearestField(Vector3 near)
         {
             var fields = UnityEngine.Object.FindObjectsByType<GrassField>(UnityEngine.FindObjectsSortMode.None);
+            foreach (var f in fields)
+                if (f.ContainsWorldPoint(near)) return f;
             GrassField best = null; float bestDist = float.MaxValue;
             foreach (var f in fields) { float d = (f.transform.position - near).sqrMagnitude; if (d < bestDist) { bestDist = d; best = f; } }
             return best;

@@ -17,7 +17,9 @@ namespace Fields.Hay
         public GameConfig config;
         public GameObject hayPilePrefab;
 
-        [Header("Loose Hay Decal Thresholds (0–1 of collection cell max)")]
+        [Header("Loose Hay Decal")]
+        [Tooltip("Materials for 3 fill phases (sparse / medium / full)")]
+        public Material[] decalPhaseMaterials = new Material[3];
         [Tooltip("Fraction at which decal advances to phase 2")]
         public float decalPhase2Threshold = 0.33f;
         [Tooltip("Fraction at which decal advances to phase 3")]
@@ -25,13 +27,13 @@ namespace Fields.Hay
 
         GrassField _grassField;
 
-        // [collectionCol, collectionRow] = accumulated cut-cell count
         float[,] _hayGrid;
         int _collCols;
         int _collRows;
 
-        // Decal GameObjects per cell (3 phases, only one active)
+        // One flat quad per collection cell, reused across phases
         GameObject[,] _decalObjects;
+        int[,] _decalPhase; // -1 = hidden
 
         public event Action<Vector3, float> OnHayPileSpawned; // worldPos, leftover
 
@@ -61,6 +63,10 @@ namespace Fields.Hay
             _collRows = Mathf.CeilToInt(fh / config.collectionCellSize);
             _hayGrid = new float[_collCols, _collRows];
             _decalObjects = new GameObject[_collCols, _collRows];
+            _decalPhase   = new int[_collCols, _collRows];
+            for (int r = 0; r < _collRows; r++)
+                for (int c = 0; c < _collCols; c++)
+                    _decalPhase[c, r] = -1;
         }
 
         void OnGrassCellCut(int gridCol, int gridRow)
@@ -103,21 +109,49 @@ namespace Fields.Hay
         {
             float fillRatio = _hayGrid[cc, cr] / config.hayUnitsPerCollectionCell;
 
-            // In Phase 0 implementation, decals are placeholder — just log state.
-            // Phase 1 will swap between 3 material phases.
+            if (fillRatio <= 0f)
+            {
+                // Hide decal
+                if (_decalObjects[cc, cr] != null) _decalObjects[cc, cr].SetActive(false);
+                _decalPhase[cc, cr] = -1;
+                return;
+            }
+
             int phase = fillRatio < decalPhase2Threshold ? 0 :
                         fillRatio < decalPhase3Threshold ? 1 : 2;
 
-            // Placeholder: real decal swap done in Phase 1
-            _ = phase;
+            if (_decalPhase[cc, cr] == phase && _decalObjects[cc, cr] != null) return;
+            _decalPhase[cc, cr] = phase;
+
+            // Create quad if it doesn't exist yet
+            if (_decalObjects[cc, cr] == null)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                go.name = $"HayDecal_{cc}_{cr}";
+                go.transform.SetParent(transform);
+                go.transform.position = CollectionCellCenter(cc, cr) + Vector3.up * 0.02f;
+                go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+                float s = config.collectionCellSize * 0.88f;
+                go.transform.localScale = new Vector3(s, s, 1f);
+                // Remove collider — it's purely visual
+                Destroy(go.GetComponent<Collider>());
+                _decalObjects[cc, cr] = go;
+            }
+
+            _decalObjects[cc, cr].SetActive(true);
+            if (decalPhaseMaterials != null && phase < decalPhaseMaterials.Length &&
+                decalPhaseMaterials[phase] != null)
+            {
+                _decalObjects[cc, cr].GetComponent<MeshRenderer>().sharedMaterial =
+                    decalPhaseMaterials[phase];
+            }
         }
 
         Vector3 CollectionCellCenter(int cc, int cr)
         {
-            float lx = cc * config.collectionCellSize + config.collectionCellSize * 0.5f
-                       - _grassField.fieldSize.x * 0.5f;
-            float lz = cr * config.collectionCellSize + config.collectionCellSize * 0.5f
-                       - _grassField.fieldSize.y * 0.5f;
+            // Field origin = GO local (0,0) — bottom-left, no centering offset.
+            float lx = cc * config.collectionCellSize + config.collectionCellSize * 0.5f;
+            float lz = cr * config.collectionCellSize + config.collectionCellSize * 0.5f;
             return transform.TransformPoint(new Vector3(lx, 0f, lz));
         }
 

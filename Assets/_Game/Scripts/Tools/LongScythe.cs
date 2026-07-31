@@ -9,6 +9,12 @@ namespace Fields.Tools
     /// </summary>
     public class LongScythe : MeleeToolBase
     {
+        void Awake()
+        {
+            animWindUpRotation   = new Vector3(-10f,  70f,  10f);
+            animSweepEndRotation = new Vector3(  8f, -85f, -12f);
+        }
+
         [Header("Scythe Geometry")]
         public Transform bladeTipLeft;
         public Transform bladeTipRight;
@@ -50,6 +56,8 @@ namespace Fields.Tools
         GrassField FindNearestField(Vector3 near)
         {
             var fields = UnityEngine.Object.FindObjectsByType<GrassField>(UnityEngine.FindObjectsSortMode.None);
+            foreach (var f in fields)
+                if (f.ContainsWorldPoint(near)) return f;
             GrassField best = null; float bestDist = float.MaxValue;
             foreach (var f in fields) { float d = (f.transform.position - near).sqrMagnitude; if (d < bestDist) { bestDist = d; best = f; } }
             return best;

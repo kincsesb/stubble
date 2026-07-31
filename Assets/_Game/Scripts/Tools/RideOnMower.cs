@@ -56,11 +56,13 @@ namespace Fields.Tools
         protected override void OnEngineStarted()
         {
             _currentSpeed = 0f;
+            Fields.Audio.ToolAudioManager.Instance?.StartTractor();
         }
 
         protected override void OnEngineStopped()
         {
             _currentSpeed = 0f;
+            Fields.Audio.ToolAudioManager.Instance?.StopTractor();
         }
 
         public override void OnEquip()
@@ -180,12 +182,10 @@ namespace Fields.Tools
         GrassField FindNearestField(Vector3 near)
         {
             var fields = Object.FindObjectsByType<GrassField>(FindObjectsSortMode.None);
-            GrassField best = null; float bestDist = float.MaxValue;
             foreach (var f in fields)
-            {
-                float d = (f.transform.position - near).sqrMagnitude;
-                if (d < bestDist) { bestDist = d; best = f; }
-            }
+                if (f.ContainsWorldPoint(near)) return f;
+            GrassField best = null; float bestDist = float.MaxValue;
+            foreach (var f in fields) { float d = (f.transform.position - near).sqrMagnitude; if (d < bestDist) { bestDist = d; best = f; } }
             return best;
         }
 
