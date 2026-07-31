@@ -170,14 +170,19 @@ namespace Fields.UI
                 _displayedMoney, _targetMoney, ref _moneyVelocity,
                 moneyAnimDuration, float.MaxValue, Time.deltaTime);
 
-            moneyText.text = $"$ {Mathf.RoundToInt(_displayedMoney)}";
+            int m = Mathf.RoundToInt(_displayedMoney);
+            moneyText.text = Fields.Core.LocalizationManager.Instance != null
+                ? Fields.Core.LocalizationManager.Instance.Get("hud.money", m)
+                : $"$ {m}";
         }
 
         void UpdateCompletion()
         {
             if (completionText == null || activeGrassField == null) return;
             float pct = activeGrassField.GetCompletionPercent();
-            completionText.text = $"{pct:F0}%";
+            completionText.text = Fields.Core.LocalizationManager.Instance != null
+                ? Fields.Core.LocalizationManager.Instance.Get("hud.completion", (int)pct)
+                : $"{pct:F0}%";
 
             // Milestone flash
             int milestone = 0;
@@ -206,7 +211,11 @@ namespace Fields.UI
         {
             if (baleCountText == null || player == null) return;
             int count = player.CarriedBaleCount;
-            baleCountText.text = count > 0 ? $"[{count}]" : string.Empty;
+            baleCountText.text = count > 0
+                ? (Fields.Core.LocalizationManager.Instance != null
+                    ? Fields.Core.LocalizationManager.Instance.Get("hud.bales", count)
+                    : $"[{count}]")
+                : string.Empty;
             baleCountText.gameObject.SetActive(count > 0);
         }
 
