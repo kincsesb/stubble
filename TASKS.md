@@ -48,7 +48,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 > **Dev estimate: M1 (Vertical Slice/Core Foundation), 6–8 hét, $4,000**
 
 ### P0-01 | Project Setup — URP, csomagok, mappastruktúra
-**Status:** 🔧 RÉSZBEN
+**Status:** ✅ KÉSZ
 
 **Kész:**
 - Unity 6 URP projekt ✅
@@ -56,14 +56,11 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 - Shader Graph 17.3.0 ✅  
 - manifest.json-ba felvéve: NGO 2.4.0, Cinemachine 3.1.4 ✅
 - Mappa struktúra: `Assets/_Game/Scripts/{Core,Grass,Tools,Hay,Economy,Network,UI,Save}` ✅
-
-**Hiányzik (Unity Editor):**
-- [ ] Layers: Ground, Uncut, Obstacle, Bale, Player, HayPile
-- [ ] Tags: Player, HayPile, Bale, Stand, ParcelBoundary
-- [ ] Physics Matrix beállítás
-- [ ] Input Action Asset: `UseTool`, `Interact`, `Drop`, `Journal`, `ToolSelect`, `ScrollTool` akciók hozzáadása
-- [ ] Bootstrap scene létrehozása
-- [ ] NetworkManager (NGO) elhelyezése scénában
+- Layers: Ground(6), Uncut(7), Obstacle(8), Bale(9), HayPile(10), Player(13) ✅
+- Tags: Player, HayPile, Bale, Stand, ParcelBoundary ✅
+- Physics Matrix: Player↔HayPile IGNORE, HayPile↔Bale/Uncut/Obstacle IGNORE ✅
+- Input Action Asset: Move, Look, UsePrimary, Interact, Drop, Sprint, ToolSelect, ScrollTool ✅
+- Bootstrap: single GAME scene, all managers present as GOs ✅
 
 ---
 
@@ -104,10 +101,10 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 - `Assets/_Game/Shaders/GrassMaskWrite.shader` — Hidden CommandBuffer writer, min-blend ✅
 - `Assets/_Game/Shaders/GrassBlade.shader` — URP ForwardLit, vertex mask sampling, stubble collapse ✅
 - `Assets/_Game/Scripts/Grass/GrassChunkManager.cs` — 10×10m chunks, 3 LOD szint (100%/50%/20%) ✅
+- `Assets/_Game/Materials/GrassBlade_Material.mat` — shader bekötve, RT runtime-ban bindel ✅
+- GrassChunkManager mind a 4 terénre config+material bekötve ✅
 
-**Hiányzik (Unity Editor):**
-- [ ] GrassBlade Material létrehozása + GrassMask RT bekötése
-- [ ] `<150 draw call` Frame Debugger ellenőrzés
+**Megjegyzés:** _GrassMask RT az asset-ben NULL — GrassChunkManager.Start() bindeli per-terrain instance-ra runtime-ban.
 
 ---
 
@@ -195,17 +192,19 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ---
 
 ### P0-10 | Alap HUD + Mentési rendszer váz
-**Status:** ✅ KÉSZ — HUD_Canvas jelenetben bekötve, EndScreen_Canvas elkészítve
+**Status:** ✅ KÉSZ
 
 **Fájlok:**
 - `Assets/_Game/Scripts/Save/SaveData.cs` — versioned schema (v1) ✅
 - `Assets/_Game/Scripts/Save/RLEEncoder.cs` — RLE encoding ✅
 - `Assets/_Game/Scripts/Save/SaveSystem.cs` — save/load, autosave (parcel kész / vásárlás / 60mp) ✅
-- `Assets/_Game/Scripts/UI/HUDController.cs` — stamina/fuel bar fade, SmoothDamp money counter (0.4s), completion %, bale count ✅
+- `Assets/_Game/Scripts/UI/HUDController.cs` — stamina/fuel bar fade, SmoothDamp money counter (0.4s), completion %, bale count, LocalizationManager ✅
 
-**Hiányzik (Unity Editor):**
-- [ ] HUD Canvas + UI elemek (Image, TextMeshProUGUI) bekötése HUDController-be
-- [ ] SaveSystem inspector-ban GrassField[4] + HayAccumulationSystem[4] bekötése
+**Inspector-ban bekötve:**
+- HUD Canvas: staminaBar, moneyText, completionText, baleCountText, crosshair ✅
+- SaveSystem: grassFields[4] + hayAccumulationSystems[4] ✅
+- WorldBootstrap: endScreenRoot → EndScreen_Canvas ✅
+- EndScreen_Canvas: EndScreen component, titleText, totalEarningsText, timePlayedText, playAgainButton, quitButton ✅
 
 ---
 
@@ -334,9 +333,7 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 - `PlayerController`: FOV sprint kick (60°→65°, Lerp speed 6), `TriggerHaptics(low, high, duration)` → `Gamepad.SetMotorSpeeds`, sprint low-freq idle rumble
 - `MeleeToolBase`: sweep-begin fires haptic thump via `_owner.TriggerHaptics(0.35, 0.65, 0.10s)`
 - `AccessibilitySettings`: singleton, FOV slider 50–110°, motion blur toggle (URP Volume), 4 colorblind modes (`Shader.EnableKeyword`), PlayerPrefs persist; debug overlay F10
-
-**Hiányzik (Editor):**
-- [ ] AccessibilitySettings GO bekötése scénába (postProcessVolume, player ref)
+- AccessibilitySettings GO scénában + player ref bekötve ✅
 
 ---
 
@@ -374,15 +371,16 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 ### P3-06 | Lokalizáció — 9 nyelv, string externalizáció
 **Status:** ✅ KÉSZ
 
-- `LocalizationManager`: singleton, JSON string table-ok `Resources/Localization/*.json`-ból, angol fallback beépítve, PlayerPrefs persist
-- `en.json` + `hu.json`: minden kulcs kitöltve
+- `LocalizationManager`: singleton, JSON string table-ok `Resources/Localization/*.json`-ból, angol fallback beépítve, PlayerPrefs persist ✅
+- `en.json` + `hu.json`: minden kulcs kitöltve ✅
 - `de/ru/zh-Hans/pl/es/pt-BR/jp.json`: üres stub — kliens tölti ki
+- LocalizationManager GO scénában ✅
+- ShopUI: `L()` helper via LocalizationManager.Get() ✅
+- HUDController: hud.money / hud.completion / hud.bales ✅
 - Nyelvek: EN, HU, DE, RU, ZH-Hans, PL, ES, PT-BR, JP
 
-**Hiányzik:**
-- [ ] Kliens localiz. fordítások (7 nyelv)
-- [ ] LocalizationManager GO bekötése scénába
-- [ ] ShopUI + HUD szövegek `LocalizationManager.Get()` hívásokra cserélése
+**Hiányzik (kliens feladata):**
+- [ ] Kliens localiz. fordítások (7 nyelv: de/ru/zh-Hans/pl/es/pt-BR/jp)
 
 ---
 
