@@ -21,8 +21,37 @@ namespace Fields.Tools
 
         void Start()
         {
+            // Push current unlock levels into tool components immediately
+            ApplyUpgradeLevels();
+
             foreach (var t in tools) t?.OnUnequip();
             if (tools.Count > 0) EquipSlot(0);
+
+            var um = Fields.Economy.ToolUnlockManager.Instance;
+            if (um != null)
+                um.OnToolUpgraded += OnToolUpgraded;
+        }
+
+        void OnDestroy()
+        {
+            var um = Fields.Economy.ToolUnlockManager.Instance;
+            if (um != null)
+                um.OnToolUpgraded -= OnToolUpgraded;
+        }
+
+        void OnToolUpgraded(int toolIndex, int newLevel)
+        {
+            if (toolIndex >= 0 && toolIndex < tools.Count && tools[toolIndex] != null)
+                tools[toolIndex].upgradeLevel = newLevel;
+        }
+
+        void ApplyUpgradeLevels()
+        {
+            var um = Fields.Economy.ToolUnlockManager.Instance;
+            if (um == null) return;
+            for (int i = 0; i < tools.Count; i++)
+                if (tools[i] != null)
+                    tools[i].upgradeLevel = um.GetLevel(i);
         }
 
         // ------------------------------------------------------------------ //

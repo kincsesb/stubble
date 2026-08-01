@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdfbc1291f3bb47d89da9b607f13f87b, type: 3}
   m_Name: ParcelData_0
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Core.Data.ParcelData
-  parcelName: Home Paddock
+  parcelName: Home Field
   unlockCost: 0
-  cuttableArea: 1200
-  targetTimeMinutes: 15
+  cuttableArea: 10000
+  targetTimeMinutes: 20
   parcelIndex: 0

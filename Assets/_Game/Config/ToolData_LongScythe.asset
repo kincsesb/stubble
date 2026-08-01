@@ -16,19 +16,19 @@ MonoBehaviour:
   icon: {fileID: 0}
   toolType: 1
   speedLevels:
+  - 0.75
   - 0.9
-  - 1
   - 1.1
-  - 1.25
+  - 1.3
   enduranceLevels:
-  - 90
-  - 108
-  - 130
-  - 158
+  - 15
+  - 22
+  - 30
+  - 40
   powerLevels:
   - 1.4
   - 1.6
-  - 1.9
+  - 1.8
   - 2.4
-  purchaseCost: 120
-  upgradeCosts: 50000000c8000000f4010000
+  purchaseCost: 200
+  upgradeCosts: 64000000fa00000058020000

@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Core.Data.BalerData
   isRoundBaler: 1
   compressionSpeedLevels:
-  - 0.85
   - 1
   - 1.2
   - 1.45
+  - 1.75
   carryCapacityLevels: 01000000010000000100000001000000
-  densityLevels: 5000000048000000410000003a000000
-  purchaseCost: 1200
-  upgradeCosts: fa0000005802000078050000
+  densityLevels: b4000000a50000009600000087000000
+  purchaseCost: 2000
+  upgradeCosts: 9001000084030000d0070000
   mass: 80
   drag: 1.5
   angularDrag: 2

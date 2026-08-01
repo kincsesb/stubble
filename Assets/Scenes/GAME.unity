@@ -157,7 +157,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff8acf3b49a46439a97cb1971b983fcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Core.ParcelBoundary
-  parcelData: {fileID: 11400000, guid: 0c005e410e2b64a4ab82ae7f5b606941, type: 2}
+  parcelData: {fileID: 0}
   grassField: {fileID: 24682562}
   haySystem: {fileID: 24682560}
 --- !u!65 &24682559
@@ -213,7 +213,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a83f3a6df7344cc5a455d2895e6b737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassChunkManager
-  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
+  config: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 89b49ec3559bb4887a3459c57992aff7, type: 2}
   chunkSize: 10
   bladeDensity: 16
@@ -231,7 +231,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37656776dbcc541b889a864d4b2eaf19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassField
-  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
+  config: {fileID: 0}
   fieldSize: {x: 100, y: 100}
   renderTextureSize: 1024
 --- !u!154 &24682563
@@ -432,7 +432,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff8acf3b49a46439a97cb1971b983fcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Core.ParcelBoundary
-  parcelData: {fileID: 11400000, guid: 9a8f37f7db8924462a83b9c54b341865, type: 2}
+  parcelData: {fileID: 0}
   grassField: {fileID: 54970759}
   haySystem: {fileID: 54970757}
 --- !u!65 &54970756
@@ -488,7 +488,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a83f3a6df7344cc5a455d2895e6b737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassChunkManager
-  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
+  config: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 89b49ec3559bb4887a3459c57992aff7, type: 2}
   chunkSize: 10
   bladeDensity: 16
@@ -506,7 +506,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37656776dbcc541b889a864d4b2eaf19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassField
-  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
+  config: {fileID: 0}
   fieldSize: {x: 100, y: 100}
   renderTextureSize: 1024
 --- !u!154 &54970760
@@ -1803,6 +1803,51 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &321252893
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 321252895}
+  - component: {fileID: 321252894}
+  m_Layer: 0
+  m_Name: BalerManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &321252894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 321252893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d1864fae69a348c99ea8c8ac1397528, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Fields.Economy.BalerManager
+  roundBalerData: {fileID: 11400000, guid: e4b34ba01b48f4aa6be70ccc209fccf5, type: 2}
+--- !u!4 &321252895
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 321252893}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -5444,7 +5489,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff8acf3b49a46439a97cb1971b983fcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Core.ParcelBoundary
-  parcelData: {fileID: 11400000, guid: 3c697080453a5474ab9d15d95524c28f, type: 2}
+  parcelData: {fileID: 0}
   grassField: {fileID: 1052962260}
   haySystem: {fileID: 1052962258}
 --- !u!65 &1052962257
@@ -5500,7 +5545,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a83f3a6df7344cc5a455d2895e6b737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassChunkManager
-  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
+  config: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 89b49ec3559bb4887a3459c57992aff7, type: 2}
   chunkSize: 10
   bladeDensity: 16
@@ -5518,7 +5563,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37656776dbcc541b889a864d4b2eaf19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassField
-  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
+  config: {fileID: 0}
   fieldSize: {x: 100, y: 100}
   renderTextureSize: 1024
 --- !u!154 &1052962261
@@ -8854,7 +8899,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff8acf3b49a46439a97cb1971b983fcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Core.ParcelBoundary
-  parcelData: {fileID: 11400000, guid: 17ff20e3b419c4510ba856b2356b2e30, type: 2}
+  parcelData: {fileID: 0}
   grassField: {fileID: 1668825429}
   haySystem: {fileID: 1668825427}
 --- !u!65 &1668825426
@@ -8910,7 +8955,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a83f3a6df7344cc5a455d2895e6b737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassChunkManager
-  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
+  config: {fileID: 0}
   grassMaterial: {fileID: 2100000, guid: 89b49ec3559bb4887a3459c57992aff7, type: 2}
   chunkSize: 10
   bladeDensity: 16
@@ -8928,7 +8973,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37656776dbcc541b889a864d4b2eaf19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassField
-  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
+  config: {fileID: 0}
   fieldSize: {x: 100, y: 100}
   renderTextureSize: 1024
 --- !u!154 &1668825430
@@ -10322,3 +10367,4 @@ SceneRoots:
   - {fileID: 1008367303}
   - {fileID: 442487466}
   - {fileID: 1398688555}
+  - {fileID: 321252895}

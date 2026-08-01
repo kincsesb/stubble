@@ -21,14 +21,14 @@ MonoBehaviour:
   - 1
   - 1.15
   enduranceLevels:
-  - 120
-  - 144
-  - 173
-  - 208
+  - 100
+  - 130
+  - 165
+  - 200
   powerLevels:
+  - 1
   - 1.2
   - 1.4
-  - 1.65
-  - 2
-  purchaseCost: 500
-  upgradeCosts: 960000007c01000084030000
+  - 1.6
+  purchaseCost: 600
+  upgradeCosts: c8000000f4010000b0040000
