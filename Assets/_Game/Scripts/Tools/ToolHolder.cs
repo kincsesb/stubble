@@ -85,6 +85,12 @@ namespace Fields.Tools
             return mgr == null || mgr.IsOwned(index);
         }
 
+        public void RefuelAllPowered()
+        {
+            foreach (var t in tools)
+                if (t is PoweredToolBase pt) pt.RefuelFull();
+        }
+
         public BaseTool ActiveTool =>
             _activeIndex >= 0 && _activeIndex < tools.Count ? tools[_activeIndex] : null;
 

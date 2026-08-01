@@ -108,6 +108,7 @@ namespace Fields.Save
             var cm = CurrencyManager.Instance;
             var um = ToolUnlockManager.Instance;
             var pm = ParcelManager.Instance;
+            var bm = Fields.Economy.BalerManager.Instance;
 
             var data = new SaveData
             {
@@ -115,6 +116,8 @@ namespace Fields.Save
                 toolsOwned = um != null ? um.GetOwnedArray() : new bool[5],
                 toolUpgradeLevels = um != null ? um.GetLevelsArray() : new int[5],
                 parcelsUnlocked = pm != null ? pm.GetUnlockedArray() : new bool[4],
+                roundBalerOwned = bm != null && bm.GetRoundBalerOwned(),
+                balerUpgradeLevels = bm != null ? bm.GetLevels() : new int[3],
             };
 
             // Grass + hay grids
@@ -157,6 +160,7 @@ namespace Fields.Save
             CurrencyManager.Instance?.SetMoney(data.money);
             ToolUnlockManager.Instance?.LoadState(data.toolsOwned, data.toolUpgradeLevels);
             ParcelManager.Instance?.LoadState(data.parcelsUnlocked);
+            Fields.Economy.BalerManager.Instance?.LoadState(data.roundBalerOwned, data.balerUpgradeLevels);
 
             for (int i = 0; i < grassFields.Length; i++)
             {

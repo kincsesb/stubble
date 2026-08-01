@@ -44,6 +44,8 @@ namespace Fields.Tools
         protected virtual void OnEngineStarted() { }
         protected virtual void OnEngineStopped() { }
 
+        public void RefuelFull() => _fuel = fuelCapacity;
+
         public float FuelNormalized => fuelCapacity > 0 ? _fuel / fuelCapacity : 0f;
         public bool IsRunning => _engineRunning;
     }

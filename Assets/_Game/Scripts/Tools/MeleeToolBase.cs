@@ -99,11 +99,23 @@ namespace Fields.Tools
             OnSweepBegin();
         }
 
+        // Spec §5.5: at zero stamina, swing speed drops to ~40% of normal.
+        // Smooth degradation begins below 30% stamina.
+        float EffectiveDuration
+        {
+            get
+            {
+                if (_maxStamina <= 0f) return swingDuration;
+                float factor = Mathf.Clamp01(_stamina / (_maxStamina * 0.3f));
+                return swingDuration / Mathf.Lerp(0.4f, 1f, factor);
+            }
+        }
+
         void TickSwing()
         {
             if (_phase == SwingPhase.Idle) return;
 
-            _swingTimer += Time.deltaTime / swingDuration;
+            _swingTimer += Time.deltaTime / EffectiveDuration;
 
             switch (_phase)
             {

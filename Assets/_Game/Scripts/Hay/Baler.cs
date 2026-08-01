@@ -33,23 +33,15 @@ namespace Fields.Hay
         public System.Func<Vector3, Quaternion, GameObject, bool> SpawnBaleInterceptor;
 
         float _hayAccumulated;
-        float _hayRequired;
         bool _compressing;
         float _compressionTimer;
 
-        // ------------------------------------------------------------------ //
+        // Reads from BalerManager (live upgrade level) with fallback to inspector field.
+        int ActiveLevel => Fields.Economy.BalerManager.Instance?.BalerLevel ?? upgradeLevel;
 
-        void Start()
-        {
-            RefreshThreshold();
-        }
-
-        void RefreshThreshold()
-        {
-            if (balerData == null) { _hayRequired = 60f; return; }
-            // hayRequired scales with compression speed upgrade (higher = faster = less hay per bale)
-            _hayRequired = 60f; // fixed: 60 hay units = 1 bale (spec)
-        }
+        float HayRequired => balerData != null && balerData.densityLevels.Length > ActiveLevel
+            ? balerData.densityLevels[ActiveLevel]
+            : 60f;
 
         // ------------------------------------------------------------------ //
         // IInteractable — player brings HayPile
@@ -68,7 +60,7 @@ namespace Fields.Hay
 
             _hayAccumulated += hayUnits;
 
-            if (_hayAccumulated >= _hayRequired && !_compressing)
+            if (_hayAccumulated >= HayRequired && !_compressing)
                 StartCompression();
         }
 
@@ -77,8 +69,9 @@ namespace Fields.Hay
         void StartCompression()
         {
             _compressing = true;
-            float speed = balerData != null && balerData.compressionSpeedLevels.Length > upgradeLevel
-                ? balerData.compressionSpeedLevels[upgradeLevel]
+            int level = ActiveLevel;
+            float speed = balerData != null && balerData.compressionSpeedLevels.Length > level
+                ? balerData.compressionSpeedLevels[level]
                 : 1f;
             _compressionTimer = 2f / speed;
             Fields.Audio.ToolAudioManager.Instance?.StartBaler();
@@ -98,7 +91,7 @@ namespace Fields.Hay
         void EjectBale()
         {
             _compressing = false;
-            _hayAccumulated -= _hayRequired;
+            _hayAccumulated -= HayRequired;
             _totalBalesEjected++;
             Fields.Audio.ToolAudioManager.Instance?.StopBaler();
 
@@ -128,8 +121,7 @@ namespace Fields.Hay
                 if (_totalBalesEjected == 100) steam.UnlockAchievement(Fields.Core.SteamManager.Achievements.HUNDRED_BALES);
             }
 
-            // Start another compression if enough hay is still buffered
-            if (_hayAccumulated >= _hayRequired)
+            if (_hayAccumulated >= HayRequired)
                 StartCompression();
         }
 
@@ -150,7 +142,7 @@ namespace Fields.Hay
         public float CompressionProgress =>
             _compressing && _compressionTimer > 0
                 ? 1f - (_compressionTimer / 2f)
-                : (_hayAccumulated / _hayRequired);
+                : (_hayAccumulated / HayRequired);
 
         public bool IsCompressing => _compressing;
     }

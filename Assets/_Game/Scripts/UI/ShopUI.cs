@@ -142,10 +142,52 @@ namespace Fields.UI
                     if (_toolMgr.TryUpgrade(idx)) ShowTab(1);
                 });
             }
+
+            // Baler upgrade (spec §6.2)
+            var bm = Fields.Economy.BalerManager.Instance;
+            if (bm != null)
+            {
+                int bl = bm.BalerLevel;
+                if (bl < 3)
+                {
+                    int cost = Fields.Economy.BalerManager.BalerUpgradeCosts[bl];
+                    var row = AddRow(L("shop.baler"), $"Lv {bl + 1}→{bl + 2}  $ {cost}", L("shop.upgrade", cost));
+                    row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { if (bm.TryUpgradeBaler()) ShowTab(1); });
+                }
+                else AddRow(L("shop.baler"), L("shop.maxlevel"), string.Empty);
+
+                // Hay Value upgrade (spec §6.4): 1.0× → 1.25× → 1.55× → 1.90×
+                int hvl = bm.HayValueLevel;
+                if (hvl < 3)
+                {
+                    float nextMult = Fields.Economy.BalerManager.HayValueMultipliers[hvl + 1];
+                    int cost = Fields.Economy.BalerManager.HayValueCosts[hvl];
+                    var row = AddRow(L("shop.hayvalue"), $"×{nextMult:0.00}  $ {cost}", L("shop.upgrade", cost));
+                    row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { if (bm.TryUpgradeHayValue()) ShowTab(1); });
+                }
+                else AddRow(L("shop.hayvalue"), L("shop.maxlevel"), string.Empty);
+            }
         }
 
         void BuildUnlocksTab()
         {
+            // Round baler unlock (spec §7.2)
+            var bm = Fields.Economy.BalerManager.Instance;
+            if (bm?.roundBalerData != null)
+            {
+                bool owned = bm.RoundBalerOwned;
+                int price = bm.roundBalerData.purchaseCost;
+                var row = AddRow(
+                    L("shop.roundbaler"),
+                    owned ? L("shop.owned") : $"$ {price}",
+                    owned ? string.Empty    : L("shop.buy", price));
+                if (!owned)
+                    row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
+                    {
+                        if (bm.TryPurchaseRoundBaler()) ShowTab(2);
+                    });
+            }
+
             for (int i = 1; i < allParcels.Count; i++)
             {
                 var data = allParcels[i];

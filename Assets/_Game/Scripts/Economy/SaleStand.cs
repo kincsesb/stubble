@@ -1,5 +1,6 @@
 using Fields.Core;
 using Fields.Hay;
+using Fields.Tools;
 using Fields.UI;
 using UnityEngine;
 
@@ -26,7 +27,6 @@ namespace Fields.Economy
 
         public void Interact(PlayerController player)
         {
-            int baleCountBefore = player.CarriedBaleCount;
             int earned = SellBales(player);
             if (earned > 0)
             {
@@ -37,6 +37,9 @@ namespace Fields.Economy
                     Fields.Core.SteamManager.Instance?.OnFirstSale();
                 }
             }
+
+            // Spec §5.5: powered tools refuel free at the stand.
+            player.GetComponentInChildren<ToolHolder>()?.RefuelAllPowered();
 
             shop?.Open();
         }
@@ -83,6 +86,8 @@ namespace Fields.Economy
             return earned;
         }
 
-        float GetParcelMultiplier() => parcelMultiplier;
+        // Spec §6.4: apply hay value upgrade multiplier on top of parcel quality.
+        float GetParcelMultiplier() =>
+            parcelMultiplier * (BalerManager.Instance?.HayValueMultiplier ?? 1f);
     }
 }
