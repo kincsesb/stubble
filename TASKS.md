@@ -268,46 +268,46 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 > ⚠️ **Networking döntés szükséges: NGO (jelenlegi) vs Mirror + FizzySteamworks (dev ajánlás)**
 
 ### P2-01 | Co-op Foundation — session flow, player spawn
-**Status:** 🔧 RÉSZBEN — kód kész, Mirror telepítés szükséges
+**Status:** ✅ KÉSZ
 
 **Fájlok:**
-- `CoopSessionManager.cs` — Steam lobby create/join, Mirror host/client start, `#if MIRROR` guarded ✅
+- `CoopSessionManager.cs` — Steam lobby create/join, Mirror host/client start ✅
 - `FieldsNetworkManager.cs` — `NetworkManager` subclass, spawn points, late-join grid snapshot küldés ✅
 
-**Hiányzik (telepítés + Editor):**
-- [ ] Mirror import: Unity Asset Store → "Mirror" (free)
-- [ ] FizzySteamworks: Package Manager → `https://github.com/Chykary/FizzySteamworks.git`
-- [ ] FieldsNetworkManager GO a scénában, playerPrefab + spawnPoints bekötve
-- [ ] CoopSessionManager GO a scénában
+**Scénában (GAME):**
+- FieldsNetworkManager GO: FieldsNetworkManager + FizzySteamworks transport ✅
+- playerPrefab = Player, balePrefab = SquareBale, hayPilePrefab = HayPile_Size1 ✅
+- spawnPoints[4] = SpawnPoint_0..3, maxConnections = 4 ✅
+- spawnPrefabs[3] (Player + SquareBale + HayPile_Size1) ✅
+- CoopSessionManager GO ✅
 
 ---
 
 ### P2-02 | Player + Tool Replication
-**Status:** 🔧 RÉSZBEN — kód kész, Mirror telepítés szükséges
+**Status:** ✅ KÉSZ
 
 **Fájlok:**
 - `NetworkedPlayer.cs` — `NetworkBehaviour`, SyncVar pos/yaw, Command UseTool, TargetRpc haptics ✅
 
-**Hiányzik:**
-- [ ] Player prefab: NetworkedPlayer component + NetworkIdentity hozzáadása
-- [ ] Tool use Commands bekötése ToolHolder.SelectTool() hívásokhoz
+**Prefab:**
+- Player.prefab: NetworkIdentity + NetworkedPlayer hozzáadva ✅
 
 ---
 
 ### P2-03 | Fű szinkronizáció — CPU grid delta sync
-**Status:** 🔧 RÉSZBEN — kód kész, Mirror telepítés szükséges
+**Status:** ✅ KÉSZ
 
 **Fájlok:**
 - `GrassNetSync.cs` — Command/ClientRpc cut broadcast, TargetRpc late-join RLE snapshot ✅
 
-**Hiányzik:**
-- [ ] GrassNetSync component mind a 4 GrassField GO-ra
-- [ ] Tools: `CutArea/CutCapsule` hívások → `GrassNetSync.RequestCut*()` átirányítás co-op módban
+**Scénában:**
+- GrassNetSync + NetworkIdentity mind a 4 Terrain_Parcel GO-ra ✅
+- CutAreaInterceptor + CutCapsuleInterceptor delegate: client-oldalon átirányít Cmd-re ✅
 
 ---
 
 ### P2-04 | Bálák + Economy + Host Save
-**Status:** 🔧 RÉSZBEN — kód kész, Mirror telepítés szükséges
+**Status:** ✅ KÉSZ
 
 **Fájlok:**
 - `EconomyNetSync.cs` — SyncVar money, Command purchase/sell, Server spawn bale/haypile; OnStartClient interceptors ✅
@@ -315,14 +315,14 @@ A fejlesztő azt feltételezi, hogy a kliens biztosítja:
 - `Baler.cs` — `SpawnBaleInterceptor` delegate ✅
 - `FieldsNetworkManager.cs` — `balePrefab` + `hayPilePrefab` fields for Command-based spawning ✅
 
-**Hiányzik:**
-- [ ] EconomyNetSync GO a scénában
-- [ ] FieldsNetworkManager `balePrefab` + `hayPilePrefab` bekötése Inspector-ban
+**Scénában:**
+- EconomyNetSync GO: NetworkIdentity + EconomyNetSync ✅
+- SquareBale.prefab + HayPile_Size1.prefab: NetworkIdentity hozzáadva ✅
 
 ---
 
 ### P2-05 | Co-op QA + Polish
-**Status:** ⏳ PENDING | **Blokkolt:** Mirror telepítés + P2-01–04 Editor wiring után
+**Status:** ⏳ PENDING — gameplay tesztelés 2+ játékossal szükséges
 
 ---
 

@@ -1,11 +1,5 @@
-// Mirror + FizzySteamworks transport required.
-// Install: Mirror (Asset Store, free) + FizzySteamworks (Package Manager git URL)
-// Package Manager → Add from git URL: https://github.com/Chykary/FizzySteamworks.git
-#if MIRROR
 using Mirror;
 using Steamworks;
-#endif
-
 using UnityEngine;
 using Fields.Core;
 
@@ -24,16 +18,12 @@ namespace Fields.Network
         public int maxPlayers = 4;
         public GameObject playerPrefab;
 
-#if MIRROR
-        Callback<LobbyCreated_t>      _onLobbyCreated;
-        Callback<GameLobbyJoinRequested_t> _onJoinRequested;
-        Callback<LobbyEnter_t>        _onLobbyEntered;
+        Callback<LobbyCreated_t>           _onLobbyCreated;
+        Callback<GameLobbyJoinRequested_t>  _onJoinRequested;
+        Callback<LobbyEnter_t>             _onLobbyEntered;
 
         CSteamID _currentLobby;
         bool _isHost;
-#endif
-
-        // ------------------------------------------------------------------ //
 
         void Awake()
         {
@@ -44,19 +34,11 @@ namespace Fields.Network
 
         void Start()
         {
-#if MIRROR
             RegisterSteamCallbacks();
-#endif
         }
 
-        // ------------------------------------------------------------------ //
-        // Public API
-        // ------------------------------------------------------------------ //
-
-        /// <summary>Create a Steam lobby and start as Mirror host.</summary>
         public void HostGame()
         {
-#if MIRROR
             if (!SteamManager.Instance || !SteamAPI.IsSteamRunning())
             {
                 Debug.LogWarning("[Coop] Steam not running — hosting without Steam lobby.");
@@ -64,26 +46,18 @@ namespace Fields.Network
                 return;
             }
             SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, maxPlayers);
-#else
-            Debug.LogWarning("[Coop] Mirror not installed — co-op unavailable.");
-#endif
         }
 
-        /// <summary>Join a friend's lobby by Steam lobby ID string.</summary>
         public void JoinGame(string lobbySteamIdStr)
         {
-#if MIRROR
             if (ulong.TryParse(lobbySteamIdStr, out ulong id))
                 SteamMatchmaking.JoinLobby(new CSteamID(id));
             else
                 Debug.LogError("[Coop] Invalid lobby ID.");
-#endif
         }
 
-        /// <summary>Leave the current session cleanly.</summary>
         public void LeaveGame()
         {
-#if MIRROR
             if (NetworkServer.active && NetworkClient.isConnected)
                 NetworkManager.singleton.StopHost();
             else if (NetworkClient.isConnected)
@@ -94,14 +68,8 @@ namespace Fields.Network
                 SteamMatchmaking.LeaveLobby(_currentLobby);
                 _currentLobby = CSteamID.Nil;
             }
-#endif
         }
 
-        // ------------------------------------------------------------------ //
-        // Mirror helpers
-        // ------------------------------------------------------------------ //
-
-#if MIRROR
         void StartHost()
         {
             _isHost = true;
@@ -116,10 +84,6 @@ namespace Fields.Network
             NetworkManager.singleton.StartClient();
             Debug.Log($"[Coop] Connecting to {ip}.");
         }
-
-        // ------------------------------------------------------------------ //
-        // Steam callbacks
-        // ------------------------------------------------------------------ //
 
         void RegisterSteamCallbacks()
         {
@@ -136,7 +100,6 @@ namespace Fields.Network
                 return;
             }
             _currentLobby = new CSteamID(cb.m_ulSteamIDLobby);
-            // Store host Steam ID so joiners can connect
             SteamMatchmaking.SetLobbyData(_currentLobby, "HostSteamID",
                 SteamUser.GetSteamID().ToString());
             StartHost();
@@ -149,14 +112,11 @@ namespace Fields.Network
 
         void OnLobbyEntered(LobbyEnter_t cb)
         {
-            if (_isHost) return; // host already started
+            if (_isHost) return;
 
             _currentLobby = new CSteamID(cb.m_ulSteamIDLobby);
             string hostId = SteamMatchmaking.GetLobbyData(_currentLobby, "HostSteamID");
-
-            // FizzySteamworks uses Steam64 ID as address
             StartClient(hostId);
         }
-#endif
     }
 }

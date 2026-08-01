@@ -1,10 +1,4 @@
-// P2-03: Grass cut synchronisation across all clients.
-// Every cut event is a lightweight Command → ClientRpc broadcast.
-// Late-join: host sends compressed CPU grid snapshot on player connect.
-#if MIRROR
 using Mirror;
-#endif
-
 using UnityEngine;
 using Fields.Grass;
 using Fields.Save;
@@ -16,7 +10,6 @@ namespace Fields.Network
     /// Host validates all cut events; clients replay locally from the same data
     /// so GPU mask stays identical on all machines without RT sync.
     /// </summary>
-#if MIRROR
     public class GrassNetSync : NetworkBehaviour
     {
         GrassField _field;
@@ -33,15 +26,13 @@ namespace Fields.Network
         {
             if (!isServer && _field != null)
             {
-                // Non-host clients: intercept local cuts and route through network
-                _field.CutAreaInterceptor     = (pos, r)       => { CmdCutArea(pos, r);       return true; };
-                _field.CutCapsuleInterceptor  = (f, t, r)      => { CmdCutCapsule(f, t, r);   return true; };
+                _field.CutAreaInterceptor    = (pos, r)  => { CmdCutArea(pos, r);     return true; };
+                _field.CutCapsuleInterceptor = (f, t, r) => { CmdCutCapsule(f, t, r); return true; };
             }
         }
 
         void OnDestroy()
         {
-            // Clear interceptors so GrassField doesn't hold dead delegates
             if (_field != null)
             {
                 _field.CutAreaInterceptor    = null;
@@ -49,11 +40,6 @@ namespace Fields.Network
             }
         }
 
-        // ------------------------------------------------------------------ //
-        // Cut broadcast
-        // ------------------------------------------------------------------ //
-
-        /// <summary>Direct request — used by tools that want explicit net routing.</summary>
         public void RequestCutArea(Vector3 worldPos, float radius)
         {
             if (isServer) ApplyCutArea(worldPos, radius);
@@ -67,7 +53,7 @@ namespace Fields.Network
         }
 
         [Command(requiresAuthority = false)]
-        void CmdCutArea(Vector3 pos, float radius)    => RpcCutArea(pos, radius);
+        void CmdCutArea(Vector3 pos, float radius) => RpcCutArea(pos, radius);
 
         [Command(requiresAuthority = false)]
         void CmdCutCapsule(Vector3 from, Vector3 to, float radius) => RpcCutCapsule(from, to, radius);
@@ -75,7 +61,7 @@ namespace Fields.Network
         [ClientRpc]
         void RpcCutArea(Vector3 pos, float radius)
         {
-            if (!isServer) ApplyCutArea(pos, radius); // host already applied
+            if (!isServer) ApplyCutArea(pos, radius);
         }
 
         [ClientRpc]
@@ -84,19 +70,9 @@ namespace Fields.Network
             if (!isServer) ApplyCutCapsule(from, to, radius);
         }
 
-        void ApplyCutArea(Vector3 pos, float radius)     => _field?.CutArea(pos, radius);
-        void ApplyCutCapsule(Vector3 f, Vector3 t, float r) => _field?.CutCapsule(f, t, r);
+        void ApplyCutArea(Vector3 pos, float radius)          => _field?.CutArea(pos, radius);
+        void ApplyCutCapsule(Vector3 f, Vector3 t, float r)   => _field?.CutCapsule(f, t, r);
 
-        // ------------------------------------------------------------------ //
-        // Late-join snapshot — host sends full compressed grid to new client
-        // ------------------------------------------------------------------ //
-
-        public override void OnStartServer()
-        {
-            // Nothing here — snapshot is sent on player connect via NetworkManager hook
-        }
-
-        /// <summary>Host calls this when a new player connects. Sends compressed grid.</summary>
         [Server]
         public void SendGridSnapshot(NetworkConnection conn)
         {
@@ -113,7 +89,4 @@ namespace Fields.Network
             _field?.LoadCutGrid(grid);
         }
     }
-#else
-    public class GrassNetSync : UnityEngine.MonoBehaviour { }
-#endif
 }
