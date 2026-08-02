@@ -14,6 +14,8 @@ namespace Fields.Tools
         public Transform headCenter;
         [Tooltip("Base cut radius at upgrade level 0")]
         public float baseCutRadius = 0.18f;
+        [Tooltip("How far in front of the player the cut circle sits")]
+        public float forwardReach = 0.5f;
         [Tooltip("How quickly RPM drops when bogging (0-1 per second)")]
         public float boggingRate = 0.4f;
         [Tooltip("Camera vibration amplitude while running")]
@@ -65,8 +67,8 @@ namespace Fields.Tools
 
             if (!_engineRunning) return;
 
-            // Find target field
-            Vector3 cutPos = headCenter != null ? headCenter.position : transform.position;
+            // Cut circle in camera-forward direction, terrain-snapped
+            Vector3 cutPos = CalcCutPosition();
             if (_targetField == null) _targetField = FindNearestField(cutPos);
 
             if (_targetField != null)
@@ -95,6 +97,22 @@ namespace Fields.Tools
             if (!_isEquipped || _engineRunning) return;
             transform.localRotation = Quaternion.Slerp(
                 transform.localRotation, _restLocalRotation, Time.deltaTime * 6f);
+        }
+
+        Vector3 CalcCutPosition()
+        {
+            var player = Fields.Core.PlayerController.Instance;
+            if (player == null)
+                return headCenter != null ? headCenter.position : transform.position;
+
+            Transform cam = player.cameraRoot;
+            Vector3 forward = cam != null ? cam.forward : player.transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.001f) forward = player.transform.forward;
+            forward.Normalize();
+
+            Vector3 pos = player.transform.position + forward * forwardReach;
+            return GrassField.SnapToTerrain(pos);
         }
 
         bool IsCuttingUncut(Vector3 pos)

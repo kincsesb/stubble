@@ -18,6 +18,7 @@ namespace Fields.Save
         public int[] balerUpgradeLevels = new int[3];
         public FieldSaveData[] fields = new FieldSaveData[4];
         public BaleSaveData[] bales = new BaleSaveData[0];
+        public HayPileSaveData[] hayPiles = new HayPileSaveData[0];
         public float[] hayGrids = new float[0]; // flattened: [parcel][collRow][collCol]
     }
 
@@ -43,5 +44,12 @@ namespace Fields.Save
         public bool isRound;
         public int hayUnits;
         public int parcelIndex;
+    }
+
+    [Serializable]
+    public class HayPileSaveData
+    {
+        public float posX, posY, posZ;
+        public int hayUnits;
     }
 }

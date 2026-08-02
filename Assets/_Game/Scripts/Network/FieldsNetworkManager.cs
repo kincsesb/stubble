@@ -1,4 +1,5 @@
 using Mirror;
+using kcp2k;
 using UnityEngine;
 using Fields.Grass;
 
@@ -19,6 +20,24 @@ namespace Fields.Network
         public GameObject hayPilePrefab;
 
         int _spawnIndex;
+
+        public override void Start()
+        {
+            base.Start();
+            // If Steam is not running (editor / no Steam), auto-start as local host using KCP
+            // so that Mirror's NetworkScenePostProcess re-enables scene objects (terrains, etc.)
+#if STEAMWORKS_NET
+            bool steamUp = Steamworks.SteamAPI.IsSteamRunning();
+#else
+            bool steamUp = false;
+#endif
+            if (!steamUp)
+            {
+                var kcp = GetComponent<KcpTransport>() ?? gameObject.AddComponent<KcpTransport>();
+                Transport.active = kcp;
+                StartHost();
+            }
+        }
 
         public override void OnServerAddPlayer(NetworkConnectionToClient conn)
         {

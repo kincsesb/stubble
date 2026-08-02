@@ -14,6 +14,8 @@ namespace Fields.Hay
     {
         [Header("Config")]
         public BalerData balerData;
+        [Tooltip("When round baler is purchased, this data overrides balerData")]
+        public BalerData roundBalerData;
         public int upgradeLevel;
 
         [Header("Spawn")]
@@ -36,12 +38,28 @@ namespace Fields.Hay
         bool _compressing;
         float _compressionTimer;
 
-        // Reads from BalerManager (live upgrade level) with fallback to inspector field.
+        // Switches to round baler mode when the player has purchased it (spec §7.2).
+        BalerData ActiveBalerData
+        {
+            get
+            {
+                var bm = Fields.Economy.BalerManager.Instance;
+                return bm != null && bm.RoundBalerOwned && roundBalerData != null
+                    ? roundBalerData : balerData;
+            }
+        }
+
         int ActiveLevel => Fields.Economy.BalerManager.Instance?.BalerLevel ?? upgradeLevel;
 
-        float HayRequired => balerData != null && balerData.densityLevels.Length > ActiveLevel
-            ? balerData.densityLevels[ActiveLevel]
-            : 60f;
+        float HayRequired
+        {
+            get
+            {
+                var d = ActiveBalerData;
+                return d != null && d.densityLevels.Length > ActiveLevel
+                    ? d.densityLevels[ActiveLevel] : 60f;
+            }
+        }
 
         // ------------------------------------------------------------------ //
         // IInteractable — player brings HayPile
@@ -49,11 +67,16 @@ namespace Fields.Hay
 
         public void Interact(Fields.Core.PlayerController player)
         {
-            if (player.CarriedBaleCount > 0) return; // carrying bales, not hay
+            // Block only if carrying finished square bales (not loose hay piles)
+            if (player.GetCarriedSquareBales().Count > 0) return;
 
-            // Try to take a HayPile from the player's vicinity
-            var pile = FindNearestHayPile();
+            // Search for hay pile: carried by player counts (player is standing here)
+            var pile = FindNearestHayPile(player.transform.position);
             if (pile == null) return;
+
+            // If the pile was carried by this player, remove it from their carry list
+            if (pile.IsCarried)
+                player.RemoveCarriedHayPile(pile);
 
             float hayUnits = pile.HayUnits;
             pile.ConsumeAll();
@@ -70,8 +93,9 @@ namespace Fields.Hay
         {
             _compressing = true;
             int level = ActiveLevel;
-            float speed = balerData != null && balerData.compressionSpeedLevels.Length > level
-                ? balerData.compressionSpeedLevels[level]
+            var d = ActiveBalerData;
+            float speed = d != null && d.compressionSpeedLevels.Length > level
+                ? d.compressionSpeedLevels[level]
                 : 1f;
             _compressionTimer = 2f / speed;
             Fields.Audio.ToolAudioManager.Instance?.StartBaler();
@@ -99,7 +123,7 @@ namespace Fields.Hay
             feedbackThunk?.PlayFeedbacks(transform.position);
 
             // Spawn bale
-            bool isRound = balerData != null && balerData.isRoundBaler;
+            bool isRound = ActiveBalerData?.isRoundBaler == true;
             var prefab = isRound ? roundBalePrefab : squareBalePrefab;
             if (prefab == null) { Debug.LogWarning("[Baler] No bale prefab assigned"); return; }
 
@@ -125,14 +149,21 @@ namespace Fields.Hay
                 StartCompression();
         }
 
-        HayPile FindNearestHayPile()
+        // Search from baler OR from player position (covers carried piles).
+        HayPile FindNearestHayPile(UnityEngine.Vector3? playerPos = null)
         {
             var piles = Object.FindObjectsByType<HayPile>(FindObjectsSortMode.None);
-            HayPile best = null; float bestDist = 4f; // max 4m radius
+            HayPile best = null;
+            float bestDist = float.MaxValue;
             foreach (var p in piles)
             {
-                float d = (p.transform.position - transform.position).magnitude;
-                if (d < bestDist && p.HayUnits > 0f) { bestDist = d; best = p; }
+                if (p.HayUnits <= 0f) continue;
+                // Prefer baler-proximity for world piles; use player position for carried ones
+                var origin = (p.IsCarried && playerPos.HasValue) ? playerPos.Value : transform.position;
+                float d = (p.transform.position - origin).magnitude;
+                // World piles: must be within 8m of baler. Carried piles: always accepted.
+                float limit = p.IsCarried ? float.MaxValue : 8f;
+                if (d < limit && d < bestDist) { bestDist = d; best = p; }
             }
             return best;
         }

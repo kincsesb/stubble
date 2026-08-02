@@ -179,7 +179,8 @@ namespace Fields.Tools
         {
             if (!_deckEngaged) return;
 
-            Vector3 deckPos = deckCenter != null ? deckCenter.position : transform.position;
+            Vector3 rawPos = deckCenter != null ? deckCenter.position : transform.position;
+            Vector3 deckPos = GrassField.SnapToTerrain(rawPos);
             if (_targetField == null) _targetField = FindNearestField(deckPos);
 
             if (_targetField != null)

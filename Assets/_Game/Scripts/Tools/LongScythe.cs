@@ -4,8 +4,8 @@ using UnityEngine;
 namespace Fields.Tools
 {
     /// <summary>
-    /// Long Scythe — wider, slower melee tool. Arc width 1.4–2.4m (power-driven).
-    /// Deeper swing sound hook, heavier feel via longer swing duration.
+    /// Long Scythe — sweeps a fan in the camera's forward direction during the swing arc.
+    /// Fan angle ~45deg total, reach scaled by CurrentPower. Terrain-snapped.
     /// </summary>
     public class LongScythe : MeleeToolBase
     {
@@ -15,43 +15,61 @@ namespace Fields.Tools
             animSweepEndRotation = new Vector3(  8f, -85f, -12f);
         }
 
-        [Header("Scythe Geometry")]
-        public Transform bladeTipLeft;
-        public Transform bladeTipRight;
-        [Tooltip("Base arc half-width at upgrade level 0 (spec: 0.7m each side = 1.4m total)")]
-        public float baseHalfArcWidth = 0.7f;
+        [Header("Scythe Fan Geometry")]
+        [Tooltip("Half-angle of the fan sweep in degrees (total arc = 2x this)")]
+        public float fanHalfAngle = 22.5f;
+        [Tooltip("Reach from player origin at upgrade level 0")]
+        public float baseReach = 1.6f;
+        [Tooltip("Capsule radius for each cut segment")]
+        public float cutRadius = 0.15f;
+
+        const float WINDUP_END = 0.25f;
+        const float SWEEP_END  = 0.55f;
 
         GrassField _targetField;
-        Vector3 _prevLeft, _prevRight;
+        Vector3 _prevSweepTip;
 
         protected override void OnSweepBegin()
         {
-            _prevLeft  = bladeTipLeft  != null ? bladeTipLeft.position  : transform.position + transform.right * -baseHalfArcWidth;
-            _prevRight = bladeTipRight != null ? bladeTipRight.position : transform.position + transform.right *  baseHalfArcWidth;
-            TryConsumeStamina(14f); // slightly more expensive than sickle
+            _prevSweepTip = CalcFanTip(0f);
+            TryConsumeStamina(14f);
         }
 
-        protected override void OnSweepTick(float normalizedTime)
+        protected override void OnSweepTick(float rawTimer)
         {
-            Vector3 curLeft  = bladeTipLeft  != null ? bladeTipLeft.position  : transform.position + transform.right * -baseHalfArcWidth * CurrentPower;
-            Vector3 curRight = bladeTipRight != null ? bladeTipRight.position : transform.position + transform.right *  baseHalfArcWidth * CurrentPower;
+            float sweepT = Mathf.Clamp01((rawTimer - WINDUP_END) / (SWEEP_END - WINDUP_END));
+            Vector3 tip = CalcFanTip(sweepT);
 
-            float radius = 0.15f * CurrentPower;
-
-            if (_targetField == null) _targetField = FindNearestField(curLeft);
+            if (_targetField == null) _targetField = FindNearestField(tip);
             if (_targetField != null)
-            {
-                _targetField.CutCapsule(_prevLeft,  curLeft,  radius);
-                _targetField.CutCapsule(_prevRight, curRight, radius);
-                // Also fill the gap between tips
-                _targetField.CutCapsule(curLeft, curRight, radius);
-            }
+                _targetField.CutCapsule(_prevSweepTip, tip, cutRadius * CurrentPower);
 
-            _prevLeft  = curLeft;
-            _prevRight = curRight;
+            _prevSweepTip = tip;
         }
 
         protected override void OnSweepEnd() => _targetField = null;
+
+        // sweepT 0..1 maps left edge to right edge of fan
+        Vector3 CalcFanTip(float sweepT)
+        {
+            var player = Fields.Core.PlayerController.Instance;
+            Vector3 origin = player != null ? player.transform.position : transform.position;
+
+            // Camera forward projected to XZ plane
+            Transform cam = player?.cameraRoot;
+            Vector3 forward = cam != null ? cam.forward : transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.001f) forward = transform.forward;
+            forward.Normalize();
+
+            // Sweep from -fanHalfAngle to +fanHalfAngle
+            float angle = Mathf.Lerp(-fanHalfAngle, fanHalfAngle, sweepT);
+            Vector3 dir = Quaternion.Euler(0f, angle, 0f) * forward;
+
+            float reach = baseReach * CurrentPower;
+            Vector3 worldTip = origin + dir * reach;
+            return GrassField.SnapToTerrain(worldTip);
+        }
 
         GrassField FindNearestField(Vector3 near)
         {

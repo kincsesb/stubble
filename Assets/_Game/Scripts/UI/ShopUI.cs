@@ -8,8 +8,9 @@ using UnityEngine.UI;
 namespace Fields.UI
 {
     /// <summary>
-    /// Minimal in-world shop panel. Three tabs: Tools | Upgrades | Unlocks.
+    /// In-world shop panel. Three tabs: Tools | Upgrades | Unlocks.
     /// Toggled by SaleStand.Interact(). Pauses time while open.
+    /// Rows are procedurally built — rowPrefab is optional override.
     /// </summary>
     public class ShopUI : MonoBehaviour
     {
@@ -23,7 +24,7 @@ namespace Fields.UI
 
         [Header("Content area")]
         public Transform contentParent;
-        public GameObject rowPrefab; // simple row: [name label] [price label] [button]
+        public GameObject rowPrefab;
 
         [Header("Close")]
         public Button closeButton;
@@ -37,15 +38,26 @@ namespace Fields.UI
         CurrencyManager _currency;
         int _activeTab;
 
+        static readonly Color COL_BG_ROW    = new Color(0.10f, 0.12f, 0.16f, 0.95f);
+        static readonly Color COL_BG_HEADER = new Color(0.06f, 0.08f, 0.12f, 1.00f);
+        static readonly Color COL_BTN_BUY   = new Color(0.18f, 0.60f, 0.25f, 1.00f);
+        static readonly Color COL_BTN_GREY  = new Color(0.35f, 0.35f, 0.35f, 1.00f);
+        static readonly Color COL_TEXT_MAIN = Color.white;
+        static readonly Color COL_TEXT_SUB  = new Color(0.75f, 0.75f, 0.75f);
+        static readonly Color COL_MONEY     = new Color(1.00f, 0.85f, 0.20f);
+        static readonly Color COL_OWNED     = new Color(0.40f, 0.90f, 0.45f);
+        static readonly Color COL_TAB_ON    = new Color(0.22f, 0.55f, 0.28f);
+        static readonly Color COL_TAB_OFF   = new Color(0.16f, 0.16f, 0.20f);
+
         // ------------------------------------------------------------------ //
 
         void Awake()
         {
-            tabTools.onClick.AddListener(() => ShowTab(0));
-            tabUpgrades.onClick.AddListener(() => ShowTab(1));
-            tabUnlocks.onClick.AddListener(() => ShowTab(2));
-            closeButton.onClick.AddListener(Close);
-            shopPanel.SetActive(false);
+            if (tabTools)    tabTools.onClick.AddListener(() => ShowTab(0));
+            if (tabUpgrades) tabUpgrades.onClick.AddListener(() => ShowTab(1));
+            if (tabUnlocks)  tabUnlocks.onClick.AddListener(() => ShowTab(2));
+            if (closeButton) closeButton.onClick.AddListener(Close);
+            if (shopPanel)   shopPanel.SetActive(false);
         }
 
         void Start()
@@ -61,14 +73,14 @@ namespace Fields.UI
 
         public void Open()
         {
-            shopPanel.SetActive(true);
+            if (shopPanel) shopPanel.SetActive(true);
             Time.timeScale = 0f;
             ShowTab(0);
         }
 
         public void Close()
         {
-            shopPanel.SetActive(false);
+            if (shopPanel) shopPanel.SetActive(false);
             Time.timeScale = 1f;
         }
 
@@ -77,7 +89,9 @@ namespace Fields.UI
         void ShowTab(int tab)
         {
             _activeTab = tab;
+            HighlightTab(tab);
             ClearContent();
+            AddMoneyHeader();
 
             switch (tab)
             {
@@ -87,10 +101,39 @@ namespace Fields.UI
             }
         }
 
+        void HighlightTab(int tab)
+        {
+            SetTabColor(tabTools,    tab == 0);
+            SetTabColor(tabUpgrades, tab == 1);
+            SetTabColor(tabUnlocks,  tab == 2);
+        }
+
+        static void SetTabColor(Button btn, bool active)
+        {
+            if (btn == null) return;
+            var img = btn.GetComponent<Image>();
+            if (img) img.color = active ? COL_TAB_ON : COL_TAB_OFF;
+        }
+
         void ClearContent()
         {
             for (int i = contentParent.childCount - 1; i >= 0; i--)
                 Destroy(contentParent.GetChild(i).gameObject);
+        }
+
+        void AddMoneyHeader()
+        {
+            int money = _currency?.Money ?? 0;
+            // Background container
+            var container = new GameObject("MoneyHeader", typeof(RectTransform), typeof(Image));
+            container.transform.SetParent(contentParent, false);
+            container.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 38);
+            container.GetComponent<Image>().color = COL_BG_HEADER;
+            // Separate child for text (Image + TMP cannot share a GameObject)
+            MakeTMPChild("Text", container.transform, 0, 20, COL_MONEY, TextAlignmentOptions.Right, stretchFill: true);
+            var texts = container.GetComponentsInChildren<TextMeshProUGUI>();
+            if (texts.Length > 0)
+                texts[0].text = $"Egyenleg:  $ {money}";
         }
 
         // ------------------------------------------------------------------ //
@@ -102,19 +145,27 @@ namespace Fields.UI
                 ? Fields.Core.LocalizationManager.Instance.Get(key, args)
                 : (args.Length > 0 ? string.Format(key, args) : key);
 
+        static string Stars(int level, int max = 3)
+        {
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < max; i++) sb.Append(i < level ? "*" : "-");
+            return sb.ToString();
+        }
+
         void BuildToolsTab()
         {
             for (int i = 0; i < allTools.Count; i++)
             {
                 var data = allTools[i];
                 bool owned = _toolMgr != null && _toolMgr.IsOwned(i);
-                int price = data.purchaseCost;
+                int price  = data.purchaseCost;
 
-                var row = AddRow(
-                    data.toolName,
-                    owned ? L("shop.owned") : $"$ {price}",
-                    owned ? string.Empty    : L("shop.buy", price));
+                string detail = owned
+                    ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] Megveve</color>"
+                    : $"$ {price}";
+                string btnLabel = owned ? string.Empty : L("shop.buy", price);
 
+                var row = AddRow(data.toolName, detail, btnLabel, owned ? -1 : price);
                 if (!owned)
                 {
                     int idx = i;
@@ -128,14 +179,28 @@ namespace Fields.UI
 
         void BuildUpgradesTab()
         {
+            bool anyOwned = false;
             for (int i = 0; i < allTools.Count; i++)
             {
                 if (_toolMgr == null || !_toolMgr.IsOwned(i)) continue;
-                var data = allTools[i];
+                anyOwned = true;
+                var data  = allTools[i];
                 int level = _toolMgr.GetLevel(i);
-                if (level >= 3) { AddRow(data.toolName, L("shop.maxlevel"), string.Empty); continue; }
-                int price = data.upgradeCosts[level];
-                var row = AddRow(data.toolName, $"Lv {level + 1}→{level + 2}  $ {price}", L("shop.upgrade", price));
+                string stars = Stars(level);
+
+                if (level >= 3)
+                {
+                    AddRow($"{data.toolName}  {stars}", L("shop.maxlevel"), string.Empty, -1);
+                    continue;
+                }
+
+                int price    = data.upgradeCosts[level];
+                int nextLevel = level + 1;
+                string detail = $"{stars}  Lv{level}→{level + 1}" +
+                                $"  Spd:{data.speedLevels[nextLevel]:0.0}×" +
+                                $"  Pwr:{data.powerLevels[nextLevel]:0.0}×" +
+                                $"  $ {price}";
+                var row = AddRow($"{data.toolName}  {stars}", detail, L("shop.upgrade", price), price);
                 int idx = i;
                 row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                 {
@@ -143,7 +208,11 @@ namespace Fields.UI
                 });
             }
 
-            // Baler upgrade (spec §6.2)
+            if (!anyOwned)
+                AddInfoRow("Nincs még megvett eszköz. Vásárolj az Eszközök fülön.");
+
+            AddSectionSeparator("Bálozo");
+
             var bm = Fields.Economy.BalerManager.Instance;
             if (bm != null)
             {
@@ -151,36 +220,38 @@ namespace Fields.UI
                 if (bl < 3)
                 {
                     int cost = Fields.Economy.BalerManager.BalerUpgradeCosts[bl];
-                    var row = AddRow(L("shop.baler"), $"Lv {bl + 1}→{bl + 2}  $ {cost}", L("shop.upgrade", cost));
+                    string detail = $"{Stars(bl)}  Lv{bl}→{bl + 1}  $ {cost}";
+                    var row = AddRow(L("shop.baler"), detail, L("shop.upgrade", cost), cost);
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { if (bm.TryUpgradeBaler()) ShowTab(1); });
                 }
-                else AddRow(L("shop.baler"), L("shop.maxlevel"), string.Empty);
+                else AddRow(L("shop.baler"), $"{Stars(3)}  {L("shop.maxlevel")}", string.Empty, -1);
 
-                // Hay Value upgrade (spec §6.4): 1.0× → 1.25× → 1.55× → 1.90×
+                AddSectionSeparator("Szénaérték");
+
                 int hvl = bm.HayValueLevel;
                 if (hvl < 3)
                 {
                     float nextMult = Fields.Economy.BalerManager.HayValueMultipliers[hvl + 1];
                     int cost = Fields.Economy.BalerManager.HayValueCosts[hvl];
-                    var row = AddRow(L("shop.hayvalue"), $"×{nextMult:0.00}  $ {cost}", L("shop.upgrade", cost));
+                    string detail = $"{Stars(hvl)}  ×{nextMult:0.00}  $ {cost}";
+                    var row = AddRow(L("shop.hayvalue"), detail, L("shop.upgrade", cost), cost);
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { if (bm.TryUpgradeHayValue()) ShowTab(1); });
                 }
-                else AddRow(L("shop.hayvalue"), L("shop.maxlevel"), string.Empty);
+                else AddRow(L("shop.hayvalue"), $"{Stars(3)}  {L("shop.maxlevel")}", string.Empty, -1);
             }
         }
 
         void BuildUnlocksTab()
         {
-            // Round baler unlock (spec §7.2)
             var bm = Fields.Economy.BalerManager.Instance;
             if (bm?.roundBalerData != null)
             {
                 bool owned = bm.RoundBalerOwned;
-                int price = bm.roundBalerData.purchaseCost;
-                var row = AddRow(
-                    L("shop.roundbaler"),
-                    owned ? L("shop.owned") : $"$ {price}",
-                    owned ? string.Empty    : L("shop.buy", price));
+                int price  = bm.roundBalerData.purchaseCost;
+                string detail = owned
+                    ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] Megveve</color>"
+                    : $"$ {price}";
+                var row = AddRow(L("shop.roundbaler"), detail, owned ? string.Empty : L("shop.buy", price), owned ? -1 : price);
                 if (!owned)
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                     {
@@ -188,15 +259,18 @@ namespace Fields.UI
                     });
             }
 
+            AddSectionSeparator("Parcellák");
+
             for (int i = 1; i < allParcels.Count; i++)
             {
-                var data = allParcels[i];
+                var data      = allParcels[i];
                 bool unlocked = _parcelMgr != null && _parcelMgr.IsUnlocked(i);
-                int price = data.unlockCost;
-                var row = AddRow(
-                    L($"parcel.{i}.name"),
-                    unlocked ? L("shop.owned") : $"$ {price}",
-                    unlocked ? string.Empty     : L("shop.unlock", price));
+                int price     = data.unlockCost;
+                string detail = unlocked
+                    ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] Feloldva</color>"
+                    : $"$ {price}";
+                var row = AddRow(L($"parcel.{i}.name"), detail,
+                    unlocked ? string.Empty : L("shop.unlock", price), unlocked ? -1 : price);
                 if (!unlocked)
                 {
                     int idx = i;
@@ -209,8 +283,11 @@ namespace Fields.UI
         }
 
         // ------------------------------------------------------------------ //
+        // Row factories
+        // ------------------------------------------------------------------ //
 
-        GameObject AddRow(string label, string detail, string buttonLabel)
+        /// <param name="price">Pass -1 for rows with no buy action (owned / max level).</param>
+        GameObject AddRow(string label, string detail, string buttonLabel, int price = 0)
         {
             var row = rowPrefab != null
                 ? Instantiate(rowPrefab, contentParent)
@@ -223,42 +300,103 @@ namespace Fields.UI
             var btn = row.GetComponentInChildren<Button>();
             if (btn != null)
             {
-                btn.gameObject.SetActive(!string.IsNullOrEmpty(buttonLabel));
-                if (btn.GetComponentInChildren<TextMeshProUGUI>() is TextMeshProUGUI btnText)
-                    btnText.text = buttonLabel;
+                bool hasBtn = !string.IsNullOrEmpty(buttonLabel);
+                btn.gameObject.SetActive(hasBtn);
+                if (hasBtn)
+                {
+                    if (btn.GetComponentInChildren<TextMeshProUGUI>() is TextMeshProUGUI bt)
+                        bt.text = buttonLabel;
+
+                    bool canAfford = price < 0 || (_currency != null && _currency.Money >= price);
+                    if (btn.GetComponent<Image>() is Image bi)
+                        bi.color = canAfford ? COL_BTN_BUY : COL_BTN_GREY;
+                    btn.interactable = canAfford;
+                }
             }
             return row;
         }
 
+        void AddSectionSeparator(string title)
+        {
+            var container = new GameObject("Sep_" + title, typeof(RectTransform), typeof(Image));
+            container.transform.SetParent(contentParent, false);
+            container.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 28);
+            container.GetComponent<Image>().color = new Color(0.08f, 0.10f, 0.14f, 1f);
+            MakeTMPChild("Text", container.transform, 0, 15, new Color(0.6f, 0.6f, 0.6f),
+                TextAlignmentOptions.Center, stretchFill: true);
+            var texts = container.GetComponentsInChildren<TextMeshProUGUI>();
+            if (texts.Length > 0) texts[0].text = $"— {title} —";
+        }
+
+        void AddInfoRow(string message)
+        {
+            var go = new GameObject("Info", typeof(RectTransform), typeof(TextMeshProUGUI));
+            go.transform.SetParent(contentParent, false);
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 36);
+            var tmp = go.GetComponent<TextMeshProUGUI>();
+            tmp.text = message;
+            tmp.fontSize = 16;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.color = new Color(0.6f, 0.6f, 0.6f);
+        }
+
         GameObject BuildDefaultRow()
         {
-            var row = new GameObject("Row", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+            var row = new GameObject("Row", typeof(RectTransform), typeof(Image), typeof(HorizontalLayoutGroup));
             row.transform.SetParent(contentParent, false);
-            var hlg = row.GetComponent<HorizontalLayoutGroup>();
-            hlg.spacing = 12; hlg.childForceExpandWidth = false; hlg.childForceExpandHeight = true;
-            hlg.childControlWidth = true;
-
+            row.GetComponent<Image>().color = COL_BG_ROW;
             var rt = row.GetComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(0, 44);
+            rt.sizeDelta = new Vector2(0, 52);
 
-            MakeTMPChild("Label", row.transform, 220);
-            MakeTMPChild("Detail", row.transform, 180);
+            // LayoutElement so VLG uses the fixed 52px height
+            var le = row.AddComponent<UnityEngine.UI.LayoutElement>();
+            le.minHeight = 52;
+            le.preferredHeight = 52;
 
-            var btnGO = new GameObject("Btn", typeof(RectTransform), typeof(UnityEngine.UI.Image), typeof(Button));
+            var hlg = row.GetComponent<HorizontalLayoutGroup>();
+            hlg.padding        = new RectOffset(14, 8, 6, 6);
+            hlg.spacing        = 10;
+            hlg.childForceExpandWidth  = false;
+            hlg.childForceExpandHeight = true;
+            hlg.childControlWidth      = true;
+
+            MakeTMPChild("Label",  row.transform, 190, 20, COL_TEXT_MAIN);
+            MakeTMPChild("Detail", row.transform, 200, 16, COL_TEXT_SUB);
+
+            var btnGO = new GameObject("Btn", typeof(RectTransform), typeof(Image), typeof(Button));
             btnGO.transform.SetParent(row.transform, false);
-            btnGO.GetComponent<RectTransform>().sizeDelta = new Vector2(120, 0);
-            MakeTMPChild("BtnText", btnGO.transform, 120);
+            btnGO.GetComponent<RectTransform>().sizeDelta = new Vector2(130, 0);
+            btnGO.GetComponent<Image>().color = COL_BTN_BUY;
+            MakeTMPChild("BtnText", btnGO.transform, 130, 17, COL_TEXT_MAIN, TextAlignmentOptions.Center);
 
             return row;
         }
 
-        static void MakeTMPChild(string name, Transform parent, float width)
+        static void MakeTMPChild(string name, Transform parent, float width, float fontSize,
+                                  Color color, TextAlignmentOptions align = TextAlignmentOptions.Left,
+                                  bool stretchFill = false)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
             go.transform.SetParent(parent, false);
-            go.GetComponent<RectTransform>().sizeDelta = new Vector2(width, 0);
+            var rt = go.GetComponent<RectTransform>();
+            if (stretchFill)
+            {
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.sizeDelta = Vector2.zero;
+                rt.offsetMin = new Vector2(8, 0);
+                rt.offsetMax = new Vector2(-8, 0);
+            }
+            else
+            {
+                rt.sizeDelta = new Vector2(width, 0);
+            }
             var tmp = go.GetComponent<TextMeshProUGUI>();
-            tmp.fontSize = 20; tmp.color = Color.white;
+            tmp.fontSize  = fontSize;
+            tmp.color     = color;
+            tmp.alignment = align;
+            tmp.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+            tmp.overflowMode = TextOverflowModes.Ellipsis;
         }
     }
 }

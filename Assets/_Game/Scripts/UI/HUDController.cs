@@ -31,6 +31,10 @@ namespace Fields.UI
         [Header("Carry indicator")]
         public TextMeshProUGUI baleCountText;
 
+        [Header("Baling progress")]
+        [Tooltip("Assign a bar Image (fillMethod=Horizontal). Created from code if null.")]
+        public Image balingBar;
+
         [Header("Crosshair")]
         public Image crosshair;
         [Tooltip("Crosshair pulse scale when tool hits grass")]
@@ -60,8 +64,7 @@ namespace Fields.UI
         const float MILESTONE_FLASH_DURATION = 1.2f;
         static readonly int[] MILESTONES = { 25, 50, 75, 100 };
 
-        // Bar fade
-        float _staminaFadeTimer;
+        // Bar fade (fuel only)
         float _fuelFadeTimer;
         const float FADE_DELAY = 1.5f;
         const float FADE_DURATION = 0.4f;
@@ -81,6 +84,26 @@ namespace Fields.UI
                 _targetMoney = _displayedMoney = CurrencyManager.Instance.Money;
                 CurrencyManager.Instance.OnMoneyChanged += OnMoneyChanged;
             }
+            EnsureBalingBar();
+        }
+
+        void EnsureBalingBar()
+        {
+            if (balingBar != null) return;
+            // Build a simple progress bar above the stamina bar if none is assigned
+            var go = new GameObject("BalingBar", typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(transform, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 0f);
+            rt.anchorMax = new Vector2(0.5f, 0f);
+            rt.anchoredPosition = new Vector2(0f, 78f);
+            rt.sizeDelta = new Vector2(350f, 16f);
+            balingBar = go.GetComponent<Image>();
+            balingBar.color = new Color(0.9f, 0.7f, 0.1f);
+            balingBar.type = Image.Type.Filled;
+            balingBar.fillMethod = Image.FillMethod.Horizontal;
+            balingBar.fillAmount = 0f;
+            go.SetActive(false);
         }
 
         void OnDestroy()
@@ -115,20 +138,25 @@ namespace Fields.UI
             if (staminaBar != null)
             {
                 staminaBar.fillAmount = stamina;
+                // Always visible; color: green → yellow → red
+                Color staminaColor = stamina > 0.6f
+                    ? Color.Lerp(new Color(1f, 0.75f, 0f), new Color(0.15f, 0.85f, 0.25f), (stamina - 0.6f) / 0.4f)
+                    : Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.75f, 0f), stamina / 0.6f);
+                staminaBar.color = staminaColor;
+            }
 
-                // Fade when full
-                if (stamina >= 0.999f)
+            // Baling progress bar: shows when hay is nearby OR actively baling
+            if (balingBar != null)
+            {
+                bool show = player.BalingReady || player.IsBaling;
+                balingBar.gameObject.SetActive(show);
+                if (show)
                 {
-                    _staminaFadeTimer += Time.deltaTime;
-                    float t = Mathf.Clamp01((_staminaFadeTimer - FADE_DELAY) / FADE_DURATION);
-                    var c = staminaBar.color;
-                    staminaBar.color = new Color(c.r, c.g, c.b, 1f - t);
-                }
-                else
-                {
-                    _staminaFadeTimer = 0f;
-                    var c = staminaBar.color;
-                    staminaBar.color = new Color(c.r, c.g, c.b, 1f);
+                    balingBar.fillAmount = player.BalingProgress;
+                    // Yellow-green while ready-idle, bright green while actively holding E
+                    balingBar.color = player.IsBaling
+                        ? Color.Lerp(new Color(0.9f, 0.7f, 0.1f), new Color(0.2f, 0.95f, 0.2f), player.BalingProgress)
+                        : new Color(0.9f, 0.75f, 0.1f, 0.6f); // dimmer when just ready
                 }
             }
 
@@ -146,18 +174,20 @@ namespace Fields.UI
                 if (showFuel)
                 {
                     fuelBar.fillAmount = fuel;
+                    // Color: blue → orange → red + fade when full
+                    Color fuelColor = fuel > 0.3f
+                        ? Color.Lerp(new Color(1f, 0.55f, 0.05f), new Color(0.15f, 0.55f, 1f), (fuel - 0.3f) / 0.7f)
+                        : Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.55f, 0.05f), fuel / 0.3f);
                     if (fuel >= 0.999f)
                     {
                         _fuelFadeTimer += Time.deltaTime;
                         float t = Mathf.Clamp01((_fuelFadeTimer - FADE_DELAY) / FADE_DURATION);
-                        var c = fuelBar.color;
-                        fuelBar.color = new Color(c.r, c.g, c.b, 1f - t);
+                        fuelBar.color = new Color(fuelColor.r, fuelColor.g, fuelColor.b, 1f - t);
                     }
                     else
                     {
                         _fuelFadeTimer = 0f;
-                        var c = fuelBar.color;
-                        fuelBar.color = new Color(c.r, c.g, c.b, 1f);
+                        fuelBar.color = fuelColor;
                     }
                 }
             }

@@ -213,12 +213,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a83f3a6df7344cc5a455d2895e6b737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassChunkManager
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
   grassMaterial: {fileID: 2100000, guid: 89b49ec3559bb4887a3459c57992aff7, type: 2}
   chunkSize: 10
-  bladeDensity: 16
-  lod1Distance: 15
-  lod2Distance: 30
+  bladeDensity: 180
+  lod1Distance: 20
+  lod2Distance: 45
 --- !u!114 &24682562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -231,7 +231,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37656776dbcc541b889a864d4b2eaf19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassField
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
   fieldSize: {x: 100, y: 100}
   renderTextureSize: 1024
 --- !u!154 &24682563
@@ -342,7 +342,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a64891ad74b544ac9ee5f7187a206ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Network.GrassNetSync
-  syncMethod: 0
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
@@ -488,12 +487,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a83f3a6df7344cc5a455d2895e6b737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassChunkManager
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
   grassMaterial: {fileID: 2100000, guid: 89b49ec3559bb4887a3459c57992aff7, type: 2}
   chunkSize: 10
-  bladeDensity: 16
-  lod1Distance: 15
-  lod2Distance: 30
+  bladeDensity: 180
+  lod1Distance: 20
+  lod2Distance: 45
 --- !u!114 &54970759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -506,7 +505,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37656776dbcc541b889a864d4b2eaf19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassField
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
   fieldSize: {x: 100, y: 100}
   renderTextureSize: 1024
 --- !u!154 &54970760
@@ -617,7 +616,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a64891ad74b544ac9ee5f7187a206ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Network.GrassNetSync
-  syncMethod: 0
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
@@ -1609,7 +1607,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &252003578
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1623,6 +1621,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Hay.Baler
   balerData: {fileID: 11400000, guid: 31b0fb4238cb34901913a2101ec4c066, type: 2}
+  roundBalerData: {fileID: 11400000, guid: e4b34ba01b48f4aa6be70ccc209fccf5, type: 2}
   upgradeLevel: 0
   ejectPoint: {fileID: 32234193}
   squareBalePrefab: {fileID: 4311098249806456269, guid: 2a9dee61bd7a54850b993f728cc41291, type: 3}
@@ -1866,7 +1865,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!81 &330585544
 AudioListener:
   m_ObjectHideFlags: 0
@@ -2151,6 +2150,7 @@ MonoBehaviour:
   moneyAnimDuration: 0.4
   completionText: {fileID: 1063050006}
   baleCountText: {fileID: 1082834409}
+  balingBar: {fileID: 0}
   crosshair: {fileID: 1698955460}
   crosshairPulseScale: 1.4
   player: {fileID: 1277847331}
@@ -3408,7 +3408,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -3499,6 +3499,7 @@ Transform:
   - {fileID: 1749053763}
   - {fileID: 760560072}
   - {fileID: 1577328529}
+  - {fileID: 1767922728}
   m_Father: {fileID: 1022349326}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &760560071
@@ -3553,6 +3554,7 @@ MonoBehaviour:
   fuelConsumptionPerSecond: 5
   headCenter: {fileID: 1248670292}
   baseCutRadius: 0.18
+  forwardReach: 0.5
   boggingRate: 0.4
   vibrationAmplitude: 0.3
   swingAngle: 38
@@ -4095,7 +4097,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 10
@@ -4203,10 +4205,10 @@ RectTransform:
   - {fileID: 1469522202}
   m_Father: {fileID: 418151345}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 24, y: 24}
-  m_SizeDelta: {x: 220, y: 18}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 0, y: 50}
+  m_SizeDelta: {x: 350, y: 22}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &886532854
 MonoBehaviour:
@@ -4710,10 +4712,10 @@ RectTransform:
   - {fileID: 1697707210}
   m_Father: {fileID: 1255022701}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &937182989
 MonoBehaviour:
@@ -4876,7 +4878,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -5545,12 +5547,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a83f3a6df7344cc5a455d2895e6b737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassChunkManager
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
   grassMaterial: {fileID: 2100000, guid: 89b49ec3559bb4887a3459c57992aff7, type: 2}
   chunkSize: 10
-  bladeDensity: 16
-  lod1Distance: 15
-  lod2Distance: 30
+  bladeDensity: 180
+  lod1Distance: 20
+  lod2Distance: 45
 --- !u!114 &1052962260
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5563,7 +5565,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37656776dbcc541b889a864d4b2eaf19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassField
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
   fieldSize: {x: 100, y: 100}
   renderTextureSize: 1024
 --- !u!154 &1052962261
@@ -5674,7 +5676,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a64891ad74b544ac9ee5f7187a206ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Network.GrassNetSync
-  syncMethod: 0
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
@@ -7039,6 +7040,7 @@ MonoBehaviour:
   - {fileID: 1668825427}
   - {fileID: 54970757}
   - {fileID: 1052962258}
+  hayPilePrefab: {fileID: 8664197915596646720, guid: aabdba71c19294f45be2d5125482c4a0, type: 3}
 --- !u!4 &1253924682
 Transform:
   m_ObjectHideFlags: 0
@@ -7198,7 +7200,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -7334,6 +7336,11 @@ MonoBehaviour:
   baseFOV: 60
   sprintFOV: 65
   fovLerpSpeed: 6
+  jumpHeight: 1.2
+  balingRadius: 6
+  balingThreshold: 50
+  balingDuration: 2.5
+  squareBalePrefab: {fileID: 6783096139266340327, guid: b7317ef437d5d44ef9c662a1f48df49a, type: 3}
   hapticSwingDuration: 0.12
   hapticSwingLow: 0.3
   hapticSwingHigh: 0.6
@@ -7410,11 +7417,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Tools.ToolHolder
   tools:
-  - {fileID: 188837537}
   - {fileID: 1749053764}
   - {fileID: 760560073}
   - {fileID: 1577328530}
   - {fileID: 144935881}
+  - {fileID: 1767922729}
+  defaultToolIndex: 0
 --- !u!114 &1277847336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7600,10 +7608,10 @@ RectTransform:
   - {fileID: 622530179}
   m_Father: {fileID: 1255022701}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1327223094
 MonoBehaviour:
@@ -7717,7 +7725,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f65335b2a7fe4c4dabdd1812f8cf1a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Network.EconomyNetSync
-  syncMethod: 0
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
@@ -7845,7 +7852,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1476298739
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8181,7 +8188,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -8559,6 +8566,7 @@ MonoBehaviour:
   uncutMovePenalty: 0.8
   handleOscillationAngle: 2.5
   oscillationHz: 12
+  deckForwardOffset: 0.7
 --- !u!1 &1603318917
 GameObject:
   m_ObjectHideFlags: 0
@@ -8955,12 +8963,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a83f3a6df7344cc5a455d2895e6b737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassChunkManager
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
   grassMaterial: {fileID: 2100000, guid: 89b49ec3559bb4887a3459c57992aff7, type: 2}
   chunkSize: 10
-  bladeDensity: 16
-  lod1Distance: 15
-  lod2Distance: 30
+  bladeDensity: 180
+  lod1Distance: 20
+  lod2Distance: 45
 --- !u!114 &1668825429
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8973,7 +8981,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37656776dbcc541b889a864d4b2eaf19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Grass.GrassField
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 5ff7ef413f5e245a592a1fe138725245, type: 2}
   fieldSize: {x: 100, y: 100}
   renderTextureSize: 1024
 --- !u!154 &1668825430
@@ -9084,7 +9092,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a64891ad74b544ac9ee5f7187a206ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Network.GrassNetSync
-  syncMethod: 0
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
@@ -9184,7 +9191,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -9530,9 +9537,55 @@ MonoBehaviour:
   animRestRotation: {x: 0, y: 0, z: 0}
   animWindUpRotation: {x: -20, y: -50, z: 15}
   animSweepEndRotation: {x: 15, y: 60, z: -15}
-  bladeTipLeft: {fileID: 1268530633}
-  bladeTipRight: {fileID: 899308661}
-  baseHalfArcWidth: 0.7
+  fanHalfAngle: 22.5
+  baseReach: 1.6
+  cutRadius: 0.15
+--- !u!1 &1767922727
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1767922728}
+  - component: {fileID: 1767922729}
+  m_Layer: 0
+  m_Name: BareHand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1767922728
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1767922727}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 626962163}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1767922729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1767922727}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 919a31e836a564b85bf75d689697219b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Fields.Tools.BareHand
+  toolData: {fileID: 0}
+  upgradeLevel: 0
 --- !u!1 &1820854095
 GameObject:
   m_ObjectHideFlags: 0
@@ -9661,24 +9714,22 @@ MonoBehaviour:
   headlessStartMode: 0
   editorAutoStart: 0
   sendRate: 60
-  unreliableBaselineRate: 1
-  unreliableRedundancy: 0
+  offlineScene: 
+  onlineScene: 
+  offlineSceneLoadDelay: 0
   transport: {fileID: 1824645328}
   networkAddress: localhost
   maxConnections: 4
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
-  exceptionsDisconnect: 1
   authenticator: {fileID: 0}
-  offlineScene: 
-  onlineScene: 
-  offlineSceneLoadDelay: 0
   playerPrefab: {fileID: 1179994480286867486, guid: 481299d487de545caa9760ab4b79f302, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs:
   - {fileID: 4311098249806456269, guid: 2a9dee61bd7a54850b993f728cc41291, type: 3}
   - {fileID: 8664197915596646720, guid: aabdba71c19294f45be2d5125482c4a0, type: 3}
+  exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
     bufferLimit: 32
@@ -10250,10 +10301,10 @@ RectTransform:
   - {fileID: 1261188532}
   m_Father: {fileID: 1255022701}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2138421623
 MonoBehaviour:

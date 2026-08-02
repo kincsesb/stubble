@@ -129,6 +129,16 @@ namespace Fields.Grass
             return (float)_cutCount / _totalCells * 100f;
         }
 
+        /// <summary>Resets all cells to uncut — used by editor tools and new-game flow.</summary>
+        public void ResetGrass()
+        {
+            for (int row = 0; row < _gridRows; row++)
+                for (int col = 0; col < _gridCols; col++)
+                    _cutGrid[col, row] = true;
+            _cutCount = 0;
+            RebuildGpuFromCpu();
+        }
+
         /// <summary>Returns a copy of the cut grid for saving. True = uncut.</summary>
         public bool[,] GetCutGrid() => (bool[,])_cutGrid.Clone();
 
@@ -150,6 +160,15 @@ namespace Fields.Grass
 
         /// <summary>Converts a grid cell to world-space centre position.</summary>
         public Vector3 CellToWorld(int col, int row) => GridToWorld(col, row);
+
+        /// <summary>Snaps worldPos.y to ground height via downward raycast.</summary>
+        public static Vector3 SnapToTerrain(Vector3 worldPos, float searchHeight = 5f)
+        {
+            Vector3 origin = new Vector3(worldPos.x, worldPos.y + searchHeight, worldPos.z);
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, searchHeight * 2f))
+                return new Vector3(worldPos.x, hit.point.y, worldPos.z);
+            return worldPos;
+        }
 
         // ------------------------------------------------------------------ //
         // Internals

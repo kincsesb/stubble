@@ -167,6 +167,67 @@ namespace Fields.Hay
             return transform.TransformPoint(new Vector3(lx, 0f, lz));
         }
 
+        /// <summary>Clears all accumulated hay and destroys decal visuals — used by editor reset.</summary>
+        public void ResetHay()
+        {
+            for (int r = 0; r < _collRows; r++)
+                for (int c = 0; c < _collCols; c++)
+                {
+                    _hayGrid[c, r] = 0f;
+                    if (_decalObjects[c, r] != null)
+                    {
+                        Destroy(_decalObjects[c, r]);
+                        _decalObjects[c, r] = null;
+                    }
+                    _decalPhase[c, r] = -1;
+                }
+        }
+
+        /// <summary>
+        /// Returns total hay units in all collection cells whose centre lies within radius of worldPos (XZ only).
+        /// </summary>
+        public float GetHayInRadius(Vector3 worldPos, float radius)
+        {
+            if (_hayGrid == null) return 0f;
+            float total = 0f;
+            float radiusSq = radius * radius;
+            for (int r = 0; r < _collRows; r++)
+                for (int c = 0; c < _collCols; c++)
+                {
+                    if (_hayGrid[c, r] <= 0f) continue;
+                    Vector3 center = CollectionCellCenter(c, r);
+                    float dx = worldPos.x - center.x;
+                    float dz = worldPos.z - center.z;
+                    if (dx * dx + dz * dz <= radiusSq) total += _hayGrid[c, r];
+                }
+            return total;
+        }
+
+        /// <summary>
+        /// Removes up to maxAmount hay from cells within radius (closest cells first), updates decals.
+        /// Returns actually consumed amount.
+        /// </summary>
+        public float ConsumeHayInRadius(Vector3 worldPos, float radius, float maxAmount)
+        {
+            if (_hayGrid == null) return 0f;
+            float consumed = 0f;
+            float radiusSq = radius * radius;
+            for (int r = 0; r < _collRows && consumed < maxAmount; r++)
+                for (int c = 0; c < _collCols && consumed < maxAmount; c++)
+                {
+                    if (_hayGrid[c, r] <= 0f) continue;
+                    Vector3 center = CollectionCellCenter(c, r);
+                    float dx = worldPos.x - center.x;
+                    float dz = worldPos.z - center.z;
+                    if (dx * dx + dz * dz > radiusSq) continue;
+                    float take = Mathf.Min(_hayGrid[c, r], maxAmount - consumed);
+                    _hayGrid[c, r] -= take;
+                    consumed += take;
+                    UpdateDecal(c, r);
+                }
+            return consumed;
+        }
+
         /// <summary>Returns the hay accumulation grid for saving (value = unit count in each cell).</summary>
         public float[,] GetHayGrid() => (float[,])_hayGrid.Clone();
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
@@ -120,7 +121,7 @@ namespace Fields.UI
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         bool _showUI;
 
-        void Update() { if (Input.GetKeyDown(KeyCode.F10)) _showUI = !_showUI; }
+        void Update() { if (Keyboard.current != null && Keyboard.current.f10Key.wasPressedThisFrame) _showUI = !_showUI; }
 
         void OnGUI()
         {

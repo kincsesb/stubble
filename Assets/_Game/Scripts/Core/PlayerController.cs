@@ -39,6 +39,19 @@ namespace Fields.Core
         public float sprintFOV = 65f;
         public float fovLerpSpeed = 6f;
 
+        [Header("Jump")]
+        public float jumpHeight = 1.2f;
+
+        [Header("Baling")]
+        [Tooltip("Radius around the player to collect hay units from the accumulation grid")]
+        public float balingRadius = 6f;
+        [Tooltip("Minimum accumulated hay units needed to start baling")]
+        public float balingThreshold = 50f;
+        [Tooltip("Seconds of holding E to produce a bale")]
+        public float balingDuration = 2.5f;
+        [Tooltip("SquareBale prefab spawned when baling completes")]
+        public GameObject squareBalePrefab;
+
         [Header("Haptics")]
         [Tooltip("Duration of swing impact rumble in seconds")]
         public float hapticSwingDuration = 0.12f;
@@ -76,6 +89,18 @@ namespace Fields.Core
         List<HayPile> _carriedBales = new List<HayPile>(3);
         List<Fields.Hay.SquareBale> _carriedSquareBales = new List<Fields.Hay.SquareBale>(3);
 
+        // Baling
+        bool _interactHeld;
+        bool _balingReady;
+        float _balingTimer;
+        Fields.Hay.HayAccumulationSystem[] _hayAccumSystems;
+
+        // Vertical velocity (gravity + jump, accumulated across frames)
+        float _yVelocity;
+
+        // Jump request flag — set by OnJump, consumed in HandleMovement
+        bool _jumpRequested;
+
         // External velocity (applied next move frame)
         Vector3 _externalVelocity;
 
@@ -98,6 +123,7 @@ namespace Fields.Core
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             if (_camera != null) _camera.fieldOfView = baseFOV;
+            _hayAccumSystems = Object.FindObjectsByType<Fields.Hay.HayAccumulationSystem>(FindObjectsSortMode.None);
         }
 
         void Update()
@@ -108,6 +134,7 @@ namespace Fields.Core
             HandleFOV();
             HandleHaptics();
             RegenStamina();
+            HandleBaling();
         }
 
         // ------------------------------------------------------------------ //
@@ -122,7 +149,13 @@ namespace Fields.Core
 
         public void OnInteract(InputValue value)
         {
+            _interactHeld = value.isPressed;
             if (value.isPressed) TryInteract();
+        }
+
+        public void OnJump(InputValue value)
+        {
+            if (value.isPressed) _jumpRequested = true;
         }
 
         public void OnDrop(InputValue value)
@@ -187,8 +220,22 @@ namespace Fields.Core
             Vector3 move = transform.TransformDirection(
                 new Vector3(_moveInput.x, 0f, _moveInput.y)) * targetSpeed;
 
-            // Gravity
-            if (!_cc.isGrounded) move.y -= 9.81f * Time.deltaTime;
+            // Vertical velocity — accumulated so gravity actually accelerates
+            if (_cc.isGrounded)
+            {
+                _yVelocity = -2f; // small constant keeps CC pressed to ground
+                if (_jumpRequested)
+                {
+                    _yVelocity = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y);
+                    _jumpRequested = false;
+                }
+            }
+            else
+            {
+                _yVelocity += Physics.gravity.y * Time.deltaTime;
+            }
+            _jumpRequested = false; // discard if not grounded
+            move.y = _yVelocity;
 
             // External impulse (round bale push, etc.)
             move += _externalVelocity;
@@ -309,6 +356,9 @@ namespace Fields.Core
         public List<Fields.Hay.SquareBale> GetCarriedSquareBales() =>
             new List<Fields.Hay.SquareBale>(_carriedSquareBales);
 
+        /// <summary>Called by Baler when it consumes a pile the player was carrying.</summary>
+        public void RemoveCarriedHayPile(HayPile pile) => _carriedBales.Remove(pile);
+
         public void DropSquareBales()
         {
             for (int i = _carriedSquareBales.Count - 1; i >= 0; i--)
@@ -336,6 +386,73 @@ namespace Fields.Core
         }
 
         // ------------------------------------------------------------------ //
+        // Baling (hold E on cut grass — accumulation-grid based)
+        // ------------------------------------------------------------------ //
+
+        void HandleBaling()
+        {
+            _balingReady = GetHayNearby() >= balingThreshold;
+
+            if (!_interactHeld || !_balingReady)
+            {
+                if (_balingTimer > 0f)
+                {
+                    Fields.Audio.ToolAudioManager.Instance?.StopBaler();
+                    _balingTimer = 0f;
+                }
+                return;
+            }
+
+            if (_balingTimer == 0f)
+                Fields.Audio.ToolAudioManager.Instance?.StartBaler();
+
+            _balingTimer += Time.deltaTime;
+            if (_balingTimer >= balingDuration)
+                CompleteBaling();
+        }
+
+        float GetHayNearby()
+        {
+            if (_hayAccumSystems == null) return 0f;
+            float total = 0f;
+            foreach (var sys in _hayAccumSystems)
+                if (sys != null) total += sys.GetHayInRadius(transform.position, balingRadius);
+            return total;
+        }
+
+        void CompleteBaling()
+        {
+            _balingTimer = 0f;
+            Fields.Audio.ToolAudioManager.Instance?.StopBaler();
+
+            // Consume hay from accumulation grids in radius
+            float needed = balingThreshold;
+            if (_hayAccumSystems != null)
+                foreach (var sys in _hayAccumSystems)
+                {
+                    if (sys == null || needed <= 0f) continue;
+                    needed -= sys.ConsumeHayInRadius(transform.position, balingRadius, needed);
+                }
+
+            // Consume any HayPile objects in radius (visual cleanup)
+            var piles = Object.FindObjectsByType<HayPile>(FindObjectsSortMode.None);
+            foreach (var p in piles)
+            {
+                if (Vector3.Distance(transform.position, p.transform.position) > balingRadius) continue;
+                if (p.IsCarried) _carriedBales.Remove(p);
+                p.ConsumeAll();
+            }
+
+            Vector3 spawnPos = Fields.Grass.GrassField.SnapToTerrain(transform.position);
+            if (squareBalePrefab != null)
+                Object.Instantiate(squareBalePrefab, spawnPos, Quaternion.identity);
+        }
+
+        public bool IsBaling => _interactHeld && _balingReady;
+        public float BalingProgress => balingDuration > 0f ? Mathf.Clamp01(_balingTimer / balingDuration) : 0f;
+        public bool BalingReady => _balingReady;
+
+        // ------------------------------------------------------------------ //
         // Interact
         // ------------------------------------------------------------------ //
 
@@ -347,8 +464,8 @@ namespace Fields.Core
                     out RaycastHit hit, 2.5f))
                 return;
 
-            if (hit.collider.TryGetComponent<IInteractable>(out var interactable))
-                interactable.Interact(this);
+            var interactable = hit.collider.GetComponentInParent<IInteractable>();
+            interactable?.Interact(this);
         }
     }
 

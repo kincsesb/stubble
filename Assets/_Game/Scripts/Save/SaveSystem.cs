@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using Fields.Economy;
 using Fields.Grass;
@@ -17,6 +18,9 @@ namespace Fields.Save
         [Header("Scene references (match parcel order 0-3)")]
         public GrassField[] grassFields = new GrassField[4];
         public HayAccumulationSystem[] hayAccumulationSystems = new HayAccumulationSystem[4];
+
+        [Header("Prefabs for world-object restore")]
+        public GameObject hayPilePrefab;
 
         const string SAVE_FILE = "fields_save.json";
         const float AUTOSAVE_INTERVAL = 60f;
@@ -152,6 +156,21 @@ namespace Fields.Save
                 data.fields[i] = fd;
             }
 
+            // Save loose hay piles (not carried)
+            var allPiles = Object.FindObjectsByType<HayPile>(FindObjectsSortMode.None);
+            var pileList = new System.Collections.Generic.List<HayPileSaveData>();
+            foreach (var pile in allPiles)
+            {
+                if (pile.IsCarried) continue;
+                var pos = pile.transform.position;
+                pileList.Add(new HayPileSaveData
+                {
+                    posX = pos.x, posY = pos.y, posZ = pos.z,
+                    hayUnits = (int)pile.HayUnits
+                });
+            }
+            data.hayPiles = pileList.ToArray();
+
             return data;
         }
 
@@ -161,6 +180,21 @@ namespace Fields.Save
             ToolUnlockManager.Instance?.LoadState(data.toolsOwned, data.toolUpgradeLevels);
             ParcelManager.Instance?.LoadState(data.parcelsUnlocked);
             Fields.Economy.BalerManager.Instance?.LoadState(data.roundBalerOwned, data.balerUpgradeLevels);
+
+            // Restore hay piles — destroy any existing loose ones first to avoid duplicates
+            foreach (var pile in Object.FindObjectsByType<HayPile>(FindObjectsSortMode.None))
+                if (!pile.IsCarried) Object.Destroy(pile.gameObject);
+
+            if (data.hayPiles != null && hayPilePrefab != null)
+            {
+                foreach (var ps in data.hayPiles)
+                {
+                    var go = Object.Instantiate(hayPilePrefab,
+                        new Vector3(ps.posX, ps.posY, ps.posZ), Quaternion.identity);
+                    if (go.GetComponent<HayPile>() is HayPile hp)
+                        hp.hayUnits = ps.hayUnits;
+                }
+            }
 
             for (int i = 0; i < grassFields.Length; i++)
             {

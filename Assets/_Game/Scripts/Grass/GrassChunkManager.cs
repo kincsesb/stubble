@@ -19,11 +19,11 @@ namespace Fields.Grass
         [Header("Chunk settings")]
         public float chunkSize = 10f;
         [Tooltip("Grass blades per metre² at full density")]
-        public float bladeDensity = 48f;
+        public float bladeDensity = 180f;
 
         [Header("LOD distances")]
-        public float lod1Distance = 15f;
-        public float lod2Distance = 30f;
+        public float lod1Distance = 20f;
+        public float lod2Distance = 45f;
 
         GrassField _grassField;
         List<GrassChunk> _chunks = new List<GrassChunk>();
@@ -118,43 +118,48 @@ namespace Fields.Grass
         Mesh BuildBladeMesh(float width, float depth, float densityFraction, float originX = 0f, float originZ = 0f)
         {
             int totalBlades = Mathf.RoundToInt(width * depth * bladeDensity * densityFraction);
-            totalBlades = Mathf.Min(totalBlades, 65000 / 4); // stay under 16-bit index limit
+            // Cap per chunk to avoid excessive VRAM; 32-bit indices so no 65k limit
+            totalBlades = Mathf.Min(totalBlades, 30000);
 
-            var verts = new Vector3[totalBlades * 4];
-            var uvs = new Vector2[totalBlades * 4];
-            var tris = new int[totalBlades * 6];
-            var fieldUVs = new Vector2[totalBlades * 4]; // passed to shader for mask sampling
+            var verts    = new Vector3[totalBlades * 4];
+            var uvs      = new Vector2[totalBlades * 4];
+            var tris     = new int[totalBlades * 6];
+            var fieldUVs = new Vector2[totalBlades * 4];
+
+            const float bladeHalfWidth = 0.025f;
+            const float bladeHeight    = 0.45f;
 
             for (int i = 0; i < totalBlades; i++)
             {
                 float rx = Random.Range(0f, width);
                 float rz = Random.Range(0f, depth);
-                // UV into the full field mask RT (0-based bottom-left)
                 float maskU = (originX + rx) / _grassField.fieldSize.x;
                 float maskV = (originZ + rz) / _grassField.fieldSize.y;
 
                 int v = i * 4;
-                float hw = 0.04f;
-                verts[v + 0] = new Vector3(rx - hw, 0f, rz);
-                verts[v + 1] = new Vector3(rx + hw, 0f, rz);
-                verts[v + 2] = new Vector3(rx - hw, 0.35f, rz);
-                verts[v + 3] = new Vector3(rx + hw, 0.35f, rz);
+                verts[v + 0] = new Vector3(rx - bladeHalfWidth, 0f,         rz);
+                verts[v + 1] = new Vector3(rx + bladeHalfWidth, 0f,         rz);
+                verts[v + 2] = new Vector3(rx - bladeHalfWidth, bladeHeight, rz);
+                verts[v + 3] = new Vector3(rx + bladeHalfWidth, bladeHeight, rz);
 
                 uvs[v + 0] = new Vector2(0f, 0f);
                 uvs[v + 1] = new Vector2(1f, 0f);
                 uvs[v + 2] = new Vector2(0f, 1f);
                 uvs[v + 3] = new Vector2(1f, 1f);
 
-                // Store per-blade field UV in UV2 for mask sampling in shader
                 var fuv = new Vector2(maskU, maskV);
                 fieldUVs[v + 0] = fieldUVs[v + 1] = fieldUVs[v + 2] = fieldUVs[v + 3] = fuv;
 
                 int t = i * 6;
-                tris[t + 0] = v; tris[t + 1] = v + 2; tris[t + 2] = v + 1;
+                tris[t + 0] = v;     tris[t + 1] = v + 2; tris[t + 2] = v + 1;
                 tris[t + 3] = v + 1; tris[t + 4] = v + 2; tris[t + 5] = v + 3;
             }
 
-            var mesh = new Mesh { name = "GrassBladeMesh" };
+            var mesh = new Mesh
+            {
+                name        = "GrassBladeMesh",
+                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
+            };
             mesh.SetVertices(verts);
             mesh.SetUVs(0, uvs);
             mesh.SetUVs(1, fieldUVs);

@@ -30,11 +30,14 @@ namespace Fields.Tools
         Vector3 _prevDeckPos;
         Quaternion _restLocalRotation;
 
+        [Tooltip("Distance ahead of player where the deck cuts")]
+        public float deckForwardOffset = 0.7f;
+
         public override void OnEquip()
         {
             base.OnEquip();
             _restLocalRotation = transform.localRotation;
-            _prevDeckPos = deckCenter != null ? deckCenter.position : transform.position;
+            _prevDeckPos = CalcDeckPos();
         }
 
         protected override void OnEngineStarted()
@@ -65,12 +68,28 @@ namespace Fields.Tools
             }
         }
 
+        Vector3 CalcDeckPos()
+        {
+            var player = Fields.Core.PlayerController.Instance;
+            if (player == null)
+                return deckCenter != null ? deckCenter.position : transform.position;
+
+            Transform cam = player.cameraRoot;
+            Vector3 forward = cam != null ? cam.forward : player.transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.001f) forward = player.transform.forward;
+            forward.Normalize();
+
+            Vector3 pos = player.transform.position + forward * deckForwardOffset;
+            return Fields.Grass.GrassField.SnapToTerrain(pos);
+        }
+
         protected override void Update()
         {
             base.Update();
             if (!_isEquipped || !_engineRunning || !_deckEngaged) return;
 
-            Vector3 deckPos = deckCenter != null ? deckCenter.position : transform.position;
+            Vector3 deckPos = CalcDeckPos();
 
             if (_targetField == null) _targetField = FindNearestField(deckPos);
 

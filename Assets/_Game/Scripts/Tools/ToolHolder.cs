@@ -14,6 +14,9 @@ namespace Fields.Tools
         [Header("Tool Slots (assign in inspector, ordered 1-5)")]
         public List<BaseTool> tools = new List<BaseTool>(5);
 
+        [Header("Default slot equipped on Start (0-based)")]
+        public int defaultToolIndex = 0;
+
         /// <summary>Fired on local player: (toolIndex, isPressed). Consumed by NetworkedPlayer to send CmdUseTool.</summary>
         public event Action<int, bool> OnToolAction;
 
@@ -25,7 +28,7 @@ namespace Fields.Tools
             ApplyUpgradeLevels();
 
             foreach (var t in tools) t?.OnUnequip();
-            if (tools.Count > 0) EquipSlot(0);
+            if (tools.Count > 0) EquipSlot(Mathf.Clamp(defaultToolIndex, 0, tools.Count - 1));
 
             var um = Fields.Economy.ToolUnlockManager.Instance;
             if (um != null)
@@ -81,6 +84,7 @@ namespace Fields.Tools
 
         public void OnUsePrimary(InputValue value)
         {
+            if (Time.timeScale == 0f) return; // shop/pause is open
             bool pressed = value.isPressed;
             ActiveTool?.OnUsePrimary(pressed);
             OnToolAction?.Invoke(_activeIndex, pressed);
@@ -110,6 +114,7 @@ namespace Fields.Tools
 
         bool IsOwned(int index)
         {
+            if (index >= 0 && index < tools.Count && tools[index] is BareHand) return true;
             var mgr = Fields.Economy.ToolUnlockManager.Instance;
             return mgr == null || mgr.IsOwned(index);
         }
