@@ -88,7 +88,8 @@ namespace Fields.Hay
             _hayGrid[cc, cr] += 1f;
             UpdateDecal(cc, cr);
 
-            if (_hayGrid[cc, cr] >= config.hayUnitsPerCollectionCell)
+            // Only auto-spawn if a prefab is assigned; otherwise hay accumulates freely for manual baling.
+            if (hayPilePrefab != null && _hayGrid[cc, cr] >= config.hayUnitsPerCollectionCell)
             {
                 SpawnHayPile(cc, cr);
             }
