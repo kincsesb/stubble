@@ -169,6 +169,19 @@ namespace Fields.Core
             { "a11y.cb.deut",     "Deuteranopia" },
             { "a11y.cb.prot",     "Protanopia" },
             { "a11y.cb.trit",     "Tritanopia" },
+
+            // Settings screen
+            { "settings.tab.display",       "Display" },
+            { "settings.tab.audio",         "Audio" },
+            { "settings.tab.controls",      "Controls" },
+            { "settings.tab.accessibility", "Accessibility" },
+            { "settings.tab.language",      "Language" },
+            { "settings.wm.fullscreen",     "Fullscreen" },
+            { "settings.wm.borderless",     "Borderless" },
+            { "settings.wm.windowed",       "Windowed" },
+            { "settings.quality.low",       "Low" },
+            { "settings.quality.medium",    "Medium" },
+            { "settings.quality.high",      "High" },
         };
 
         // ------------------------------------------------------------------ //

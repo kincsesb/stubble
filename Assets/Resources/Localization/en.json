@@ -46,6 +46,17 @@
     { "key": "a11y.cb.none",     "value": "None" },
     { "key": "a11y.cb.deut",     "value": "Deuteranopia" },
     { "key": "a11y.cb.prot",     "value": "Protanopia" },
-    { "key": "a11y.cb.trit",     "value": "Tritanopia" }
+    { "key": "a11y.cb.trit",     "value": "Tritanopia" },
+    { "key": "settings.tab.display",      "value": "Display" },
+    { "key": "settings.tab.audio",        "value": "Audio" },
+    { "key": "settings.tab.controls",     "value": "Controls" },
+    { "key": "settings.tab.accessibility","value": "Accessibility" },
+    { "key": "settings.tab.language",     "value": "Language" },
+    { "key": "settings.wm.fullscreen",    "value": "Fullscreen" },
+    { "key": "settings.wm.borderless",    "value": "Borderless" },
+    { "key": "settings.wm.windowed",      "value": "Windowed" },
+    { "key": "settings.quality.low",      "value": "Low" },
+    { "key": "settings.quality.medium",   "value": "Medium" },
+    { "key": "settings.quality.high",     "value": "High" }
   ]
 }

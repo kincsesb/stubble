@@ -65,6 +65,21 @@ namespace Fields.UI
             _toolMgr   = ToolUnlockManager.Instance;
             _parcelMgr = ParcelManager.Instance;
             _currency  = CurrencyManager.Instance;
+
+            if (Fields.Core.LocalizationManager.Instance != null)
+                Fields.Core.LocalizationManager.Instance.OnLanguageChanged += OnLanguageChanged;
+        }
+
+        void OnDestroy()
+        {
+            if (Fields.Core.LocalizationManager.Instance != null)
+                Fields.Core.LocalizationManager.Instance.OnLanguageChanged -= OnLanguageChanged;
+        }
+
+        void OnLanguageChanged()
+        {
+            if (shopPanel != null && shopPanel.activeSelf)
+                ShowTab(_activeTab);
         }
 
         // ------------------------------------------------------------------ //

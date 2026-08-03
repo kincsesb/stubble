@@ -198,15 +198,22 @@ namespace Fields.UI
         {
             if (player == null) return;
 
-            float stamina = player.StaminaNormalized;
+            // Stamina: melee tool pool when equipped, else player sprint pool
+            float stamina = toolHolder?.ActiveTool is MeleeToolBase m
+                ? m.StaminaNormalized
+                : player.StaminaNormalized;
             if (staminaBar != null)
             {
-                staminaBar.fillAmount = stamina;
-                // Always visible; color: green → yellow → red
-                Color staminaColor = stamina > 0.6f
-                    ? Color.Lerp(new Color(1f, 0.75f, 0f), new Color(0.15f, 0.85f, 0.25f), (stamina - 0.6f) / 0.4f)
-                    : Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.75f, 0f), stamina / 0.6f);
-                staminaBar.color = staminaColor;
+                bool showStamina = stamina < 0.999f;
+                staminaBar.gameObject.SetActive(showStamina);
+                if (showStamina)
+                {
+                    staminaBar.fillAmount = stamina;
+                    Color staminaColor = stamina > 0.6f
+                        ? Color.Lerp(new Color(1f, 0.75f, 0f), new Color(0.15f, 0.85f, 0.25f), (stamina - 0.6f) / 0.4f)
+                        : Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.75f, 0f), stamina / 0.6f);
+                    staminaBar.color = staminaColor;
+                }
             }
 
             // Baling progress bar
@@ -271,17 +278,10 @@ namespace Fields.UI
                 if (showFuel)
                 {
                     fuelBar.fillAmount = fuel;
-                    // Color: blue → orange → red + fade when full
+                    // Color: blue (full) → orange → red (empty)
                     Color fuelColor = fuel > 0.3f
                         ? Color.Lerp(new Color(1f, 0.55f, 0.05f), new Color(0.15f, 0.55f, 1f), (fuel - 0.3f) / 0.7f)
                         : Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.55f, 0.05f), fuel / 0.3f);
-                    if (fuel >= 0.999f)
-                    {
-                        _fuelFadeTimer += Time.deltaTime;
-                        float t = Mathf.Clamp01((_fuelFadeTimer - FADE_DELAY) / FADE_DURATION);
-                        fuelBar.color = new Color(fuelColor.r, fuelColor.g, fuelColor.b, 1f - t);
-                    }
-                    else
                     {
                         _fuelFadeTimer = 0f;
                         fuelBar.color = fuelColor;

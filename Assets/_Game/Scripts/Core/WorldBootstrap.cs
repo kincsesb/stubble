@@ -17,6 +17,10 @@ namespace Fields.Core
         public ParcelBoundary[] parcels = new ParcelBoundary[4];
         public GameObject endScreenRoot;
 
+        [Header("Main menu")]
+        public MainMenuScreen mainMenuScreen;
+        public GameObject playerRoot;   // hidden until game starts
+
         int _completedParcels;
 
         void Start()
@@ -36,6 +40,13 @@ namespace Fields.Core
             // Default active field = first parcel (parcel 0 is always unlocked)
             if (parcels.Length > 0 && parcels[0] != null && HUDController.Instance != null)
                 HUDController.Instance.activeGrassField = parcels[0].grassField;
+
+            // Show main menu — player stays hidden until Continue or New Game.
+            if (mainMenuScreen != null)
+            {
+                if (playerRoot != null) playerRoot.SetActive(false);
+                UIManager.Instance?.Push(mainMenuScreen);
+            }
         }
 
         void OnDestroy()
@@ -52,6 +63,10 @@ namespace Fields.Core
         {
             if (HUDController.Instance != null)
                 HUDController.Instance.activeGrassField = parcel.grassField;
+
+            int idx = parcel.parcelData != null ? parcel.parcelData.parcelIndex : System.Array.IndexOf(parcels, parcel);
+            if (Fields.Core.PlayerController.Instance != null)
+                Fields.Core.PlayerController.Instance.CurrentParcelIndex = idx;
         }
 
         void OnParcelCompleted(ParcelBoundary parcel)
@@ -60,9 +75,15 @@ namespace Fields.Core
             _completedParcels++;
             saveSystem?.SaveGame();
 
+            float parcelTime = SessionState.Instance?.GetParcel(idx)?.TimeSpentSeconds ?? 0f;
+            GameEvents.FireParcelCompleted(idx, parcelTime);
+
             SteamManager.Instance?.OnParcelComplete(idx);
             if (_completedParcels >= 4)
             {
+                float totalTime = SessionState.Instance?.TotalPlaytime ?? 0f;
+                GameEvents.FireFullGameCompleted(totalTime);
+
                 SteamManager.Instance?.OnAllParcelsComplete();
                 if (endScreenRoot != null) endScreenRoot.SetActive(true);
             }

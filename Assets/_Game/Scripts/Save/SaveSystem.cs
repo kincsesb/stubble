@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using Fields.Core;
 using Fields.Economy;
 using Fields.Grass;
 using Fields.Hay;
@@ -8,26 +11,52 @@ using UnityEngine;
 namespace Fields.Save
 {
     /// <summary>
-    /// Manages save/load. Autosaves on: parcel complete / purchase / bale sold / 60s.
-    /// Data written to Application.persistentDataPath as JSON.
+    /// Versioned save/load with atomic writes, rolling backup, and background
+    /// JSON serialization. Never causes a frame hitch.
+    ///
+    /// File layout (Application.persistentDataPath):
+    ///   save_slot0.dat  — game state   (this system)
+    ///   save_slot0.bak  — rolling backup of previous successful save
+    ///   settings.json   — user settings (managed by SettingsManager, TBD)
+    ///   records.json    — personal bests (managed by RecordsManager, TBD)
+    ///
+    /// Autosave triggers: parcel complete, purchase, bale sold, every 60 s.
     /// </summary>
     public class SaveSystem : MonoBehaviour
     {
         public static SaveSystem Instance { get; private set; }
 
-        [Header("Scene references (match parcel order 0-3)")]
-        public GrassField[] grassFields = new GrassField[4];
+        [Header("Scene references — match parcel order 0-3")]
+        public GrassField[]            grassFields            = new GrassField[4];
         public HayAccumulationSystem[] hayAccumulationSystems = new HayAccumulationSystem[4];
 
-        [Header("Prefabs for world-object restore")]
-        public GameObject hayPilePrefab;
+        [Header("Prefabs for bale restoration on load")]
+        public GameObject squareBalePrefab;
+        public GameObject roundBalePrefab;
 
-        const string SAVE_FILE = "fields_save.json";
+        // ── File paths ─────────────────────────────────────────────────────── //
+        const string SAVE_FILE = "save_slot0.dat";
+        const string SAVE_TEMP = "save_slot0.tmp";
+        const string SAVE_BACK = "save_slot0.bak";
+
+        // ── Autosave ───────────────────────────────────────────────────────── //
         const float AUTOSAVE_INTERVAL = 60f;
-
         float _autosaveTimer;
 
-        // ------------------------------------------------------------------ //
+        /// <summary>True if a valid save file exists on disk.</summary>
+        public static bool HasSave =>
+            File.Exists(Path.Combine(Application.persistentDataPath, SAVE_FILE));
+
+        // ── Background save state (accessed from two threads — volatile) ───── //
+        volatile bool _saveInFlight;
+        volatile bool _saveJustCompleted;
+
+        /// <summary>Fired on the main thread when an autosave completes.</summary>
+        public static event Action OnSaveCompleted;
+
+        // ================================================================== //
+        // Lifecycle
+        // ================================================================== //
 
         void Awake()
         {
@@ -37,62 +66,100 @@ namespace Fields.Save
 
         void Start()
         {
-            // Hook autosave triggers
-            if (CurrencyManager.Instance != null)
-                CurrencyManager.Instance.OnMoneyChanged += (_, __) => TriggerAutosave("purchase");
+            HookAutosaveEvents();
         }
+
+        void OnApplicationQuit() => SaveGame();
 
         void Update()
         {
-            _autosaveTimer += Time.deltaTime;
-            if (_autosaveTimer >= AUTOSAVE_INTERVAL)
+            // Dispatch save-complete notification back on the main thread.
+            if (_saveJustCompleted)
             {
-                _autosaveTimer = 0f;
-                SaveGame();
+                _saveJustCompleted = false;
+                OnSaveCompleted?.Invoke();
+            }
+
+            // Autosave timer — only tick while gameplay is running.
+            if (Time.timeScale > 0f && !_saveInFlight)
+            {
+                _autosaveTimer += Time.deltaTime;
+                if (_autosaveTimer >= AUTOSAVE_INTERVAL)
+                {
+                    _autosaveTimer = 0f;
+                    SaveGame();
+                }
             }
         }
 
-        // ------------------------------------------------------------------ //
-        // Public API
-        // ------------------------------------------------------------------ //
+        void OnDestroy()
+        {
+            UnhookAutosaveEvents();
+        }
 
+        // ================================================================== //
+        // Public API
+        // ================================================================== //
+
+        /// <summary>
+        /// Serialise game state to disk. Serialization runs on a background
+        /// thread; only the atomic file rename touches the filesystem at the end.
+        /// Safe to call from any gameplay event — guards against stacking.
+        /// </summary>
         public void SaveGame()
         {
-            var data = BuildSaveData();
-            string json = JsonUtility.ToJson(data, prettyPrint: false);
-            string path = SavePath();
-            File.WriteAllText(path, json);
-            Fields.Core.SteamManager.Instance?.CloudSave(json); // mirror to Steam Cloud
-            Debug.Log($"[SaveSystem] Saved to {path}");
+            if (_saveInFlight) return;
+
+            SaveData data = BuildSaveData();      // must run on main thread
+            _saveInFlight = true;
+
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    string json = JsonUtility.ToJson(data, prettyPrint: false);
+                    WriteAtomic(SavePath(), TempPath(), BackupPath(), json);
+                    Fields.Core.SteamManager.Instance?.CloudSave(json);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[SaveSystem] Background save failed: {ex.Message}");
+                }
+                finally
+                {
+                    _saveInFlight     = false;
+                    _saveJustCompleted = true;
+                }
+            });
+            thread.IsBackground = true;
+            thread.Start();
         }
 
+        /// <summary>
+        /// Load and apply save data. Returns false if no valid save exists.
+        /// On version mismatch (save is newer than game), refuses to load and logs clearly.
+        /// </summary>
         public bool LoadGame()
         {
-            // Try Steam Cloud first
-            string cloudJson = Fields.Core.SteamManager.Instance?.CloudLoad();
-            string json = null;
-
-            if (!string.IsNullOrEmpty(cloudJson))
-            {
-                json = cloudJson;
-            }
-            else
-            {
-                string path = SavePath();
-                if (!File.Exists(path)) return false;
-                json = File.ReadAllText(path);
-            }
+            string json = TryReadSave();
+            if (string.IsNullOrEmpty(json)) return false;
 
             SaveData data;
             try { data = JsonUtility.FromJson<SaveData>(json); }
-            catch { Debug.LogWarning("[SaveSystem] Failed to parse save file."); return false; }
-
-            if (data.version != 1)
+            catch (Exception ex)
             {
-                Debug.LogWarning($"[SaveSystem] Unknown save version {data.version}.");
+                Debug.LogWarning($"[SaveSystem] Save parse failed: {ex.Message}. Trying backup.");
+                return TryLoadBackup();
+            }
+
+            int detected = DetectVersion(data);
+            if (detected > SaveData.CURRENT_VERSION)
+            {
+                Debug.LogError($"[SaveSystem] Save is version {detected} but game only supports up to {SaveData.CURRENT_VERSION}. Cannot load — please update the game.");
                 return false;
             }
 
+            RunMigrations(data, detected);
             ApplySaveData(data);
             return true;
         }
@@ -103,40 +170,46 @@ namespace Fields.Save
             if (File.Exists(path)) File.Delete(path);
         }
 
-        // ------------------------------------------------------------------ //
-        // Internal
-        // ------------------------------------------------------------------ //
+        // ================================================================== //
+        // Build
+        // ================================================================== //
 
         SaveData BuildSaveData()
         {
             var cm = CurrencyManager.Instance;
             var um = ToolUnlockManager.Instance;
             var pm = ParcelManager.Instance;
-            var bm = Fields.Economy.BalerManager.Instance;
+            var bm = BalerManager.Instance;
+            var ss = SessionState.Instance;
 
             var data = new SaveData
             {
-                money = cm != null ? cm.Money : 0,
-                toolsOwned = um != null ? um.GetOwnedArray() : new bool[5],
-                toolUpgradeLevels = um != null ? um.GetLevelsArray() : new int[5],
-                parcelsUnlocked = pm != null ? pm.GetUnlockedArray() : new bool[4],
-                roundBalerOwned = bm != null && bm.GetRoundBalerOwned(),
+                schemaVersion   = SaveData.CURRENT_VERSION,
+                saveTimestamp   = DateTime.UtcNow.ToString("o"),
+                totalPlaytime   = ss != null ? ss.TotalPlaytime : 0f,
+                isMultiplayerSave = ss != null && ss.IsMultiplayer,
+
+                money              = cm != null ? cm.Money : 0,
+                toolsOwned         = um != null ? um.GetOwnedArray()  : new bool[5],
+                toolUpgradeLevels  = um != null ? um.GetLevelsArray() : new int[5],
+                parcelsUnlocked    = pm != null ? pm.GetUnlockedArray() : new bool[4],
+                roundBalerOwned    = bm != null && bm.GetRoundBalerOwned(),
                 balerUpgradeLevels = bm != null ? bm.GetLevels() : new int[3],
             };
 
-            // Grass + hay grids
+            // ── Fields: cut grid + hay grid ──────────────────────────────── //
             data.fields = new FieldSaveData[grassFields.Length];
             for (int i = 0; i < grassFields.Length; i++)
             {
                 var gf = grassFields[i];
                 if (gf == null) continue;
-                var grid = gf.GetCutGrid();
+
                 var fd = new FieldSaveData
                 {
                     parcelIndex = i,
                     gridCols    = gf.GridCols,
                     gridRows    = gf.GridRows,
-                    cutGridRLE  = RLEEncoder.Encode(grid, gf.GridCols, gf.GridRows)
+                    cutGridRLE  = RLEEncoder.Encode(gf.GetCutGrid(), gf.GridCols, gf.GridRows)
                 };
 
                 var hay = i < hayAccumulationSystems.Length ? hayAccumulationSystems[i] : null;
@@ -152,62 +225,123 @@ namespace Fields.Save
                         for (int c = 0; c < cols; c++)
                             fd.hayGrid[c + r * cols] = hayGrid[c, r];
                 }
-
                 data.fields[i] = fd;
             }
 
-            // Save loose hay piles (not carried)
-            var allPiles = Object.FindObjectsByType<HayPile>(FindObjectsSortMode.None);
-            var pileList = new System.Collections.Generic.List<HayPileSaveData>();
-            foreach (var pile in allPiles)
-            {
-                if (pile.IsCarried) continue;
-                var pos = pile.transform.position;
-                pileList.Add(new HayPileSaveData
-                {
-                    posX = pos.x, posY = pos.y, posZ = pos.z,
-                    hayUnits = (int)pile.HayUnits
-                });
-            }
-            data.hayPiles = pileList.ToArray();
+            // ── Bales: all world bales not currently carried ─────────────── //
+            data.bales = BuildBaleSaveData();
+
+            // ── Statistics ───────────────────────────────────────────────── //
+            data.playerStats = BuildPlayerStats(ss);
+            data.parcelStats = BuildParcelStats(ss);
 
             return data;
         }
+
+        static BaleSaveData[] BuildBaleSaveData()
+        {
+            var list = new List<BaleSaveData>();
+
+            foreach (var sq in UnityEngine.Object.FindObjectsByType<SquareBale>(FindObjectsSortMode.None))
+            {
+                if (sq.IsCarried) continue;  // carried bales re-form on next baling session
+                var t = sq.transform;
+                list.Add(new BaleSaveData
+                {
+                    posX = t.position.x, posY = t.position.y, posZ = t.position.z,
+                    rotX = t.rotation.x, rotY = t.rotation.y,
+                    rotZ = t.rotation.z, rotW = t.rotation.w,
+                    isRound            = false,
+                    hayUnits           = sq.HayUnits,
+                    originParcelIndex  = sq.OriginParcelIndex,
+                });
+            }
+
+            foreach (var rb in UnityEngine.Object.FindObjectsByType<RoundBale>(FindObjectsSortMode.None))
+            {
+                var t = rb.transform;
+                list.Add(new BaleSaveData
+                {
+                    posX = t.position.x, posY = t.position.y, posZ = t.position.z,
+                    rotX = t.rotation.x, rotY = t.rotation.y,
+                    rotZ = t.rotation.z, rotW = t.rotation.w,
+                    isRound           = true,
+                    hayUnits          = rb.HayUnits,
+                    originParcelIndex = 0,  // round bales don't carry origin yet
+                });
+            }
+
+            return list.ToArray();
+        }
+
+        static PlayerSaveStats[] BuildPlayerStats(SessionState ss)
+        {
+            if (ss == null) return new PlayerSaveStats[1] { new PlayerSaveStats { playerId = 0 } };
+            var stats = new PlayerSaveStats[ss.PlayerCount];
+            for (int i = 0; i < ss.PlayerCount; i++)
+            {
+                var p = ss.GetPlayer(i);
+                stats[i] = p == null ? new PlayerSaveStats { playerId = i } : new PlayerSaveStats
+                {
+                    playerId           = p.PlayerId,
+                    areaCutCells       = p.AreaCutCells,
+                    hayPilesCollected  = p.HayPilesCollected,
+                    squareBalesMade    = p.SquareBalesMade,
+                    roundBalesMade     = p.RoundBalesMade,
+                    moneyEarned        = p.MoneyEarned,
+                    moneySpent         = p.MoneySpent,
+                    totalSwings        = p.TotalSwings,
+                    distanceTravelledM = p.DistanceTravelledM,
+                    playtimeSeconds    = p.PlaytimeSeconds,
+                };
+            }
+            return stats;
+        }
+
+        static ParcelSaveStats[] BuildParcelStats(SessionState ss)
+        {
+            var stats = new ParcelSaveStats[4];
+            for (int i = 0; i < 4; i++)
+            {
+                var p = ss?.GetParcel(i);
+                stats[i] = p == null ? new ParcelSaveStats { parcelIndex = i } : new ParcelSaveStats
+                {
+                    parcelIndex        = i,
+                    areaCutCells       = p.AreaCutCells,
+                    hayPilesSpawned    = p.HayPilesSpawned,
+                    hayPilesCollected  = p.HayPilesCollected,
+                    squareBalesMade    = p.SquareBalesMade,
+                    roundBalesMade     = p.RoundBalesMade,
+                    moneyEarned        = p.MoneyEarned,
+                    timeSpentSeconds   = p.TimeSpentSeconds,
+                    grassCutComplete   = p.GrassCutComplete,
+                    hayClearComplete   = p.HayClearComplete,
+                };
+            }
+            return stats;
+        }
+
+        // ================================================================== //
+        // Apply
+        // ================================================================== //
 
         void ApplySaveData(SaveData data)
         {
             CurrencyManager.Instance?.SetMoney(data.money);
             ToolUnlockManager.Instance?.LoadState(data.toolsOwned, data.toolUpgradeLevels);
             ParcelManager.Instance?.LoadState(data.parcelsUnlocked);
-            Fields.Economy.BalerManager.Instance?.LoadState(data.roundBalerOwned, data.balerUpgradeLevels);
+            BalerManager.Instance?.LoadState(data.roundBalerOwned, data.balerUpgradeLevels);
 
-            // Restore hay piles — destroy any existing loose ones first to avoid duplicates
-            foreach (var pile in Object.FindObjectsByType<HayPile>(FindObjectsSortMode.None))
-                if (!pile.IsCarried) Object.Destroy(pile.gameObject);
-
-            if (data.hayPiles != null && hayPilePrefab != null)
-            {
-                foreach (var ps in data.hayPiles)
-                {
-                    var go = Object.Instantiate(hayPilePrefab,
-                        new Vector3(ps.posX, ps.posY, ps.posZ), Quaternion.identity);
-                    if (go.GetComponent<HayPile>() is HayPile hp)
-                        hp.hayUnits = ps.hayUnits;
-                }
-            }
-
+            // Fields
             for (int i = 0; i < grassFields.Length; i++)
             {
                 if (data.fields == null || i >= data.fields.Length) continue;
                 var fd = data.fields[i];
                 if (fd == null) continue;
 
-                var gf = i < grassFields.Length ? grassFields[i] : null;
+                var gf = grassFields[i];
                 if (gf != null && fd.cutGridRLE != null)
-                {
-                    var grid = RLEEncoder.Decode(fd.cutGridRLE, fd.gridCols, fd.gridRows);
-                    gf.LoadCutGrid(grid);
-                }
+                    gf.LoadCutGrid(RLEEncoder.Decode(fd.cutGridRLE, fd.gridCols, fd.gridRows));
 
                 var hay = i < hayAccumulationSystems.Length ? hayAccumulationSystems[i] : null;
                 if (hay != null && fd.hayGrid != null && fd.hayCollCols > 0 && fd.hayCollRows > 0)
@@ -220,15 +354,246 @@ namespace Fields.Save
                     hay.LoadHayGrid(hayGrid);
                 }
             }
+
+            // Bales
+            if (data.bales != null)
+                foreach (var bd in data.bales)
+                    SpawnBale(bd);
+
+            // Statistics → SessionState
+            var ss = SessionState.Instance;
+            if (ss != null)
+            {
+                if (data.playerStats != null)
+                    foreach (var ps in data.playerStats)
+                    {
+                        var p = ss.GetPlayer(ps.playerId);
+                        if (p == null) continue;
+                        p.AreaCutCells      = ps.areaCutCells;
+                        p.HayPilesCollected = ps.hayPilesCollected;
+                        p.SquareBalesMade   = ps.squareBalesMade;
+                        p.RoundBalesMade    = ps.roundBalesMade;
+                        p.MoneyEarned       = ps.moneyEarned;
+                        p.MoneySpent        = ps.moneySpent;
+                        p.TotalSwings       = ps.totalSwings;
+                        p.DistanceTravelledM = ps.distanceTravelledM;
+                        p.PlaytimeSeconds   = ps.playtimeSeconds;
+                    }
+
+                if (data.parcelStats != null)
+                    foreach (var ps in data.parcelStats)
+                    {
+                        var p = ss.GetParcel(ps.parcelIndex);
+                        if (p == null) continue;
+                        p.AreaCutCells      = ps.areaCutCells;
+                        p.HayPilesSpawned   = ps.hayPilesSpawned;
+                        p.HayPilesCollected = ps.hayPilesCollected;
+                        p.SquareBalesMade   = ps.squareBalesMade;
+                        p.RoundBalesMade    = ps.roundBalesMade;
+                        p.MoneyEarned       = ps.moneyEarned;
+                        p.TimeSpentSeconds  = ps.timeSpentSeconds;
+                        p.GrassCutComplete  = ps.grassCutComplete;
+                        p.HayClearComplete  = ps.hayClearComplete;
+                    }
+            }
         }
 
-        void TriggerAutosave(string reason)
+        void SpawnBale(BaleSaveData bd)
+        {
+            var prefab = bd.isRound ? roundBalePrefab : squareBalePrefab;
+            if (prefab == null) return;
+
+            var pos = new Vector3(bd.posX, bd.posY, bd.posZ);
+            var rot = new Quaternion(bd.rotX, bd.rotY, bd.rotZ, bd.rotW);
+            var go  = Instantiate(prefab, pos, rot);
+
+            if (!bd.isRound)
+            {
+                var sq = go.GetComponent<SquareBale>();
+                if (sq != null)
+                {
+                    sq.hayUnits          = bd.hayUnits;
+                    sq.OriginParcelIndex = bd.originParcelIndex;
+                }
+            }
+            else
+            {
+                var rb = go.GetComponent<RoundBale>();
+                if (rb != null) rb.hayUnits = bd.hayUnits;
+            }
+        }
+
+        // ================================================================== //
+        // Migration
+        // ================================================================== //
+
+        static int DetectVersion(SaveData data)
+        {
+            if (data.schemaVersion > 0) return data.schemaVersion;
+            if (data.version       > 0) return data.version;
+            return 0;
+        }
+
+        static void RunMigrations(SaveData data, int fromVersion)
+        {
+            if (fromVersion < 2) MigrateV1ToV2(data);
+            // Future: if (fromVersion < 3) MigrateV2ToV3(data);
+        }
+
+        /// <summary>
+        /// Migrate a v1 save in-place.
+        /// Rules: never lose existing data; derive what we can; zero the rest.
+        /// All existing money is attributed to player 0.
+        ///
+        /// Unit-testable: pass a synthetic SaveData with version=1 and assert
+        /// schemaVersion==2 and parcelStats[i].areaCutCells > 0 after calling this.
+        /// </summary>
+        internal static void MigrateV1ToV2(SaveData data)
+        {
+            // ── Player stats ──────────────────────────────────────────────── //
+            data.playerStats = new PlayerSaveStats[1];
+            data.playerStats[0] = new PlayerSaveStats
+            {
+                playerId    = 0,
+                moneyEarned = data.money,  // best-effort: attribute all money to p0
+            };
+
+            // ── Parcel stats — derive area cut from existing RLE grids ────── //
+            data.parcelStats = new ParcelSaveStats[4];
+            long totalCutCells = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                data.parcelStats[i] = new ParcelSaveStats { parcelIndex = i };
+                if (data.fields == null || i >= data.fields.Length) continue;
+                var fd = data.fields[i];
+                if (fd?.cutGridRLE == null || fd.gridCols == 0 || fd.gridRows == 0) continue;
+
+                var grid = RLEEncoder.Decode(fd.cutGridRLE, fd.gridCols, fd.gridRows);
+                long cut = 0;
+                for (int r = 0; r < fd.gridRows; r++)
+                    for (int c = 0; c < fd.gridCols; c++)
+                        if (!grid[c, r]) cut++;  // false = cell has been cut
+
+                data.parcelStats[i].areaCutCells = cut;
+                totalCutCells += cut;
+            }
+            data.playerStats[0].areaCutCells = totalCutCells;
+
+            // ── Stamp new version ─────────────────────────────────────────── //
+            data.schemaVersion = SaveData.CURRENT_VERSION;
+            data.version       = 0;  // clear v1 marker
+        }
+
+        // ================================================================== //
+        // Atomic file I/O
+        // ================================================================== //
+
+        /// <summary>
+        /// Write-to-temp → backup-existing → rename-over-real.
+        /// A crash mid-write leaves the temp file; the real file is intact.
+        /// </summary>
+        static void WriteAtomic(string realPath, string tempPath, string backupPath, string json)
+        {
+            // 1. Write to temp (crash here → temp is partial, real is intact)
+            File.WriteAllText(tempPath, json, System.Text.Encoding.UTF8);
+
+            // 2. Rotate existing save to backup (crash here → temp + real both exist, backup may be gone)
+            if (File.Exists(realPath))
+                File.Copy(realPath, backupPath, overwrite: true);
+
+            // 3. Atomic rename (on POSIX systems this is truly atomic; on Windows it's near-atomic)
+            if (File.Exists(realPath)) File.Delete(realPath);
+            File.Move(tempPath, realPath);
+        }
+
+        // ================================================================== //
+        // Load helpers
+        // ================================================================== //
+
+        string TryReadSave()
+        {
+            // Steam Cloud first
+            string cloud = Fields.Core.SteamManager.Instance?.CloudLoad();
+            if (!string.IsNullOrEmpty(cloud)) return cloud;
+
+            string path = SavePath();
+            if (File.Exists(path))
+            {
+                try { return File.ReadAllText(path, System.Text.Encoding.UTF8); }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[SaveSystem] Cannot read save: {ex.Message}. Trying backup.");
+                }
+            }
+            return null;
+        }
+
+        bool TryLoadBackup()
+        {
+            string backupPath = BackupPath();
+            if (!File.Exists(backupPath))
+            {
+                Debug.Log("[SaveSystem] No backup found.");
+                return false;
+            }
+
+            string json;
+            try { json = File.ReadAllText(backupPath, System.Text.Encoding.UTF8); }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SaveSystem] Backup also unreadable: {ex.Message}");
+                return false;
+            }
+
+            SaveData data;
+            try { data = JsonUtility.FromJson<SaveData>(json); }
+            catch
+            {
+                Debug.LogError("[SaveSystem] Backup is corrupt.");
+                return false;
+            }
+
+            Debug.LogWarning("[SaveSystem] Loaded from backup save.");
+            int detected = DetectVersion(data);
+            RunMigrations(data, detected);
+            ApplySaveData(data);
+            return true;
+        }
+
+        // ================================================================== //
+        // Autosave event wiring
+        // ================================================================== //
+
+        void HookAutosaveEvents()
+        {
+            GameEvents.OnBaleSold      += OnBaleSoldForSave;
+            GameEvents.OnToolPurchased += OnToolPurchasedForSave;
+            GameEvents.OnParcelUnlocked += OnParcelUnlockedForSave;
+        }
+
+        void UnhookAutosaveEvents()
+        {
+            GameEvents.OnBaleSold       -= OnBaleSoldForSave;
+            GameEvents.OnToolPurchased  -= OnToolPurchasedForSave;
+            GameEvents.OnParcelUnlocked -= OnParcelUnlockedForSave;
+        }
+
+        void OnBaleSoldForSave(int _, int __, int ___) => TriggerAutosave();
+        void OnToolPurchasedForSave(int _, int __)     => TriggerAutosave();
+        void OnParcelUnlockedForSave(int _, int __)    => TriggerAutosave();
+
+        void TriggerAutosave()
         {
             _autosaveTimer = 0f;
             SaveGame();
         }
 
-        static string SavePath() =>
-            Path.Combine(Application.persistentDataPath, SAVE_FILE);
+        // ================================================================== //
+        // Paths
+        // ================================================================== //
+
+        static string SavePath()   => Path.Combine(Application.persistentDataPath, SAVE_FILE);
+        static string TempPath()   => Path.Combine(Application.persistentDataPath, SAVE_TEMP);
+        static string BackupPath() => Path.Combine(Application.persistentDataPath, SAVE_BACK);
     }
 }

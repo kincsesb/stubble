@@ -16,8 +16,6 @@ namespace Fields.Network
         public Transform[] spawnPoints;
         [Tooltip("Bale prefab used by EconomyNetSync when a client requests a bale spawn")]
         public GameObject balePrefab;
-        [Tooltip("HayPile prefab used by EconomyNetSync when a client requests a hay spawn")]
-        public GameObject hayPilePrefab;
 
         int _spawnIndex;
 
@@ -35,6 +33,7 @@ namespace Fields.Network
             {
                 var kcp = GetComponent<KcpTransport>() ?? gameObject.AddComponent<KcpTransport>();
                 Transport.active = kcp;
+                autoCreatePlayer = false; // scene already has the player GO; don't spawn a second one
                 StartHost();
             }
         }

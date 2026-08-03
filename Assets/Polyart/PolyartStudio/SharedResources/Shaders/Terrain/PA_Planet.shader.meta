@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 31140191d0629c242b9fdc6a9a5f29f0
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 244797
+  packageName: Dreamscape Village - Stylized Fantasy Open World
+  packageVersion: 1.1
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Terrain/PA_Planet.shader
+  uploadId: 850980

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: e4daef2b1647b674d85de0d710e0f877
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 244797
+  packageName: Dreamscape Village - Stylized Fantasy Open World
+  packageVersion: 1.1
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Scripts/Gameplay/SimpleAI/StateMachine/States/NPCIdleState.cs
+  uploadId: 850980

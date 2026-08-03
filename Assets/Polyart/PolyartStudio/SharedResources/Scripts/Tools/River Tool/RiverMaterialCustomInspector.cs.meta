@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: dfbc2c9c39af1524e8e180dc1a767102
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 244797
+  packageName: Dreamscape Village - Stylized Fantasy Open World
+  packageVersion: 1.1
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Scripts/Tools/River Tool/RiverMaterialCustomInspector.cs
+  uploadId: 850980

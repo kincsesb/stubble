@@ -47,42 +47,20 @@ namespace Fields.Economy
         int SellBales(PlayerController player)
         {
             if (player.CarriedBaleCount == 0) return 0;
-
             float multiplier = GetParcelMultiplier();
-            int total = 0;
-
-            // Sell square bales
-            total += SellSquareBales(player, multiplier);
-
-            // Sell hay piles (legacy carry path)
-            total += SellHayPiles(player, multiplier);
-
-            return total;
-        }
-
-        int SellSquareBales(PlayerController player, float multiplier)
-        {
-            // Collect bales before dropping (DropSquareBales destroys carry refs)
             var bales = player.GetCarriedSquareBales();
             int earned = 0;
             foreach (var bale in bales)
-                earned += Mathf.RoundToInt(bale.HayUnits * hayUnitValue * multiplier);
+            {
+                int value = Mathf.RoundToInt(bale.HayUnits * hayUnitValue * multiplier);
+                earned += value;
+                // Attribute revenue to the parcel the hay was CUT in, not the stand's parcel.
+                Fields.Core.GameEvents.FireBaleSold(bale.OriginParcelIndex, 0, value);
+            }
 
-            player.DropSquareBales(); // physically drop then destroy
+            player.DropSquareBales();
             foreach (var bale in bales)
                 if (bale != null) Object.Destroy(bale.gameObject);
-
-            return earned;
-        }
-
-        int SellHayPiles(PlayerController player, float multiplier)
-        {
-            int earned = 0;
-            int count = player.CarriedBaleCount; // remaining hay piles
-            for (int i = 0; i < count; i++)
-                earned += Mathf.RoundToInt(60 * hayUnitValue * multiplier);
-
-            player.DropAllHayPiles(destroy: true);
             return earned;
         }
 

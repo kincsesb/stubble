@@ -16,6 +16,8 @@ namespace Fields.Grass
         public GameConfig config;
         [Tooltip("World-space size of this field (X = width, Y = height)")]
         public Vector2 fieldSize = new Vector2(30f, 40f);
+        [Tooltip("Parcel index (0-3) — must match ParcelData.parcelIndex")]
+        public int parcelIndex = 0;
         [Tooltip("RT resolution: 1024 or 2048")]
         public int renderTextureSize = 1024;
 
@@ -211,6 +213,8 @@ namespace Fields.Grass
             _cutGrid[col, row] = false;
             _cutCount++;
             OnCellCut?.Invoke(col, row);
+            float cellArea = config != null ? config.gridCellSize * config.gridCellSize : 0.16f;
+            Fields.Core.GameEvents.FireGridCellCut(parcelIndex, 0, cellArea);
         }
 
         void DrawCircleToRT(Vector2 centerUV, float uvRadius)

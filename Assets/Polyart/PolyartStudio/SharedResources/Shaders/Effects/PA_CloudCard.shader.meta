@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: bad99357129d4804998ec89c28f1934d
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  preprocessorOverride: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 244797
+  packageName: Dreamscape Village - Stylized Fantasy Open World
+  packageVersion: 1.1
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Effects/PA_CloudCard.shader
+  uploadId: 850980

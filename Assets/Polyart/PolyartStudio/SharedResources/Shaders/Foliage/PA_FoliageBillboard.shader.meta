@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 76f9dd3272bbd644a86c2be2dc57cf63
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 244797
+  packageName: Dreamscape Village - Stylized Fantasy Open World
+  packageVersion: 1.1
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Foliage/PA_FoliageBillboard.shader
+  uploadId: 850980

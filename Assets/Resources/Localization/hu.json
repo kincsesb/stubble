@@ -46,6 +46,17 @@
     { "key": "a11y.cb.none",     "value": "Nincs" },
     { "key": "a11y.cb.deut",     "value": "Deuteranópia" },
     { "key": "a11y.cb.prot",     "value": "Protanópia" },
-    { "key": "a11y.cb.trit",     "value": "Tritanópia" }
+    { "key": "a11y.cb.trit",          "value": "Tritanópia" },
+    { "key": "settings.tab.display",       "value": "Megjelenítés" },
+    { "key": "settings.tab.audio",         "value": "Hang" },
+    { "key": "settings.tab.controls",      "value": "Irányítás" },
+    { "key": "settings.tab.accessibility", "value": "Akadálymentesség" },
+    { "key": "settings.tab.language",      "value": "Nyelv" },
+    { "key": "settings.wm.fullscreen",     "value": "Teljes képernyő" },
+    { "key": "settings.wm.borderless",     "value": "Keret nélküli" },
+    { "key": "settings.wm.windowed",       "value": "Ablakos" },
+    { "key": "settings.quality.low",       "value": "Alacsony" },
+    { "key": "settings.quality.medium",    "value": "Közepes" },
+    { "key": "settings.quality.high",      "value": "Magas" }
   ]
 }

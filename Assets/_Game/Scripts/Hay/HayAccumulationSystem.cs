@@ -37,12 +37,6 @@ namespace Fields.Hay
 
         public event Action<Vector3, float> OnHayPileSpawned; // worldPos, leftover
 
-        /// <summary>
-        /// Co-op hook: set by EconomyNetSync on non-host clients.
-        /// Returns true → intercepted (local Instantiate suppressed; host will spawn via NetworkServer.Spawn).
-        /// </summary>
-        public System.Func<Vector3, bool> SpawnHayPileInterceptor;
-
         void Awake()
         {
             _grassField = GetComponent<GrassField>();
@@ -75,6 +69,8 @@ namespace Fields.Hay
                     _decalPhase[c, r] = -1;
         }
 
+        int _totalCutCells;
+
         void OnGrassCellCut(int gridCol, int gridRow)
         {
             // Map grass grid cell → collection cell
@@ -86,6 +82,9 @@ namespace Fields.Hay
             cr = Mathf.Clamp(cr, 0, _collRows - 1);
 
             _hayGrid[cc, cr] += 1f;
+            _totalCutCells++;
+            if (_totalCutCells % 20 == 0)
+                Debug.Log($"[Hay:{gameObject.name}] {_totalCutCells} cells cut, cell({cc},{cr}) has {_hayGrid[cc,cr]:F0}/{config.hayUnitsPerCollectionCell} units");
             UpdateDecal(cc, cr);
 
             // Only auto-spawn if a prefab is assigned; otherwise hay accumulates freely for manual baling.
@@ -104,15 +103,9 @@ namespace Fields.Hay
 
             if (hayPilePrefab != null)
             {
-                if (SpawnHayPileInterceptor != null && SpawnHayPileInterceptor(cellCenter))
-                {
-                    OnHayPileSpawned?.Invoke(cellCenter, leftover);
-                }
-                else
-                {
-                    Instantiate(hayPilePrefab, cellCenter, Quaternion.identity);
-                    OnHayPileSpawned?.Invoke(cellCenter, leftover);
-                }
+                Instantiate(hayPilePrefab, cellCenter, Quaternion.identity);
+                OnHayPileSpawned?.Invoke(cellCenter, leftover);
+                Fields.Core.GameEvents.FireHayPileSpawned(_grassField.parcelIndex, cellCenter);
             }
 
             UpdateDecal(cc, cr);

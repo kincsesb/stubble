@@ -87,6 +87,9 @@ namespace Fields.Core
         // Carry
         List<Fields.Hay.SquareBale> _carriedSquareBales = new List<Fields.Hay.SquareBale>(3);
 
+        // Current parcel (set externally by WorldBootstrap on ParcelBoundary enter/exit)
+        public int CurrentParcelIndex { get; set; } = 0;
+
         // Baling
         bool _interactHeld;
         bool _balingReady;
@@ -313,7 +316,11 @@ namespace Fields.Core
         void RegenStamina()
         {
             if (config == null) return;
-            _stamina = Mathf.Min(_stamina + config.staminaRegen * Time.deltaTime, 100f);
+            bool sprinting = _sprintHeld && _moveInput.sqrMagnitude > 0.01f && _cc.isGrounded && !IsMounted;
+            if (sprinting)
+                _stamina = Mathf.Max(0f, _stamina - config.staminaRegen * 3f * Time.deltaTime);
+            else
+                _stamina = Mathf.Min(_stamina + config.staminaRegen * Time.deltaTime, 100f);
         }
 
         // ------------------------------------------------------------------ //
@@ -421,8 +428,12 @@ namespace Fields.Core
             Vector3 spawnPos = Fields.Grass.GrassField.SnapToTerrain(transform.position + transform.forward * 1.5f);
             if (squareBalePrefab != null)
             {
-                Object.Instantiate(squareBalePrefab, spawnPos, Quaternion.identity);
-                Debug.Log($"[Baling] COMPLETE — SquareBale spawned at {spawnPos}");
+                var baleGO = Object.Instantiate(squareBalePrefab, spawnPos, Quaternion.identity);
+                var bale   = baleGO.GetComponent<Fields.Hay.SquareBale>();
+                if (bale != null) bale.OriginParcelIndex = CurrentParcelIndex;
+                Fields.Core.GameEvents.FireBaleCreated(CurrentParcelIndex, 0, isRound: false);
+                Fields.Core.GameEvents.FireHayConsumed(CurrentParcelIndex, 0);
+                Debug.Log($"[Baling] COMPLETE — SquareBale spawned at {spawnPos} (parcel {CurrentParcelIndex})");
             }
             else
                 Debug.LogError("[Baling] FAILED — squareBalePrefab is NULL!");

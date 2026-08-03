@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b0f282fb0799a4e4389f2062d2bab02a
+ComputeShaderImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 244797
+  packageName: Dreamscape Village - Stylized Fantasy Open World
+  packageVersion: 1.1
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/ComputeShaders/CloudComputeShader.compute
+  uploadId: 850980

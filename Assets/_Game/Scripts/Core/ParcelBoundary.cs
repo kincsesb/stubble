@@ -45,16 +45,6 @@ namespace Fields.Core
             if (grassField == null) return;
             if (grassField.GetCompletionPercent() < 99.9f) return;
 
-            // Check no HayPiles remain in parcel
-            var piles = FindObjectsByType<Hay.HayPile>(FindObjectsSortMode.None);
-            foreach (var pile in piles)
-            {
-                if (pile.IsCarried) continue;
-                // Check if this pile is within our bounds
-                var col = GetComponent<Collider>();
-                if (col.bounds.Contains(pile.transform.position)) return;
-            }
-
             _completed = true;
             OnParcelCompleted?.Invoke(this);
         }
@@ -66,15 +56,22 @@ namespace Fields.Core
 
         void OnTriggerEnter(Collider other)
         {
-            // Used by HUD to set activeGrassField when player enters parcel
             if (other.CompareTag("Player"))
+            {
                 OnPlayerEntered?.Invoke(this);
+                int id = parcelData != null ? parcelData.parcelIndex : 0;
+                Fields.Core.GameEvents.FireParcelEntered(id, 0);
+            }
         }
 
         void OnTriggerExit(Collider other)
         {
             if (other.CompareTag("Player"))
+            {
                 OnPlayerExited?.Invoke(this);
+                int id = parcelData != null ? parcelData.parcelIndex : 0;
+                Fields.Core.GameEvents.FireParcelExited(id, 0);
+            }
         }
 
         public event Action<ParcelBoundary> OnPlayerEntered;

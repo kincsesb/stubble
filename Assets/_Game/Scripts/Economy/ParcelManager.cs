@@ -38,6 +38,7 @@ namespace Fields.Economy
             if (!CurrencyManager.Instance.TrySpend(data.unlockCost)) return false;
             _unlocked[parcelIndex] = true;
             OnParcelUnlocked?.Invoke(parcelIndex);
+            Fields.Core.GameEvents.FireParcelUnlocked(parcelIndex, data.unlockCost);
             return true;
         }
 

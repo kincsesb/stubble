@@ -3,9 +3,15 @@ using UnityEngine;
 
 namespace Fields.Hay
 {
+    public interface IPickupable
+    {
+        bool CanPickup(Transform byPlayer);
+        void OnPickup(Transform carrier);
+        void OnDrop(Vector3 worldPosition);
+    }
+
     /// <summary>
     /// Square bale — stackable, player carries 1/2/3.
-    /// Intentionally occludes view when carrying (spec §8.1.2).
     /// Collides with player only to push, never topple (anti-pattern #7).
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
@@ -17,6 +23,9 @@ namespace Fields.Hay
         public int hayUnits = 60;
         [Tooltip("Stack index when player holds multiple (0 = bottom)")]
         public int stackIndex;
+
+        /// <summary>Parcel where the hay was cut. Set by PlayerController on spawn.</summary>
+        public int OriginParcelIndex { get; set; } = 0;
 
         Rigidbody _rb;
         bool _isCarried;

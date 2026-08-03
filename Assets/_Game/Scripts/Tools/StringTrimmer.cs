@@ -54,6 +54,13 @@ namespace Fields.Tools
             _feelController = GetComponentInParent<Fields.Feel.SwingFeelController>();
         }
 
+        public override void OnUnequip()
+        {
+            if (_engineRunning) StopEngine();
+            _primaryHeld = false;
+            base.OnUnequip();
+        }
+
         public override void OnUsePrimary(bool pressed) => _primaryHeld = pressed;
 
         protected override void Update()

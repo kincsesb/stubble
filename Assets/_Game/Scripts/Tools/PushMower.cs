@@ -40,6 +40,13 @@ namespace Fields.Tools
             _prevDeckPos = CalcDeckPos();
         }
 
+        public override void OnUnequip()
+        {
+            if (_engineRunning) StopEngine();
+            _primaryHeld = false;
+            base.OnUnequip();
+        }
+
         protected override void OnEngineStarted()
         {
             _deckEngaged = true;
