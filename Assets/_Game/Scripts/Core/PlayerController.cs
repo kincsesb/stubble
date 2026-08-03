@@ -148,11 +148,7 @@ namespace Fields.Core
         public void OnInteract(InputValue value)
         {
             _interactHeld = value.isPressed;
-            if (!value.isPressed) return;
-            // Single press: bale if ready, otherwise interact with world
-            if (_balingReady)
-                CompleteBaling();
-            else
+            if (value.isPressed && !_balingReady)
                 TryInteract();
         }
 
@@ -361,18 +357,20 @@ namespace Fields.Core
         // Baling (hold E on cut grass — accumulation-grid based)
         // ------------------------------------------------------------------ //
 
-        float _balingLogTimer;
-
         void HandleBaling()
         {
             float hayNearby = GetHayNearby();
             _balingReady = hayNearby >= balingThreshold;
 
-            _balingLogTimer += Time.deltaTime;
-            if (_balingLogTimer >= 2f)
+            if (_interactHeld && _balingReady)
             {
-                _balingLogTimer = 0f;
-                Debug.Log($"[Baling] hay={hayNearby:F0}/{balingThreshold} ready={_balingReady} pos={transform.position:F1}");
+                _balingTimer += Time.deltaTime;
+                if (_balingTimer >= balingDuration)
+                    CompleteBaling();
+            }
+            else
+            {
+                _balingTimer = 0f;
             }
         }
 
@@ -403,7 +401,7 @@ namespace Fields.Core
                     needed -= sys.ConsumeHayInRadius(transform.position, balingRadius, needed);
                 }
 
-            Vector3 spawnPos = Fields.Grass.GrassField.SnapToTerrain(transform.position);
+            Vector3 spawnPos = Fields.Grass.GrassField.SnapToTerrain(transform.position + transform.forward * 1.5f);
             if (squareBalePrefab != null)
             {
                 Object.Instantiate(squareBalePrefab, spawnPos, Quaternion.identity);
