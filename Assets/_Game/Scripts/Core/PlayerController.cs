@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Fields.Core.Data;
-using Fields.Hay;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -44,9 +43,9 @@ namespace Fields.Core
 
         [Header("Baling")]
         [Tooltip("Radius around the player to collect hay units from the accumulation grid")]
-        public float balingRadius = 6f;
+        public float balingRadius = 12f;
         [Tooltip("Minimum accumulated hay units needed to start baling")]
-        public float balingThreshold = 50f;
+        public float balingThreshold = 60f;
         [Tooltip("Seconds of holding E to produce a bale")]
         public float balingDuration = 2.5f;
         [Tooltip("SquareBale prefab spawned when baling completes")]
@@ -86,7 +85,6 @@ namespace Fields.Core
         float _stamina = 100f;
 
         // Carry
-        List<HayPile> _carriedBales = new List<HayPile>(3);
         List<Fields.Hay.SquareBale> _carriedSquareBales = new List<Fields.Hay.SquareBale>(3);
 
         // Baling
@@ -150,7 +148,12 @@ namespace Fields.Core
         public void OnInteract(InputValue value)
         {
             _interactHeld = value.isPressed;
-            if (value.isPressed) TryInteract();
+            if (!value.isPressed) return;
+            // Single press: bale if ready, otherwise interact with world
+            if (_balingReady)
+                CompleteBaling();
+            else
+                TryInteract();
         }
 
         public void OnJump(InputValue value)
@@ -160,7 +163,7 @@ namespace Fields.Core
 
         public void OnDrop(InputValue value)
         {
-            if (value.isPressed && _carriedBales.Count > 0) DropTopBale();
+            if (value.isPressed && _carriedSquareBales.Count > 0) DropSquareBales();
         }
 
         // ------------------------------------------------------------------ //
@@ -325,28 +328,11 @@ namespace Fields.Core
         // Carry
         // ------------------------------------------------------------------ //
 
-        public bool TryPickupBale(HayPile bale)
-        {
-            if (_carriedBales.Count >= 3) return false;
-            if (!bale.CanPickup(transform)) return false;
-            _carriedBales.Add(bale);
-            bale.OnPickup(toolHolder != null ? toolHolder : transform);
-            return true;
-        }
-
-        void DropTopBale()
-        {
-            if (_carriedBales.Count == 0) return;
-            var top = _carriedBales[^1];
-            _carriedBales.RemoveAt(_carriedBales.Count - 1);
-            top.OnDrop(transform.position + transform.forward * 1.2f);
-        }
-
-        public int CarriedBaleCount => _carriedBales.Count + _carriedSquareBales.Count;
+        public int CarriedBaleCount => _carriedSquareBales.Count;
 
         public bool PickupBale(Fields.Hay.SquareBale bale)
         {
-            if (_carriedSquareBales.Count + _carriedBales.Count >= 3) return false;
+            if (_carriedSquareBales.Count >= 3) return false;
             if (!bale.CanPickup(transform)) return false;
             _carriedSquareBales.Add(bale);
             bale.OnPickup(toolHolder != null ? toolHolder : transform);
@@ -356,9 +342,6 @@ namespace Fields.Core
         public List<Fields.Hay.SquareBale> GetCarriedSquareBales() =>
             new List<Fields.Hay.SquareBale>(_carriedSquareBales);
 
-        /// <summary>Called by Baler when it consumes a pile the player was carrying.</summary>
-        public void RemoveCarriedHayPile(HayPile pile) => _carriedBales.Remove(pile);
-
         public void DropSquareBales()
         {
             for (int i = _carriedSquareBales.Count - 1; i >= 0; i--)
@@ -366,17 +349,6 @@ namespace Fields.Core
                 var b = _carriedSquareBales[i];
                 _carriedSquareBales.RemoveAt(i);
                 b.OnDrop(transform.position + transform.forward * 1.2f);
-            }
-        }
-
-        public void DropAllHayPiles(bool destroy = false)
-        {
-            for (int i = _carriedBales.Count - 1; i >= 0; i--)
-            {
-                var pile = _carriedBales[i];
-                _carriedBales.RemoveAt(i);
-                if (destroy) { Object.Destroy(pile.gameObject); }
-                else { pile.OnDrop(transform.position + transform.forward * 1.2f); }
             }
         }
 
@@ -389,36 +361,33 @@ namespace Fields.Core
         // Baling (hold E on cut grass — accumulation-grid based)
         // ------------------------------------------------------------------ //
 
+        float _balingLogTimer;
+
         void HandleBaling()
         {
-            _balingReady = GetHayNearby() >= balingThreshold;
+            float hayNearby = GetHayNearby();
+            _balingReady = hayNearby >= balingThreshold;
 
-            if (!_interactHeld || !_balingReady)
+            _balingLogTimer += Time.deltaTime;
+            if (_balingLogTimer >= 2f)
             {
-                if (_balingTimer > 0f)
-                {
-                    Fields.Audio.ToolAudioManager.Instance?.StopBaler();
-                    _balingTimer = 0f;
-                }
-                return;
+                _balingLogTimer = 0f;
+                Debug.Log($"[Baling] hay={hayNearby:F0}/{balingThreshold} ready={_balingReady} pos={transform.position:F1}");
             }
-
-            if (_balingTimer == 0f)
-                Fields.Audio.ToolAudioManager.Instance?.StartBaler();
-
-            _balingTimer += Time.deltaTime;
-            if (_balingTimer >= balingDuration)
-                CompleteBaling();
         }
 
         float GetHayNearby()
         {
-            if (_hayAccumSystems == null) return 0f;
+            // GrassFields may be inactive at Start() — refresh until we find them
+            if (_hayAccumSystems == null || _hayAccumSystems.Length == 0)
+                _hayAccumSystems = Object.FindObjectsByType<Fields.Hay.HayAccumulationSystem>(FindObjectsSortMode.None);
+            if (_hayAccumSystems == null || _hayAccumSystems.Length == 0) return 0f;
             float total = 0f;
             foreach (var sys in _hayAccumSystems)
                 if (sys != null) total += sys.GetHayInRadius(transform.position, balingRadius);
             return total;
         }
+
 
         void CompleteBaling()
         {
@@ -434,18 +403,14 @@ namespace Fields.Core
                     needed -= sys.ConsumeHayInRadius(transform.position, balingRadius, needed);
                 }
 
-            // Consume any HayPile objects in radius (visual cleanup)
-            var piles = Object.FindObjectsByType<HayPile>(FindObjectsSortMode.None);
-            foreach (var p in piles)
-            {
-                if (Vector3.Distance(transform.position, p.transform.position) > balingRadius) continue;
-                if (p.IsCarried) _carriedBales.Remove(p);
-                p.ConsumeAll();
-            }
-
             Vector3 spawnPos = Fields.Grass.GrassField.SnapToTerrain(transform.position);
             if (squareBalePrefab != null)
+            {
                 Object.Instantiate(squareBalePrefab, spawnPos, Quaternion.identity);
+                Debug.Log($"[Baling] COMPLETE — SquareBale spawned at {spawnPos}");
+            }
+            else
+                Debug.LogError("[Baling] FAILED — squareBalePrefab is NULL!");
         }
 
         public bool IsBaling => _interactHeld && _balingReady;
@@ -461,7 +426,7 @@ namespace Fields.Core
             if (!Physics.Raycast(
                     cameraRoot != null ? cameraRoot.position : transform.position + Vector3.up * 1.6f,
                     cameraRoot != null ? cameraRoot.forward : transform.forward,
-                    out RaycastHit hit, 2.5f))
+                    out RaycastHit hit, 6f))
                 return;
 
             var interactable = hit.collider.GetComponentInParent<IInteractable>();

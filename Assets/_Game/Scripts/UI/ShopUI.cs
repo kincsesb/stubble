@@ -75,13 +75,26 @@ namespace Fields.UI
         {
             if (shopPanel) shopPanel.SetActive(true);
             Time.timeScale = 0f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
             ShowTab(0);
+            // Dynamic UI elements need one frame before their CanvasRenderer materials are assigned.
+            // WaitForEndOfFrame works even when timeScale=0.
+            StartCoroutine(ForceCanvasRebuildAfterFrame());
+        }
+
+        System.Collections.IEnumerator ForceCanvasRebuildAfterFrame()
+        {
+            yield return new WaitForEndOfFrame();
+            Canvas.ForceUpdateCanvases();
         }
 
         public void Close()
         {
             if (shopPanel) shopPanel.SetActive(false);
             Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
 
         // ------------------------------------------------------------------ //
@@ -98,6 +111,16 @@ namespace Fields.UI
                 case 0: BuildToolsTab();    break;
                 case 1: BuildUpgradesTab(); break;
                 case 2: BuildUnlocksTab();  break;
+            }
+
+            // Force layout rebuild so ContentSizeFitter updates height immediately
+            if (contentParent != null)
+            {
+                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(
+                    contentParent.GetComponent<RectTransform>());
+                var scroll = contentParent.GetComponentInParent<ScrollRect>();
+                if (scroll != null) scroll.verticalNormalizedPosition = 1f;
+                Debug.Log($"[ShopUI] ShowTab({tab}) built {contentParent.childCount} rows");
             }
         }
 
@@ -118,7 +141,7 @@ namespace Fields.UI
         void ClearContent()
         {
             for (int i = contentParent.childCount - 1; i >= 0; i--)
-                Destroy(contentParent.GetChild(i).gameObject);
+                DestroyImmediate(contentParent.GetChild(i).gameObject);
         }
 
         void AddMoneyHeader()
