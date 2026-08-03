@@ -34,6 +34,12 @@ namespace Fields.UI
         [Header("Baling progress")]
         [Tooltip("Assign a bar Image (fillMethod=Horizontal). Created from code if null.")]
         public Image balingBar;
+        [Tooltip("Optional background behind the baling bar.")]
+        public Image balingBarBg;
+
+        [Header("Interaction prompt")]
+        [Tooltip("TMP text for context hints. Auto-created if null.")]
+        public TextMeshProUGUI promptText;
 
         [Header("Crosshair")]
         public Image crosshair;
@@ -69,6 +75,14 @@ namespace Fields.UI
         const float FADE_DELAY = 1.5f;
         const float FADE_DURATION = 0.4f;
 
+        // Baling flash (on bale complete)
+        float _balingFlashTimer;
+        const float BALING_FLASH_DURATION = 0.7f;
+
+        // Prompt fade
+        float _promptAlpha;
+        string _lastHint;
+
         // ------------------------------------------------------------------ //
 
         void Awake()
@@ -85,24 +99,55 @@ namespace Fields.UI
                 CurrencyManager.Instance.OnMoneyChanged += OnMoneyChanged;
             }
             EnsureBalingBar();
+            EnsurePromptText();
         }
 
         void EnsureBalingBar()
         {
             if (balingBar != null) return;
-            // Build a simple progress bar above the stamina bar if none is assigned
+
+            // Dark background track
+            var bgGO = new GameObject("BalingBarBg", typeof(RectTransform), typeof(Image));
+            bgGO.transform.SetParent(transform, false);
+            var bgRT = bgGO.GetComponent<RectTransform>();
+            bgRT.anchorMin = new Vector2(0.5f, 0f);
+            bgRT.anchorMax = new Vector2(0.5f, 0f);
+            bgRT.anchoredPosition = new Vector2(0f, 78f);
+            bgRT.sizeDelta = new Vector2(360f, 20f);
+            balingBarBg = bgGO.GetComponent<Image>();
+            balingBarBg.color = new Color(0f, 0f, 0f, 0.55f);
+            bgGO.SetActive(false);
+
+            // Fill bar (child of bg)
             var go = new GameObject("BalingBar", typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(transform, false);
+            go.transform.SetParent(bgGO.transform, false);
             var rt = go.GetComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 0f);
-            rt.anchorMax = new Vector2(0.5f, 0f);
-            rt.anchoredPosition = new Vector2(0f, 78f);
-            rt.sizeDelta = new Vector2(350f, 16f);
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(2f, 2f);
+            rt.offsetMax = new Vector2(-2f, -2f);
             balingBar = go.GetComponent<Image>();
             balingBar.color = new Color(0.9f, 0.7f, 0.1f);
             balingBar.type = Image.Type.Filled;
             balingBar.fillMethod = Image.FillMethod.Horizontal;
             balingBar.fillAmount = 0f;
+        }
+
+        void EnsurePromptText()
+        {
+            if (promptText != null) return;
+            var go = new GameObject("PromptText", typeof(RectTransform), typeof(TextMeshProUGUI));
+            go.transform.SetParent(transform, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 0f);
+            rt.anchorMax = new Vector2(0.5f, 0f);
+            rt.anchoredPosition = new Vector2(0f, 108f);
+            rt.sizeDelta = new Vector2(600f, 36f);
+            promptText = go.GetComponent<TextMeshProUGUI>();
+            promptText.fontSize = 20;
+            promptText.fontStyle = TMPro.FontStyles.Bold;
+            promptText.alignment = TextAlignmentOptions.Center;
+            promptText.color = Color.white;
             go.SetActive(false);
         }
 
@@ -118,8 +163,10 @@ namespace Fields.UI
             AnimateMoney();
             UpdateCompletion();
             UpdateBaleCount();
+            UpdatePrompt();
             TickMoneyPunch();
             TickCrosshairPulse();
+            TickBalingFlash();
         }
 
         /// <summary>Called by tools when blade connects with grass.</summary>
@@ -145,18 +192,45 @@ namespace Fields.UI
                 staminaBar.color = staminaColor;
             }
 
-            // Baling progress bar: shows when hay is nearby OR actively baling
+            // Baling progress bar
             if (balingBar != null)
             {
                 bool show = player.BalingReady || player.IsBaling;
-                balingBar.gameObject.SetActive(show);
+                // Show bg + bar together
+                if (balingBarBg != null) balingBarBg.gameObject.SetActive(show);
+                else balingBar.gameObject.SetActive(show);
+
                 if (show)
                 {
-                    balingBar.fillAmount = player.BalingProgress;
-                    // Yellow-green while ready-idle, bright green while actively holding E
-                    balingBar.color = player.IsBaling
-                        ? Color.Lerp(new Color(0.9f, 0.7f, 0.1f), new Color(0.2f, 0.95f, 0.2f), player.BalingProgress)
-                        : new Color(0.9f, 0.75f, 0.1f, 0.6f); // dimmer when just ready
+                    float prog = player.BalingProgress;
+                    balingBar.fillAmount = prog;
+
+                    if (player.IsBaling)
+                    {
+                        // Pulse brightness while filling
+                        float pulse = (Mathf.Sin(Time.time * 8f) + 1f) * 0.1f;
+                        balingBar.color = Color.Lerp(
+                            new Color(0.95f, 0.70f, 0.05f),
+                            new Color(0.20f, 0.95f, 0.25f),
+                            prog) + new Color(pulse, pulse, pulse, 0f);
+
+                        // Scale bar slightly while active (feel)
+                        float scl = 1f + Mathf.Sin(Time.time * 6f) * 0.015f;
+                        if (balingBarBg != null)
+                            balingBarBg.transform.localScale = new Vector3(scl, 1f + scl * 0.03f, 1f);
+                    }
+                    else
+                    {
+                        // Ready but not baling: dim gold idle pulse
+                        float idle = (Mathf.Sin(Time.time * 1.5f) + 1f) * 0.15f;
+                        balingBar.color = new Color(0.9f, 0.75f, 0.1f, 0.4f + idle);
+                        balingBar.fillAmount = 0f;
+                        if (balingBarBg != null) balingBarBg.transform.localScale = Vector3.one;
+                    }
+                }
+                else
+                {
+                    if (balingBarBg != null) balingBarBg.transform.localScale = Vector3.one;
                 }
             }
 
@@ -279,6 +353,74 @@ namespace Fields.UI
         {
             _targetMoney = newVal;
             if (newVal > oldVal) _moneyPunchTimer = MONEY_PUNCH_DURATION;
+        }
+
+        // ------------------------------------------------------------------ //
+        // Prompt text (context hints)
+        // ------------------------------------------------------------------ //
+
+        void UpdatePrompt()
+        {
+            if (promptText == null || player == null) return;
+
+            // Flash override: bale just completed
+            if (_balingFlashTimer > 0f)
+            {
+                promptText.gameObject.SetActive(true);
+                float t = _balingFlashTimer / BALING_FLASH_DURATION;
+                float scale = 1f + Mathf.Sin(t * Mathf.PI) * 0.18f;
+                promptText.transform.localScale = Vector3.one * scale;
+                promptText.text = "✓  Bale Created!";
+                promptText.color = Color.Lerp(new Color(0.2f, 1f, 0.3f, 0f), new Color(0.2f, 1f, 0.3f, 1f), t);
+                return;
+            }
+            promptText.transform.localScale = Vector3.one;
+
+            string hint = player.GetInteractHint();
+            bool show = !string.IsNullOrEmpty(hint);
+            promptText.gameObject.SetActive(show);
+            if (!show) return;
+
+            // Smooth alpha transition when hint changes
+            if (hint != _lastHint) { _promptAlpha = 0f; _lastHint = hint; }
+            _promptAlpha = Mathf.MoveTowards(_promptAlpha, 1f, Time.deltaTime * 6f);
+
+            promptText.text = hint;
+
+            if (player.IsBaling)
+            {
+                // Green gradient as progress fills
+                promptText.color = new Color(
+                    Mathf.Lerp(1f, 0.2f, player.BalingProgress),
+                    Mathf.Lerp(0.85f, 1f, player.BalingProgress),
+                    Mathf.Lerp(0.1f, 0.3f, player.BalingProgress),
+                    _promptAlpha);
+            }
+            else if (player.BalingReady)
+            {
+                // Gold pulsing hint
+                float p = (Mathf.Sin(Time.time * 2.5f) + 1f) * 0.35f + 0.3f;
+                promptText.color = new Color(1f, 0.88f, 0.2f, _promptAlpha * p);
+            }
+            else
+            {
+                promptText.color = new Color(1f, 1f, 1f, _promptAlpha * 0.88f);
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // Baling flash (called by PlayerController.CompleteBaling)
+        // ------------------------------------------------------------------ //
+
+        public void TriggerBalingFlash()
+        {
+            _balingFlashTimer = BALING_FLASH_DURATION;
+        }
+
+        void TickBalingFlash()
+        {
+            if (_balingFlashTimer > 0f)
+                _balingFlashTimer -= Time.deltaTime;
         }
     }
 }

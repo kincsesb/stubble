@@ -91,6 +91,7 @@ namespace Fields.Core
         bool _interactHeld;
         bool _balingReady;
         float _balingTimer;
+        bool _balingRequiresFreshPress = true; // prevents auto-fire when E held before ready
         Fields.Hay.HayAccumulationSystem[] _hayAccumSystems;
 
         // Vertical velocity (gravity + jump, accumulated across frames)
@@ -148,8 +149,17 @@ namespace Fields.Core
         public void OnInteract(InputValue value)
         {
             _interactHeld = value.isPressed;
-            if (value.isPressed && !_balingReady)
-                TryInteract();
+            if (value.isPressed)
+            {
+                if (_balingReady)
+                    _balingRequiresFreshPress = false; // intentional press → allow baling
+                else
+                    TryInteract();
+            }
+            else
+            {
+                _balingRequiresFreshPress = true; // release resets: next hold must be a new press
+            }
         }
 
         public void OnJump(InputValue value)
@@ -360,12 +370,17 @@ namespace Fields.Core
         void HandleBaling()
         {
             float hayNearby = GetHayNearby();
+            bool wasReady = _balingReady;
             _balingReady = hayNearby >= balingThreshold;
 
-            if (_interactHeld && _balingReady)
+            // When readiness is lost, require a new E press next time
+            if (wasReady && !_balingReady) _balingRequiresFreshPress = true;
+
+            bool canBale = _interactHeld && _balingReady && !_balingRequiresFreshPress;
+            if (canBale)
             {
                 _balingTimer += Time.deltaTime;
-                if (_balingTimer >= balingDuration)
+                if (_balingTimer >= Mathf.Max(0.5f, balingDuration))
                     CompleteBaling();
             }
             else
@@ -390,7 +405,9 @@ namespace Fields.Core
         void CompleteBaling()
         {
             _balingTimer = 0f;
+            _balingRequiresFreshPress = true; // must re-press E for next bale
             Fields.Audio.ToolAudioManager.Instance?.StopBaler();
+            Fields.UI.HUDController.Instance?.TriggerBalingFlash();
 
             // Consume hay from accumulation grids in radius
             float needed = balingThreshold;
@@ -411,7 +428,7 @@ namespace Fields.Core
                 Debug.LogError("[Baling] FAILED — squareBalePrefab is NULL!");
         }
 
-        public bool IsBaling => _interactHeld && _balingReady;
+        public bool IsBaling => _interactHeld && _balingReady && !_balingRequiresFreshPress;
         public float BalingProgress => balingDuration > 0f ? Mathf.Clamp01(_balingTimer / balingDuration) : 0f;
         public bool BalingReady => _balingReady;
 
@@ -419,16 +436,59 @@ namespace Fields.Core
         // Interact
         // ------------------------------------------------------------------ //
 
+        // ------------------------------------------------------------------ //
+        // Interact hint (used by HUD)
+        // ------------------------------------------------------------------ //
+
+        public string GetInteractHint()
+        {
+            if (IsMounted) return string.Empty;
+            if (BalingReady)
+                return IsBaling
+                    ? $"Baling...  {Mathf.RoundToInt(BalingProgress * 100)}%  (release E to cancel)"
+                    : "Hay Making  —  Hold  [E]";
+
+            // Forward raycast for eye-level objects
+            var origin  = cameraRoot != null ? cameraRoot.position : transform.position + Vector3.up * 1.6f;
+            var forward = cameraRoot != null ? cameraRoot.forward  : transform.forward;
+            if (Physics.Raycast(origin, forward, out RaycastHit hit, 4f))
+            {
+                if (hit.collider.GetComponentInParent<Fields.Hay.SquareBale>() != null)
+                    return CarriedBaleCount < 3 ? "Pick Up Bale  —  [E]" : "Carrying max bales  (3/3)";
+                if (hit.collider.GetComponentInParent<IInteractable>() != null)
+                    return "Interact  —  [E]";
+            }
+            // Ground proximity for bales (bale at feet, player looking forward)
+            var groundFront = transform.position + forward * 2f + Vector3.up * 0.5f;
+            foreach (var col in Physics.OverlapSphere(groundFront, 1.5f))
+            {
+                if (col.GetComponentInParent<Fields.Hay.SquareBale>() != null)
+                    return CarriedBaleCount < 3 ? "Pick Up Bale  —  [E]" : "Carrying max bales  (3/3)";
+            }
+
+            if (CarriedBaleCount > 0) return "Drop Bales  —  [G]";
+            return string.Empty;
+        }
+
         void TryInteract()
         {
-            if (!Physics.Raycast(
-                    cameraRoot != null ? cameraRoot.position : transform.position + Vector3.up * 1.6f,
-                    cameraRoot != null ? cameraRoot.forward : transform.forward,
-                    out RaycastHit hit, 6f))
-                return;
+            var origin  = cameraRoot != null ? cameraRoot.position : transform.position + Vector3.up * 1.6f;
+            var forward = cameraRoot != null ? cameraRoot.forward  : transform.forward;
 
-            var interactable = hit.collider.GetComponentInParent<IInteractable>();
-            interactable?.Interact(this);
+            // Primary: eye-level forward raycast
+            if (Physics.Raycast(origin, forward, out RaycastHit hit, 4f))
+            {
+                var ia = hit.collider.GetComponentInParent<IInteractable>();
+                if (ia != null) { ia.Interact(this); return; }
+            }
+
+            // Fallback: proximity sphere in front at waist height (catches ground bales)
+            var groundFront = transform.position + forward * 2f + Vector3.up * 0.5f;
+            foreach (var col in Physics.OverlapSphere(groundFront, 1.5f))
+            {
+                var ia = col.GetComponentInParent<IInteractable>();
+                if (ia != null) { ia.Interact(this); return; }
+            }
         }
     }
 
