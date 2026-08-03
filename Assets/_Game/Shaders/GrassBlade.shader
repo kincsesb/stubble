@@ -6,6 +6,8 @@ Shader "Fields/GrassBlade"
 {
     Properties
     {
+        _MainTex     ("Grass Billboard", 2D)    = "white" {}
+        _Cutoff      ("Alpha Cutoff", Range(0,1)) = 0.35
         _GrassMask   ("Grass Mask RT", 2D)     = "white" {}
         _GrassTop    ("Grass Top Colour", Color)   = (0.42, 0.72, 0.22, 1)
         _GrassBottom ("Grass Bottom Colour", Color) = (0.28, 0.50, 0.14, 1)
@@ -18,8 +20,9 @@ Shader "Fields/GrassBlade"
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" "Queue"="Geometry" "RenderPipeline"="UniversalPipeline" }
+        Tags { "RenderType"="TransparentCutout" "Queue"="AlphaTest" "RenderPipeline"="UniversalPipeline" }
         Cull Off
+        AlphaToMask On
 
         Pass
         {
@@ -35,10 +38,13 @@ Shader "Fields/GrassBlade"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
+            TEXTURE2D(_MainTex);
+            SAMPLER(sampler_MainTex);
             TEXTURE2D(_GrassMask);
             SAMPLER(sampler_GrassMask);
 
             CBUFFER_START(UnityPerMaterial)
+                float4 _MainTex_ST;
                 float4 _GrassTop;
                 float4 _GrassBottom;
                 float4 _StubbleColor;
@@ -46,6 +52,7 @@ Shader "Fields/GrassBlade"
                 float  _StubbleFraction;
                 float  _WindStrength;
                 float  _WindSpeed;
+                float  _Cutoff;
             CBUFFER_END
 
             struct Attributes
@@ -96,6 +103,10 @@ Shader "Fields/GrassBlade"
 
             half4 frag(Varyings IN) : SV_Target
             {
+                // Billboard texture — alpha clips the grass silhouette shape
+                half4 texSample = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv);
+                clip(texSample.a - _Cutoff);
+
                 // Blade colour: gradient from bottom to top
                 half4 grassCol = lerp(_GrassBottom, _GrassTop, IN.uv.y);
 
@@ -103,6 +114,9 @@ Shader "Fields/GrassBlade"
                 float stubbleFrac = 1.0 - saturate((IN.heightFrac - _StubbleFraction)
                                          / (1.0 - _StubbleFraction));
                 half4 col = lerp(grassCol, _StubbleColor, stubbleFrac);
+
+                // Modulate with texture grayscale for natural shape detail; fade on stubble
+                col.rgb *= lerp(texSample.rgb, half3(1.0, 1.0, 1.0), stubbleFrac * 0.6);
 
                 // Flat cartoon shading — no normal maps, just a small ambient + directional
                 Light mainLight = GetMainLight();

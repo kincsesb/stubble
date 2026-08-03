@@ -17,23 +17,11 @@ namespace Fields.Hay
         public GameConfig config;
         public GameObject hayPilePrefab;
 
-        [Header("Loose Hay Decal")]
-        [Tooltip("Materials for 3 fill phases (sparse / medium / full)")]
-        public Material[] decalPhaseMaterials = new Material[3];
-        [Tooltip("Fraction at which decal advances to phase 2")]
-        public float decalPhase2Threshold = 0.33f;
-        [Tooltip("Fraction at which decal advances to phase 3")]
-        public float decalPhase3Threshold = 0.66f;
-
         GrassField _grassField;
 
         float[,] _hayGrid;
         int _collCols;
         int _collRows;
-
-        // One flat quad per collection cell, reused across phases
-        GameObject[,] _decalObjects;
-        int[,] _decalPhase; // -1 = hidden
 
         public event Action<Vector3, float> OnHayPileSpawned; // worldPos, leftover
 
@@ -62,11 +50,6 @@ namespace Fields.Hay
             _collCols = Mathf.CeilToInt(fw / config.collectionCellSize);
             _collRows = Mathf.CeilToInt(fh / config.collectionCellSize);
             _hayGrid = new float[_collCols, _collRows];
-            _decalObjects = new GameObject[_collCols, _collRows];
-            _decalPhase   = new int[_collCols, _collRows];
-            for (int r = 0; r < _collRows; r++)
-                for (int c = 0; c < _collCols; c++)
-                    _decalPhase[c, r] = -1;
         }
 
         int _totalCutCells;
@@ -85,7 +68,6 @@ namespace Fields.Hay
             _totalCutCells++;
             if (_totalCutCells % 20 == 0)
                 Debug.Log($"[Hay:{gameObject.name}] {_totalCutCells} cells cut, cell({cc},{cr}) has {_hayGrid[cc,cr]:F0}/{config.hayUnitsPerCollectionCell} units");
-            UpdateDecal(cc, cr);
 
             // Only auto-spawn if a prefab is assigned; otherwise hay accumulates freely for manual baling.
             if (hayPilePrefab != null && _hayGrid[cc, cr] >= config.hayUnitsPerCollectionCell)
@@ -107,50 +89,6 @@ namespace Fields.Hay
                 OnHayPileSpawned?.Invoke(cellCenter, leftover);
                 Fields.Core.GameEvents.FireHayPileSpawned(_grassField.parcelIndex, cellCenter);
             }
-
-            UpdateDecal(cc, cr);
-        }
-
-        void UpdateDecal(int cc, int cr)
-        {
-            float fillRatio = _hayGrid[cc, cr] / config.hayUnitsPerCollectionCell;
-
-            if (fillRatio <= 0f)
-            {
-                // Hide decal
-                if (_decalObjects[cc, cr] != null) _decalObjects[cc, cr].SetActive(false);
-                _decalPhase[cc, cr] = -1;
-                return;
-            }
-
-            int phase = fillRatio < decalPhase2Threshold ? 0 :
-                        fillRatio < decalPhase3Threshold ? 1 : 2;
-
-            if (_decalPhase[cc, cr] == phase && _decalObjects[cc, cr] != null) return;
-            _decalPhase[cc, cr] = phase;
-
-            // Create quad if it doesn't exist yet
-            if (_decalObjects[cc, cr] == null)
-            {
-                var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                go.name = $"HayDecal_{cc}_{cr}";
-                go.transform.SetParent(transform);
-                go.transform.position = CollectionCellCenter(cc, cr) + Vector3.up * 0.02f;
-                go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-                float s = config.collectionCellSize * 0.88f;
-                go.transform.localScale = new Vector3(s, s, 1f);
-                // Remove collider — it's purely visual
-                Destroy(go.GetComponent<Collider>());
-                _decalObjects[cc, cr] = go;
-            }
-
-            _decalObjects[cc, cr].SetActive(true);
-            if (decalPhaseMaterials != null && phase < decalPhaseMaterials.Length &&
-                decalPhaseMaterials[phase] != null)
-            {
-                _decalObjects[cc, cr].GetComponent<MeshRenderer>().sharedMaterial =
-                    decalPhaseMaterials[phase];
-            }
         }
 
         Vector3 CollectionCellCenter(int cc, int cr)
@@ -161,20 +99,12 @@ namespace Fields.Hay
             return transform.TransformPoint(new Vector3(lx, 0f, lz));
         }
 
-        /// <summary>Clears all accumulated hay and destroys decal visuals — used by editor reset.</summary>
+        /// <summary>Clears all accumulated hay — used by editor reset.</summary>
         public void ResetHay()
         {
             for (int r = 0; r < _collRows; r++)
                 for (int c = 0; c < _collCols; c++)
-                {
                     _hayGrid[c, r] = 0f;
-                    if (_decalObjects[c, r] != null)
-                    {
-                        Destroy(_decalObjects[c, r]);
-                        _decalObjects[c, r] = null;
-                    }
-                    _decalPhase[c, r] = -1;
-                }
         }
 
         /// <summary>
@@ -217,7 +147,6 @@ namespace Fields.Hay
                     float take = Mathf.Min(_hayGrid[c, r], maxAmount - consumed);
                     _hayGrid[c, r] -= take;
                     consumed += take;
-                    UpdateDecal(c, r);
                 }
             return consumed;
         }

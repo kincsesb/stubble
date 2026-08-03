@@ -25,9 +25,18 @@ namespace Fields.Grass
         public float lod1Distance = 20f;
         public float lod2Distance = 45f;
 
+        [Header("Terrain Layer Exclusion")]
+        [Tooltip("Layer indices where grass will NOT spawn (e.g. 1 = Village_Dirt)")]
+        public int[] excludedLayerIndices = new int[] { 1 };
+        [Tooltip("Minimum layer weight (0-1) to suppress grass")]
+        [Range(0.01f, 1f)] public float excludeThreshold = 0.5f;
+
         GrassField _grassField;
         List<GrassChunk> _chunks = new List<GrassChunk>();
         Material _matInstance; // per-terrain instance so each field binds its own RT
+
+        float[,,] _alphamap;
+        int _alphamapW, _alphamapH, _alphamapLayers;
 
         Transform _camera;
         int _lodUpdateFrame;
@@ -67,6 +76,21 @@ namespace Fields.Grass
         {
             foreach (var c in _chunks) if (c.go != null) Destroy(c.go);
             _chunks.Clear();
+
+            // Cache terrain splatmap for layer-based exclusion (CPU-side, one-time at Start)
+            _alphamap = null;
+            if (excludedLayerIndices != null && excludedLayerIndices.Length > 0)
+            {
+                var terrain = GetComponent<Terrain>();
+                if (terrain != null)
+                {
+                    var td = terrain.terrainData;
+                    _alphamapW = td.alphamapWidth;
+                    _alphamapH = td.alphamapHeight;
+                    _alphamapLayers = td.alphamapLayers;
+                    _alphamap = td.GetAlphamaps(0, 0, _alphamapW, _alphamapH);
+                }
+            }
 
             // Create one material instance per terrain with the RT already bound,
             // so all chunks inherit the correct mask without auto-copying the source material.
@@ -117,26 +141,31 @@ namespace Fields.Grass
         /// </summary>
         Mesh BuildBladeMesh(float width, float depth, float densityFraction, float originX = 0f, float originZ = 0f)
         {
-            int totalBlades = Mathf.RoundToInt(width * depth * bladeDensity * densityFraction);
-            // Cap per chunk to avoid excessive VRAM; 32-bit indices so no 65k limit
-            totalBlades = Mathf.Min(totalBlades, 30000);
+            int maxBlades = Mathf.RoundToInt(width * depth * bladeDensity * densityFraction);
+            maxBlades = Mathf.Min(maxBlades, 30000);
 
-            var verts    = new Vector3[totalBlades * 4];
-            var uvs      = new Vector2[totalBlades * 4];
-            var tris     = new int[totalBlades * 6];
-            var fieldUVs = new Vector2[totalBlades * 4];
+            var verts    = new Vector3[maxBlades * 4];
+            var uvs      = new Vector2[maxBlades * 4];
+            var tris     = new int[maxBlades * 6];
+            var fieldUVs = new Vector2[maxBlades * 4];
 
-            const float bladeHalfWidth = 0.025f;
-            const float bladeHeight    = 0.45f;
+            const float bladeHalfWidth = 0.16f;
+            const float bladeHeight    = 0.80f;
 
-            for (int i = 0; i < totalBlades; i++)
+            // Try up to 4× more positions to fill target density despite exclusion zones
+            int attempts = _alphamap != null ? maxBlades * 4 : maxBlades;
+            int placed = 0;
+
+            for (int i = 0; i < attempts && placed < maxBlades; i++)
             {
                 float rx = Random.Range(0f, width);
                 float rz = Random.Range(0f, depth);
                 float maskU = (originX + rx) / _grassField.fieldSize.x;
                 float maskV = (originZ + rz) / _grassField.fieldSize.y;
 
-                int v = i * 4;
+                if (_alphamap != null && IsOnExcludedLayer(maskU, maskV)) continue;
+
+                int v = placed * 4;
                 verts[v + 0] = new Vector3(rx - bladeHalfWidth, 0f,         rz);
                 verts[v + 1] = new Vector3(rx + bladeHalfWidth, 0f,         rz);
                 verts[v + 2] = new Vector3(rx - bladeHalfWidth, bladeHeight, rz);
@@ -150,10 +179,17 @@ namespace Fields.Grass
                 var fuv = new Vector2(maskU, maskV);
                 fieldUVs[v + 0] = fieldUVs[v + 1] = fieldUVs[v + 2] = fieldUVs[v + 3] = fuv;
 
-                int t = i * 6;
+                int t = placed * 6;
                 tris[t + 0] = v;     tris[t + 1] = v + 2; tris[t + 2] = v + 1;
                 tris[t + 3] = v + 1; tris[t + 4] = v + 2; tris[t + 5] = v + 3;
+                placed++;
             }
+
+            // Trim arrays to actual placed count
+            System.Array.Resize(ref verts,    placed * 4);
+            System.Array.Resize(ref uvs,      placed * 4);
+            System.Array.Resize(ref fieldUVs, placed * 4);
+            System.Array.Resize(ref tris,     placed * 6);
 
             var mesh = new Mesh
             {
@@ -167,6 +203,17 @@ namespace Fields.Grass
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             return mesh;
+        }
+
+        bool IsOnExcludedLayer(float u, float v)
+        {
+            int ax = Mathf.Clamp(Mathf.FloorToInt(u * _alphamapW), 0, _alphamapW - 1);
+            // Unity alphamap: first index = Z (depth), second = X (width)
+            int ay = Mathf.Clamp(Mathf.FloorToInt(v * _alphamapH), 0, _alphamapH - 1);
+            foreach (int li in excludedLayerIndices)
+                if (li < _alphamapLayers && _alphamap[ay, ax, li] > excludeThreshold)
+                    return true;
+            return false;
         }
 
         void UpdateChunkLODs()
