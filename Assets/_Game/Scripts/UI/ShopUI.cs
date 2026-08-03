@@ -55,7 +55,7 @@ namespace Fields.UI
         {
             if (tabTools)    tabTools.onClick.AddListener(() => ShowTab(0));
             if (tabUpgrades) tabUpgrades.onClick.AddListener(() => ShowTab(1));
-            if (tabUnlocks)  tabUnlocks.onClick.AddListener(() => ShowTab(2));
+            if (tabUnlocks)  tabUnlocks.gameObject.SetActive(false);
             if (closeButton) closeButton.onClick.AddListener(Close);
             if (shopPanel)   shopPanel.SetActive(false);
         }
@@ -198,6 +198,24 @@ namespace Fields.UI
                     });
                 }
             }
+
+            // Round baler
+            var bm = Fields.Economy.BalerManager.Instance;
+            if (bm?.roundBalerData != null)
+            {
+                AddSectionSeparator("Round Bálozo");
+                bool owned = bm.RoundBalerOwned;
+                int price  = bm.roundBalerData.purchaseCost;
+                string detail = owned
+                    ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] Megveve</color>"
+                    : $"$ {price}";
+                var row = AddRow(L("shop.roundbaler"), detail, owned ? string.Empty : L("shop.buy", price), owned ? -1 : price);
+                if (!owned)
+                    row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
+                    {
+                        if (bm.TryPurchaseRoundBaler()) ShowTab(0);
+                    });
+            }
         }
 
         void BuildUpgradesTab()
@@ -266,43 +284,7 @@ namespace Fields.UI
 
         void BuildUnlocksTab()
         {
-            var bm = Fields.Economy.BalerManager.Instance;
-            if (bm?.roundBalerData != null)
-            {
-                bool owned = bm.RoundBalerOwned;
-                int price  = bm.roundBalerData.purchaseCost;
-                string detail = owned
-                    ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] Megveve</color>"
-                    : $"$ {price}";
-                var row = AddRow(L("shop.roundbaler"), detail, owned ? string.Empty : L("shop.buy", price), owned ? -1 : price);
-                if (!owned)
-                    row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
-                    {
-                        if (bm.TryPurchaseRoundBaler()) ShowTab(2);
-                    });
-            }
-
-            AddSectionSeparator("Parcellák");
-
-            for (int i = 1; i < allParcels.Count; i++)
-            {
-                var data      = allParcels[i];
-                bool unlocked = _parcelMgr != null && _parcelMgr.IsUnlocked(i);
-                int price     = data.unlockCost;
-                string detail = unlocked
-                    ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] Feloldva</color>"
-                    : $"$ {price}";
-                var row = AddRow(L($"parcel.{i}.name"), detail,
-                    unlocked ? string.Empty : L("shop.unlock", price), unlocked ? -1 : price);
-                if (!unlocked)
-                {
-                    int idx = i;
-                    row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
-                    {
-                        if (_parcelMgr.TryUnlock(idx)) ShowTab(2);
-                    });
-                }
-            }
+            AddInfoRow("Nincs elérhető tartalom.");
         }
 
         // ------------------------------------------------------------------ //
