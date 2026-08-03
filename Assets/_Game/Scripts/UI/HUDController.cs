@@ -36,6 +36,8 @@ namespace Fields.UI
         public Image balingBar;
         [Tooltip("Optional background behind the baling bar.")]
         public Image balingBarBg;
+        [Tooltip("Label inside the bar showing progress %. Auto-created.")]
+        public TextMeshProUGUI balingBarLabel;
 
         [Header("Interaction prompt")]
         [Tooltip("TMP text for context hints. Auto-created if null.")]
@@ -131,6 +133,21 @@ namespace Fields.UI
             balingBar.type = Image.Type.Filled;
             balingBar.fillMethod = Image.FillMethod.Horizontal;
             balingBar.fillAmount = 0f;
+
+            // Label centered over the bar
+            var labelGO = new GameObject("BalingBarLabel", typeof(RectTransform), typeof(TextMeshProUGUI));
+            labelGO.transform.SetParent(bgGO.transform, false);
+            var lrt = labelGO.GetComponent<RectTransform>();
+            lrt.anchorMin = Vector2.zero;
+            lrt.anchorMax = Vector2.one;
+            lrt.offsetMin = Vector2.zero;
+            lrt.offsetMax = Vector2.zero;
+            balingBarLabel = labelGO.GetComponent<TextMeshProUGUI>();
+            balingBarLabel.fontSize = 13;
+            balingBarLabel.fontStyle = TMPro.FontStyles.Bold;
+            balingBarLabel.alignment = TextAlignmentOptions.Center;
+            balingBarLabel.color = new Color(1f, 1f, 1f, 0.9f);
+            balingBarLabel.text = "";
         }
 
         void EnsurePromptText()
@@ -218,6 +235,10 @@ namespace Fields.UI
                         float scl = 1f + Mathf.Sin(Time.time * 6f) * 0.015f;
                         if (balingBarBg != null)
                             balingBarBg.transform.localScale = new Vector3(scl, 1f + scl * 0.03f, 1f);
+
+                        // Progress text inside the bar
+                        if (balingBarLabel != null)
+                            balingBarLabel.text = $"Baling...  {Mathf.RoundToInt(prog * 100)}%";
                     }
                     else
                     {
@@ -226,11 +247,13 @@ namespace Fields.UI
                         balingBar.color = new Color(0.9f, 0.75f, 0.1f, 0.4f + idle);
                         balingBar.fillAmount = 0f;
                         if (balingBarBg != null) balingBarBg.transform.localScale = Vector3.one;
+                        if (balingBarLabel != null) balingBarLabel.text = "Hold  [E]  to bale";
                     }
                 }
                 else
                 {
                     if (balingBarBg != null) balingBarBg.transform.localScale = Vector3.one;
+                    if (balingBarLabel != null) balingBarLabel.text = "";
                 }
             }
 

@@ -14,13 +14,13 @@ namespace Fields.Tools
         [Header("Mower Deck")]
         public Transform deckCenter;
         [Tooltip("Deck cut width at upgrade level 0")]
-        public float baseDeckWidth = 0.5f;
+        public float baseDeckWidth = 1.2f;
         [Tooltip("Movement penalty multiplier when in uncut grass")]
         public float uncutMovePenalty = 0.80f;
 
         [Header("Running Animation")]
         [Tooltip("Handle oscillation angle while running")]
-        public float handleOscillationAngle = 0.8f;
+        public float handleOscillationAngle = 0.08f;
         [Tooltip("Oscillation frequency Hz")]
         public float oscillationHz = 12f;
 
@@ -91,7 +91,9 @@ namespace Fields.Tools
 
             Vector3 deckPos = CalcDeckPos();
 
-            if (_targetField == null) _targetField = FindNearestField(deckPos);
+            // Refresh field when player moves to a different parcel
+            if (_targetField == null || !_targetField.ContainsWorldPoint(deckPos))
+                _targetField = FindNearestField(deckPos);
 
             if (_targetField != null)
             {

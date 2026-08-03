@@ -444,9 +444,7 @@ namespace Fields.Core
         {
             if (IsMounted) return string.Empty;
             if (BalingReady)
-                return IsBaling
-                    ? $"Baling...  {Mathf.RoundToInt(BalingProgress * 100)}%  (release E to cancel)"
-                    : "Hay Making  —  Hold  [E]";
+                return IsBaling ? "Release [E] to cancel" : "Hay Making  —  Hold  [E]";
 
             // Forward raycast for eye-level objects
             var origin  = cameraRoot != null ? cameraRoot.position : transform.position + Vector3.up * 1.6f;

@@ -13,17 +13,17 @@ namespace Fields.Tools
         [Header("Trimmer")]
         public Transform headCenter;
         [Tooltip("Base cut radius at upgrade level 0")]
-        public float baseCutRadius = 0.18f;
+        public float baseCutRadius = 0.8f;
         [Tooltip("How far in front of the player the cut circle sits")]
         public float forwardReach = 0.5f;
         [Tooltip("How quickly RPM drops when bogging (0-1 per second)")]
         public float boggingRate = 0.4f;
         [Tooltip("Camera vibration amplitude while running")]
-        public float vibrationAmplitude = 0.3f;
+        public float vibrationAmplitude = 0.03f;
 
         [Header("Pendulum Animation")]
         [Tooltip("Max yaw swing each side in degrees")]
-        public float swingAngle = 38f;
+        public float swingAngle = 3.8f;
         [Tooltip("Swings per second")]
         public float swingSpeed = 2.2f;
 
@@ -69,7 +69,9 @@ namespace Fields.Tools
 
             // Cut circle in camera-forward direction, terrain-snapped
             Vector3 cutPos = CalcCutPosition();
-            if (_targetField == null) _targetField = FindNearestField(cutPos);
+            // Refresh field when player moves to a different parcel
+            if (_targetField == null || !_targetField.ContainsWorldPoint(cutPos))
+                _targetField = FindNearestField(cutPos);
 
             if (_targetField != null)
             {

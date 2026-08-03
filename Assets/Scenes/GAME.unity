@@ -2075,6 +2075,8 @@ MonoBehaviour:
   completionText: {fileID: 1063050006}
   baleCountText: {fileID: 1082834409}
   balingBar: {fileID: 0}
+  balingBarBg: {fileID: 0}
+  promptText: {fileID: 0}
   crosshair: {fileID: 1698955460}
   crosshairPulseScale: 1.4
   player: {fileID: 1277847331}
@@ -3398,11 +3400,11 @@ MonoBehaviour:
   fuelCapacity: 100
   fuelConsumptionPerSecond: 5
   headCenter: {fileID: 1248670292}
-  baseCutRadius: 0.18
+  baseCutRadius: 0.8
   forwardReach: 0.5
   boggingRate: 0.4
-  vibrationAmplitude: 0.3
-  swingAngle: 38
+  vibrationAmplitude: 0.03
+  swingAngle: 3.8
   swingSpeed: 2.2
 --- !u!1 &772379430
 GameObject:
@@ -8484,9 +8486,9 @@ MonoBehaviour:
   fuelCapacity: 100
   fuelConsumptionPerSecond: 5
   deckCenter: {fileID: 1861146431}
-  baseDeckWidth: 0.5
+  baseDeckWidth: 1.2
   uncutMovePenalty: 0.8
-  handleOscillationAngle: 2.5
+  handleOscillationAngle: 0.08
   oscillationHz: 12
   deckForwardOffset: 0.7
 --- !u!1 &1603318917
@@ -9749,6 +9751,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Hay.DeliveryZone
   pricePerBale: 50
+  ringRadius: 0
+  ringMaterial: {fileID: 0}
+  ringColorA: {r: 1, g: 0.8, b: 0.05, a: 0.65}
+  ringColorB: {r: 1, g: 1, b: 0.8, a: 1}
+  pulseSpeed: 2.5
   saleEffect: {fileID: 0}
 --- !u!65 &1887144399
 BoxCollider:
