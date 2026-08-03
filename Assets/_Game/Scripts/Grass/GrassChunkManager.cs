@@ -165,11 +165,18 @@ namespace Fields.Grass
 
                 if (_alphamap != null && IsOnExcludedLayer(maskU, maskV)) continue;
 
+                // Random Y-axis rotation so billboards face different directions
+                float angle = Random.Range(0f, Mathf.PI); // 0–180° (symmetric quad)
+                float cos = Mathf.Cos(angle);
+                float sin = Mathf.Sin(angle);
+                float ox2 = bladeHalfWidth * cos;
+                float oz2 = bladeHalfWidth * sin;
+
                 int v = placed * 4;
-                verts[v + 0] = new Vector3(rx - bladeHalfWidth, 0f,         rz);
-                verts[v + 1] = new Vector3(rx + bladeHalfWidth, 0f,         rz);
-                verts[v + 2] = new Vector3(rx - bladeHalfWidth, bladeHeight, rz);
-                verts[v + 3] = new Vector3(rx + bladeHalfWidth, bladeHeight, rz);
+                verts[v + 0] = new Vector3(rx - ox2, 0f,          rz - oz2);
+                verts[v + 1] = new Vector3(rx + ox2, 0f,          rz + oz2);
+                verts[v + 2] = new Vector3(rx - ox2, bladeHeight, rz - oz2);
+                verts[v + 3] = new Vector3(rx + ox2, bladeHeight, rz + oz2);
 
                 uvs[v + 0] = new Vector2(0f, 0f);
                 uvs[v + 1] = new Vector2(1f, 0f);
