@@ -110,7 +110,10 @@ namespace Fields.Save
         {
             if (_saveInFlight) return;
 
-            SaveData data = BuildSaveData();      // must run on main thread
+            SaveData data     = BuildSaveData(); // must run on main thread
+            string savePath   = SavePath();       // cache paths on main thread — persistentDataPath is main-thread-only
+            string tempPath   = TempPath();
+            string backupPath = BackupPath();
             _saveInFlight = true;
 
             var thread = new Thread(() =>
@@ -118,7 +121,7 @@ namespace Fields.Save
                 try
                 {
                     string json = JsonUtility.ToJson(data, prettyPrint: false);
-                    WriteAtomic(SavePath(), TempPath(), BackupPath(), json);
+                    WriteAtomic(savePath, tempPath, backupPath, json);
                     Fields.Core.SteamManager.Instance?.CloudSave(json);
                 }
                 catch (Exception ex)

@@ -472,7 +472,7 @@ MonoBehaviour:
   balingRadius: 6
   balingThreshold: 50
   balingDuration: 2.5
-  squareBalePrefab: {fileID: 6783096139266340327, guid: b7317ef437d5d44ef9c662a1f48df49a, type: 3}
+  squareBalePrefab: {fileID: 4311098249806456269, guid: 2a9dee61bd7a54850b993f728cc41291, type: 3}
   hapticSwingDuration: 0.12
   hapticSwingLow: 0.3
   hapticSwingHigh: 0.6
@@ -1995,7 +1995,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5300592807968713344}
-  - component: {fileID: 4180952531601805549}
   m_Layer: 0
   m_Name: HandSickle
   m_TagString: Untagged
@@ -2020,27 +2019,6 @@ Transform:
   - {fileID: 638311773761790398}
   m_Father: {fileID: 6436957515968759672}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4180952531601805549
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8092580608052829637}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69b1f77f4ccfa496aa8a56012c02b4ec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Fields.Tools.HandSickle
-  toolData: {fileID: 11400000, guid: 6621b9d0862384c7bbea5a951877ad44, type: 2}
-  upgradeLevel: 0
-  swingDuration: 0.55
-  animRestRotation: {x: 0, y: 0, z: 0}
-  animWindUpRotation: {x: -20, y: -50, z: 15}
-  animSweepEndRotation: {x: 15, y: 60, z: -15}
-  bladeTip: {fileID: 638311773761790398}
-  baseCutRadius: 0.25
-  arcDegrees: 120
 --- !u!1 &8583462603541044345
 GameObject:
   m_ObjectHideFlags: 0
