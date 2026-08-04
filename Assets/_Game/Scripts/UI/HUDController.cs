@@ -61,7 +61,7 @@ namespace Fields.UI
 
         // Money punch
         float _moneyPunchTimer;
-        const float MONEY_PUNCH_DURATION = 0.25f;
+        const float MONEY_PUNCH_DURATION = 0.45f;
 
         // Crosshair pulse
         float _crosshairPulseTimer;
@@ -80,6 +80,20 @@ namespace Fields.UI
 
         // Sell feel
         Canvas _floatingCanvas;
+
+        // Tool tooltip override
+        float _toolTipTimer;
+        string _toolTipText;
+        const float TOOLTIP_FADE_START = 0.4f;   // fade-out starts this many seconds before end
+
+        // Stamina low feel
+        float _staminaLowTimer;
+        const float STAMINA_LOW_PULSE = 0.6f;
+
+        // Bale drop feel
+        float _baleDropTimer;
+        const float BALE_DROP_DURATION = 0.9f;
+        string _baleDropMessage;
 
         // Prompt fade
         float _promptAlpha;
@@ -195,6 +209,8 @@ namespace Fields.UI
             TickMoneyPunch();
             TickCrosshairPulse();
             TickBalingFlash();
+            TickStaminaLow();
+            TickBaleDropFeel();
         }
 
         /// <summary>Called by tools when blade connects with grass.</summary>
@@ -223,7 +239,28 @@ namespace Fields.UI
                     Color staminaColor = stamina > 0.6f
                         ? Color.Lerp(new Color(1f, 0.75f, 0f), new Color(0.15f, 0.85f, 0.25f), (stamina - 0.6f) / 0.4f)
                         : Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.75f, 0f), stamina / 0.6f);
+                    // Critical stamina: urgent pulse
+                    if (stamina < 0.25f)
+                    {
+                        float pulse = (Mathf.Sin(Time.time * 8f) + 1f) * 0.5f;
+                        staminaColor = Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.5f, 0.1f), pulse);
+                        float scl = 1f + pulse * 0.12f;
+                        staminaBar.transform.localScale = new Vector3(scl, scl, 1f);
+                        if (stamina < 0.15f && _staminaLowTimer <= 0f)
+                    {
+                        _staminaLowTimer = STAMINA_LOW_PULSE;
+                        Fields.Feel.GameFeelController.Instance?.StartShake(0.12f, 0.012f, 20f);
+                    }
+                    }
+                    else
+                    {
+                        staminaBar.transform.localScale = Vector3.one;
+                    }
                     staminaBar.color = staminaColor;
+                }
+                else
+                {
+                    staminaBar.transform.localScale = Vector3.one;
                 }
             }
 
@@ -356,12 +393,51 @@ namespace Fields.UI
 
         void TickMoneyPunch()
         {
-            if (moneyText == null || _moneyPunchTimer <= 0f) return;
-            _moneyPunchTimer -= Time.deltaTime;
-            float t = _moneyPunchTimer / MONEY_PUNCH_DURATION;
-            // Bounce: up then back
-            float scale = 1f + Mathf.Sin(t * Mathf.PI) * 0.25f;
-            moneyText.transform.localScale = Vector3.one * scale;
+            if (moneyText == null) return;
+            if (_moneyPunchTimer > 0f)
+            {
+                _moneyPunchTimer -= Time.deltaTime;
+                float t = _moneyPunchTimer / MONEY_PUNCH_DURATION;
+                float scale = 1f + Mathf.Sin(t * Mathf.PI) * 0.45f;
+                moneyText.transform.localScale = Vector3.one * scale;
+                // Flash green on earn: bright green → white settle
+                moneyText.color = Color.Lerp(Color.white, new Color(0.25f, 1f, 0.45f), t);
+            }
+            else
+            {
+                moneyText.transform.localScale = Vector3.one;
+                moneyText.color = Color.white;
+            }
+        }
+
+        void TickStaminaLow()
+        {
+            if (_staminaLowTimer > 0f)
+                _staminaLowTimer -= Time.deltaTime;
+        }
+
+        void TickBaleDropFeel()
+        {
+            if (_baleDropTimer <= 0f) return;
+            _baleDropTimer -= Time.deltaTime;
+
+            if (promptText == null) return;
+            float t = _baleDropTimer / BALE_DROP_DURATION;
+            promptText.gameObject.SetActive(true);
+            promptText.text = _baleDropMessage;
+            float scale = 1f + Mathf.Sin(t * Mathf.PI) * 0.14f;
+            promptText.transform.localScale = Vector3.one * scale;
+            promptText.color = new Color(0.95f, 0.85f, 0.25f, Mathf.Clamp01(t * 3f));
+        }
+
+        // ------------------------------------------------------------------ //
+        // Tool tooltip
+        // ------------------------------------------------------------------ //
+
+        public void ShowToolTip(string text, float duration)
+        {
+            _toolTipText  = text;
+            _toolTipTimer = duration;
         }
 
         void TickCrosshairPulse()
@@ -394,7 +470,7 @@ namespace Fields.UI
         {
             if (promptText == null || player == null) return;
 
-            // Flash override: bale just completed
+            // Highest priority: baling flash (bale just created)
             if (_balingFlashTimer > 0f)
             {
                 promptText.gameObject.SetActive(true);
@@ -405,6 +481,24 @@ namespace Fields.UI
                 promptText.color = Color.Lerp(new Color(0.2f, 1f, 0.3f, 0f), new Color(0.2f, 1f, 0.3f, 1f), t);
                 return;
             }
+
+            // Bale drop feel (handled by TickBaleDropFeel — it owns the prompt)
+            if (_baleDropTimer > 0f) return;
+
+            // Tool tooltip override (shown after equip, fades out)
+            if (_toolTipTimer > 0f)
+            {
+                _toolTipTimer -= Time.deltaTime;
+                float alpha = _toolTipTimer < TOOLTIP_FADE_START
+                    ? _toolTipTimer / TOOLTIP_FADE_START
+                    : 1f;
+                promptText.gameObject.SetActive(true);
+                promptText.text = _toolTipText;
+                promptText.transform.localScale = Vector3.one;
+                promptText.color = new Color(0.85f, 0.95f, 1f, alpha * 0.9f);
+                return;
+            }
+
             promptText.transform.localScale = Vector3.one;
 
             string hint = player.GetInteractHint();
@@ -458,6 +552,12 @@ namespace Fields.UI
         // Sell feel — floating money popup
         // ------------------------------------------------------------------ //
 
+        public void TriggerBaleDropFeel(int baleCount)
+        {
+            _baleDropTimer   = BALE_DROP_DURATION;
+            _baleDropMessage = baleCount == 1 ? "Bála lerakva" : $"{baleCount} bála lerakva";
+        }
+
         public void TriggerSellFeel(int earned)
         {
             _moneyPunchTimer = MONEY_PUNCH_DURATION;
@@ -471,34 +571,39 @@ namespace Fields.UI
             go.transform.SetParent(_floatingCanvas.transform, false);
 
             var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            // Anchor near top-right where the money counter lives
+            rt.anchorMin = rt.anchorMax = new Vector2(0.88f, 0.90f);
             rt.anchoredPosition = new Vector2(
-                Random.Range(-60f, 60f),
-                Random.Range(-20f, 40f));
-            rt.sizeDelta = new Vector2(300f, 60f);
+                Random.Range(-30f, 30f),
+                Random.Range(-10f, 20f));
+            rt.sizeDelta = new Vector2(300f, 80f);
 
             var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.fontSize = 36;
+            tmp.fontSize = 52;
             tmp.fontStyle = FontStyles.Bold;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.text = $"+${earned}";
 
-            const float riseSpeed = 95f;
-            const float life = 1.1f;
+            const float riseSpeed = 70f;
+            const float life = 1.3f;
             float t = 0f;
 
             while (t < life)
             {
                 t += Time.unscaledDeltaTime;
                 float n = t / life;
-                float alpha = n < 0.2f
-                    ? n / 0.2f
-                    : 1f - Mathf.Pow((n - 0.2f) / 0.8f, 1.5f);
-                float scale = n < 0.15f
-                    ? Mathf.Lerp(1.4f, 1f, n / 0.15f)
+                // Flash white on spawn then shift to green
+                Color baseColor = n < 0.1f
+                    ? Color.Lerp(Color.white, new Color(0.3f, 1f, 0.45f), n / 0.1f)
+                    : new Color(0.3f, 1f, 0.45f);
+                float alpha = n < 0.15f
+                    ? n / 0.15f
+                    : 1f - Mathf.Pow((n - 0.15f) / 0.85f, 1.5f);
+                float scale = n < 0.12f
+                    ? Mathf.Lerp(1.6f, 1f, n / 0.12f)
                     : 1f;
 
-                tmp.color = new Color(0.25f, 1f, 0.45f, alpha);
+                tmp.color = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
                 go.transform.localScale = Vector3.one * scale;
                 rt.anchoredPosition += new Vector2(0f, riseSpeed * Time.unscaledDeltaTime);
                 yield return null;

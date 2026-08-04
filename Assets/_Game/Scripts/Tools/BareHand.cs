@@ -8,5 +8,6 @@ namespace Fields.Tools
     public class BareHand : BaseTool
     {
         public override void OnUsePrimary(bool pressed) { }
+        public override string ToolTip => "Üres kéz  —  Bálák felvétele [E] · Lerakás [G]";
     }
 }

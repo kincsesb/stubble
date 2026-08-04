@@ -32,6 +32,9 @@ namespace Fields.Tools
 
         public abstract void OnUsePrimary(bool pressed);
 
+        /// <summary>Short description shown in the HUD when this tool is equipped.</summary>
+        public virtual string ToolTip => string.Empty;
+
         // Stat helpers — always read from SO, never cached
         public float CurrentPower =>
             toolData != null && toolData.powerLevels.Length > upgradeLevel

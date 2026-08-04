@@ -141,7 +141,12 @@ namespace Fields.UI
             if (!_revertActive) return;
             _revertTimer -= Time.unscaledDeltaTime;
             if (revertCountdownText != null)
-                revertCountdownText.text = $"Reverting in {Mathf.CeilToInt(_revertTimer)}s…";
+            {
+                var loc = Fields.Core.LocalizationManager.Instance;
+                revertCountdownText.text = loc != null
+                    ? loc.Get("settings.revert.countdown", Mathf.CeilToInt(_revertTimer))
+                    : $"Reverting in {Mathf.CeilToInt(_revertTimer)}s…";
+            }
             if (_revertTimer <= 0f) ExecuteRevert();
         }
 

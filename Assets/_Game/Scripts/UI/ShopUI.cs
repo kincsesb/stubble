@@ -16,6 +16,8 @@ namespace Fields.UI
     {
         [Header("Panel root (set active to show/hide)")]
         public GameObject shopPanel;
+        [Tooltip("Full-screen black overlay that dims the game behind the shop panel")]
+        public GameObject dimmerOverlay;
 
         [Header("Tab buttons")]
         public Button tabTools;
@@ -57,7 +59,8 @@ namespace Fields.UI
             if (tabUpgrades) tabUpgrades.onClick.AddListener(() => ShowTab(1));
             if (tabUnlocks)  tabUnlocks.gameObject.SetActive(false);
             if (closeButton) closeButton.onClick.AddListener(Close);
-            if (shopPanel)   shopPanel.SetActive(false);
+            if (shopPanel)       shopPanel.SetActive(false);
+            if (dimmerOverlay)   dimmerOverlay.SetActive(false);
         }
 
         void Start()
@@ -88,6 +91,7 @@ namespace Fields.UI
 
         public void Open()
         {
+            if (dimmerOverlay) dimmerOverlay.SetActive(true);
             if (shopPanel) shopPanel.SetActive(true);
             Time.timeScale = 0f;
             Cursor.lockState = CursorLockMode.None;
@@ -106,6 +110,7 @@ namespace Fields.UI
 
         public void Close()
         {
+            if (dimmerOverlay) dimmerOverlay.SetActive(false);
             if (shopPanel) shopPanel.SetActive(false);
             Time.timeScale = 1f;
             Cursor.lockState = CursorLockMode.Locked;

@@ -160,6 +160,85 @@ namespace Fields.Core
             { "hint.3", "Uncut grass slows the push mower." },
             { "hint.4", "Round bales roll on slopes — use it!" },
 
+            // Main menu buttons + confirm dialogs
+            { "menu.continue",             "Continue" },
+            { "menu.newgame",              "New Game" },
+            { "menu.playwithfriends",      "Play with Friends" },
+            { "menu.settings",             "Settings" },
+            { "menu.credits",              "Credits" },
+            { "menu.quit",                 "Quit" },
+            { "menu.overwrite.header",     "New Game" },
+            { "menu.overwrite.body",       "Starting a new game will overwrite your existing save. This cannot be undone." },
+            { "menu.quit.header",          "Quit" },
+            { "menu.quit.body",            "Are you sure you want to quit?" },
+
+            // Pause menu
+            { "pause.resume",              "Resume" },
+            { "pause.journal",             "Journal" },
+            { "pause.settings",            "Settings" },
+            { "pause.quit",                "Quit" },
+            { "pause.coop_notice",         "The game continues while this menu is open." },
+
+            // Journal tabs
+            { "journal.tab.parcels",       "Parcels" },
+            { "journal.tab.statistics",    "Statistics" },
+            { "journal.tab.records",       "Records" },
+            { "journal.close",             "Close" },
+
+            // Journal statistics labels
+            { "journal.stat.areacut",      "Area Cut" },
+            { "journal.stat.hay",          "Hay Collected" },
+            { "journal.stat.squarebales",  "Square Bales" },
+            { "journal.stat.roundbales",   "Round Bales" },
+            { "journal.stat.earned",       "Money Earned" },
+            { "journal.stat.spent",        "Money Spent" },
+            { "journal.stat.distance",     "Distance" },
+            { "journal.stat.swings",       "Swings" },
+            { "journal.stat.playtime",     "Playtime" },
+            { "journal.stat.wallet",       "Wallet" },
+            { "journal.stat.parcels",      "Parcels Completed" },
+            { "journal.stat.overall",      "Overall Completion" },
+            { "journal.stat.totaltime",    "Total Playtime" },
+
+            // Journal records labels
+            { "journal.rec.fastest0",      "Home Field" },
+            { "journal.rec.fastest1",      "East Meadow" },
+            { "journal.rec.fastest2",      "Hillside" },
+            { "journal.rec.fastest3",      "South Plateau" },
+            { "journal.rec.area",          "Largest Area" },
+            { "journal.rec.bales",         "Most Bales Delivered" },
+            { "journal.rec.streak",        "Longest Streak" },
+            { "journal.rec.fullgame",      "Full Game Completion" },
+
+            // Settings display labels
+            { "settings.display.fov",      "Field of View" },
+            { "settings.display.wm",       "Window Mode" },
+            { "settings.display.quality",  "Quality" },
+            { "settings.display.vsync",    "V-Sync" },
+            { "settings.display.framecap", "Frame Cap" },
+            { "settings.audio.master",     "Master" },
+            { "settings.audio.tools",      "Tools" },
+            { "settings.audio.world",      "World" },
+            { "settings.audio.ambience",   "Ambience" },
+            { "settings.audio.ui",         "UI" },
+            { "settings.controls.sensx",   "Mouse Sensitivity X" },
+            { "settings.controls.sensy",   "Mouse Sensitivity Y" },
+            { "settings.controls.inverty", "Invert Y" },
+            { "settings.controls.gpsens",  "Gamepad Sensitivity" },
+            { "settings.controls.gpdead",  "Gamepad Deadzone" },
+            { "settings.controls.tooluse", "Tool Use" },
+            { "settings.controls.sprint",  "Sprint" },
+            { "settings.controls.hold",    "Hold" },
+            { "settings.controls.toggle",  "Toggle" },
+            { "settings.controls.rebinds", "Reset Rebinds" },
+            { "settings.revert.countdown", "Reverting in {0}s…" },
+            { "settings.revert.confirm",   "Keep Settings" },
+
+            // Confirm modal buttons
+            { "confirm.ok",     "Confirm" },
+            { "confirm.cancel", "Cancel" },
+            { "credits.close",  "Close" },
+
             // Accessibility menu
             { "a11y.title",       "Accessibility" },
             { "a11y.fov",         "Field of View: {0}°" },

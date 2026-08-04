@@ -62,6 +62,7 @@ namespace Fields.Core
         // Components
         CharacterController _cc;
         Camera _camera;
+        Fields.Tools.ToolHolder _toolHolder;
 
         // Input state
         Vector2 _moveInput;
@@ -95,6 +96,7 @@ namespace Fields.Core
         bool _balingReady;
         float _balingTimer;
         bool _balingRequiresFreshPress = true; // prevents auto-fire when E held before ready
+        bool _balingActive;                     // tracks baling-in-progress to detect start transition
         Fields.Hay.HayAccumulationSystem[] _hayAccumSystems;
 
         // Vertical velocity (gravity + jump, accumulated across frames)
@@ -126,6 +128,7 @@ namespace Fields.Core
             Cursor.visible = false;
             if (_camera != null) _camera.fieldOfView = baseFOV;
             _hayAccumSystems = Object.FindObjectsByType<Fields.Hay.HayAccumulationSystem>(FindObjectsSortMode.None);
+            _toolHolder = GetComponentInChildren<Fields.Tools.ToolHolder>(true);
         }
 
         void Update()
@@ -207,7 +210,9 @@ namespace Fields.Core
         void HandleMovement()
         {
             if (IsMounted) return;
-            bool moving = _moveInput.sqrMagnitude > 0.01f && _cc.isGrounded;
+            // Block WASD movement while baling; keep gravity + jump ticking normally
+            Vector2 moveInput = IsBaling ? Vector2.zero : _moveInput;
+            bool moving = moveInput.sqrMagnitude > 0.01f && _cc.isGrounded;
             bool running = moving && _sprintHeld;
             var audio = Fields.Audio.ToolAudioManager.Instance;
             if (audio != null)
@@ -230,7 +235,7 @@ namespace Fields.Core
             }
 
             Vector3 move = transform.TransformDirection(
-                new Vector3(_moveInput.x, 0f, _moveInput.y)) * targetSpeed;
+                new Vector3(moveInput.x, 0f, moveInput.y)) * targetSpeed;
 
             // Vertical velocity — accumulated so gravity actually accelerates
             if (_cc.isGrounded)
@@ -347,8 +352,13 @@ namespace Fields.Core
         {
             if (_carriedSquareBales.Count >= 3) return false;
             if (!bale.CanPickup(transform)) return false;
+            int index = _carriedSquareBales.Count; // 0, 1, or 2
             _carriedSquareBales.Add(bale);
-            bale.OnPickup(toolHolder != null ? toolHolder : transform);
+            // Carrier = player root (not HandsRoot/CameraRoot child) so the
+            // bale stays horizontal regardless of camera pitch.
+            bale.OnPickup(transform, index);
+            // Auto-switch to barehand so carried bales are always visible
+            _toolHolder?.EquipBareHand();
             return true;
         }
 
@@ -357,11 +367,17 @@ namespace Fields.Core
 
         public void DropSquareBales()
         {
-            for (int i = _carriedSquareBales.Count - 1; i >= 0; i--)
+            int count = _carriedSquareBales.Count;
+            for (int i = count - 1; i >= 0; i--)
             {
                 var b = _carriedSquareBales[i];
                 _carriedSquareBales.RemoveAt(i);
                 b.OnDrop(transform.position + transform.forward * 1.2f);
+            }
+            if (count > 0)
+            {
+                Fields.Feel.GameFeelController.Instance?.StartShake(0.20f, 0.032f * count, 20f);
+                Fields.UI.HUDController.Instance?.TriggerBaleDropFeel(count);
             }
         }
 
@@ -386,6 +402,12 @@ namespace Fields.Core
             bool canBale = _interactHeld && _balingReady && !_balingRequiresFreshPress;
             if (canBale)
             {
+                if (!_balingActive)
+                {
+                    _balingActive = true;
+                    // Auto-switch to barehand so tools don't fire during baling
+                    _toolHolder?.EquipBareHand();
+                }
                 _balingTimer += Time.deltaTime;
                 if (_balingTimer >= Mathf.Max(0.5f, balingDuration))
                     CompleteBaling();
@@ -393,6 +415,7 @@ namespace Fields.Core
             else
             {
                 _balingTimer = 0f;
+                _balingActive = false;
             }
         }
 

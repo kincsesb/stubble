@@ -85,6 +85,9 @@ namespace Fields.Tools
         public void OnUsePrimary(InputValue value)
         {
             if (Time.timeScale == 0f) return; // shop/pause is open
+            // Block tool use during baling or while carrying bales
+            var player = Fields.Core.PlayerController.Instance;
+            if (player != null && (player.IsBaling || player.CarriedBaleCount > 0)) return;
             bool pressed = value.isPressed;
             ActiveTool?.OnUsePrimary(pressed);
             OnToolAction?.Invoke(_activeIndex, pressed);
@@ -110,6 +113,10 @@ namespace Fields.Tools
 
             _activeIndex = index;
             ActiveTool?.OnEquip();
+
+            var tip = ActiveTool?.ToolTip;
+            if (!string.IsNullOrEmpty(tip))
+                Fields.UI.HUDController.Instance?.ShowToolTip(tip, 2.5f);
         }
 
         bool IsOwned(int index)
@@ -117,6 +124,14 @@ namespace Fields.Tools
             if (index >= 0 && index < tools.Count && tools[index] is BareHand) return true;
             var mgr = Fields.Economy.ToolUnlockManager.Instance;
             return mgr == null || mgr.IsOwned(index);
+        }
+
+        public void EquipBareHand()
+        {
+            // Find BareHand by type — don't assume slot 0
+            for (int i = 0; i < tools.Count; i++)
+                if (tools[i] is BareHand) { EquipSlot(i); return; }
+            EquipSlot(0); // fallback
         }
 
         public void RefuelAllPowered()

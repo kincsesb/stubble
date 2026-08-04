@@ -226,6 +226,8 @@ namespace Fields.Tools
 
         // ------------------------------------------------------------------ //
 
+        public override string ToolTip => "Ülős fűnyíró  —  WASD: vezérlés · Automatikusan vág haladás közben";
+
         public float CurrentSpeedNormalized => topSpeed > 0 ? _currentSpeed / topSpeed : 0f;
         public bool DeckEngaged => _deckEngaged;
         public void ToggleDeck() => _deckEngaged = !_deckEngaged;

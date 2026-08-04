@@ -77,13 +77,13 @@ namespace Fields.UI
         {
             if (SaveSystem.HasSave)
             {
+                var loc = Fields.Core.LocalizationManager.Instance;
                 confirmModal?.Show(
-                    header:    "New Game",
-                    body:      "Starting a new game will overwrite your existing save. This cannot be undone.",
+                    header:    loc != null ? loc.Get("menu.overwrite.header") : "New Game",
+                    body:      loc != null ? loc.Get("menu.overwrite.body")   : "Starting a new game will overwrite your existing save. This cannot be undone.",
                     onConfirm: () =>
                     {
                         SaveSystem.Instance?.DeleteSave();
-                        // Reload the scene — WorldBootstrap will find no save and start fresh.
                         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
                     });
             }
@@ -113,9 +113,10 @@ namespace Fields.UI
 
         void ClickQuit()
         {
+            var loc = Fields.Core.LocalizationManager.Instance;
             confirmModal?.Show(
-                header:    "Quit",
-                body:      "Are you sure you want to quit?",
+                header:    loc != null ? loc.Get("menu.quit.header") : "Quit",
+                body:      loc != null ? loc.Get("menu.quit.body")   : "Are you sure you want to quit?",
                 onConfirm: () =>
                 {
                     SaveSystem.Instance?.SaveGame();

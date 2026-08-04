@@ -85,7 +85,6 @@ namespace Fields.Feel
         void HandleBaleCreated(int parcelId, int playerId, bool isRound)
         {
             StartShake(baleShakeDuration, baleShakeAmplitude, baleShakeFrequency);
-            StartFlash(baleFlashColor, baleFlashDuration);
             StartFreezeFrame(baleFreezeSeconds);
             PulseBloom(baleBloomBoost, baleBloomFallback);
         }

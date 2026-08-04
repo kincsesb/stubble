@@ -49,6 +49,8 @@ namespace Fields.Tools
 
         protected override void OnSweepEnd() => _targetField = null;
 
+        public override string ToolTip => "Hosszú kasza  —  LMB: ívelt kaszálás · Stamina szükséges";
+
         // sweepT 0..1 maps left edge to right edge of fan
         Vector3 CalcFanTip(float sweepT)
         {

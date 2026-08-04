@@ -140,6 +140,8 @@ namespace Fields.Tools
             return best;
         }
 
+        public override string ToolTip => "Fűkasza  —  Tartsd nyomva az LMB-t · Lassul vastag fűben";
+
         public float RPM => _rpm;
         public float BogFactor => _bogFactor;
     }
