@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: 5361025047773193227}
   - component: {fileID: 1684600572710689064}
   - component: {fileID: 6860455016132383468}
+  - component: {fileID: 2876274180213598183}
   m_Layer: 0
   m_Name: RoundBale
   m_TagString: Untagged
@@ -190,3 +191,18 @@ MonoBehaviour:
   angularDrag: 2
   rollSlopeThreshold: 8
   hayUnits: 60
+--- !u!114 &2876274180213598183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7106720738307038435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55fc0d62d68694c8d8f5cf1b1f011728, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Fields.Feel.BaleSpawnFeel
+  duration: 0.5
+  overshoot: 1.22
+  growFraction: 0.55

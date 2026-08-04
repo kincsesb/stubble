@@ -1,3 +1,4 @@
+using System.Collections;
 using Fields.Core;
 using Fields.Economy;
 using Fields.Grass;
@@ -72,14 +73,13 @@ namespace Fields.UI
         const float MILESTONE_FLASH_DURATION = 1.2f;
         static readonly int[] MILESTONES = { 25, 50, 75, 100 };
 
-        // Bar fade (fuel only)
-        float _fuelFadeTimer;
-        const float FADE_DELAY = 1.5f;
-        const float FADE_DURATION = 0.4f;
 
         // Baling flash (on bale complete)
         float _balingFlashTimer;
         const float BALING_FLASH_DURATION = 0.7f;
+
+        // Sell feel
+        Canvas _floatingCanvas;
 
         // Prompt fade
         float _promptAlpha;
@@ -91,6 +91,7 @@ namespace Fields.UI
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+            BuildFloatingCanvas();
         }
 
         void Start()
@@ -102,6 +103,16 @@ namespace Fields.UI
             }
             EnsureBalingBar();
             EnsurePromptText();
+        }
+
+        void BuildFloatingCanvas()
+        {
+            var go = new GameObject("FloatingTextCanvas");
+            go.transform.SetParent(transform.root, false);
+            _floatingCanvas = go.AddComponent<Canvas>();
+            _floatingCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _floatingCanvas.sortingOrder = 998;
+            go.AddComponent<CanvasScaler>();
         }
 
         void EnsureBalingBar()
@@ -282,10 +293,7 @@ namespace Fields.UI
                     Color fuelColor = fuel > 0.3f
                         ? Color.Lerp(new Color(1f, 0.55f, 0.05f), new Color(0.15f, 0.55f, 1f), (fuel - 0.3f) / 0.7f)
                         : Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.55f, 0.05f), fuel / 0.3f);
-                    {
-                        _fuelFadeTimer = 0f;
-                        fuelBar.color = fuelColor;
-                    }
+                    fuelBar.color = fuelColor;
                 }
             }
         }
@@ -444,6 +452,59 @@ namespace Fields.UI
         {
             if (_balingFlashTimer > 0f)
                 _balingFlashTimer -= Time.deltaTime;
+        }
+
+        // ------------------------------------------------------------------ //
+        // Sell feel — floating money popup
+        // ------------------------------------------------------------------ //
+
+        public void TriggerSellFeel(int earned)
+        {
+            _moneyPunchTimer = MONEY_PUNCH_DURATION;
+            if (_floatingCanvas != null && earned > 0)
+                StartCoroutine(FloatingMoneyRoutine(earned));
+        }
+
+        IEnumerator FloatingMoneyRoutine(int earned)
+        {
+            var go = new GameObject("FloatMoney");
+            go.transform.SetParent(_floatingCanvas.transform, false);
+
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = new Vector2(
+                Random.Range(-60f, 60f),
+                Random.Range(-20f, 40f));
+            rt.sizeDelta = new Vector2(300f, 60f);
+
+            var tmp = go.AddComponent<TextMeshProUGUI>();
+            tmp.fontSize = 36;
+            tmp.fontStyle = FontStyles.Bold;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.text = $"+${earned}";
+
+            const float riseSpeed = 95f;
+            const float life = 1.1f;
+            float t = 0f;
+
+            while (t < life)
+            {
+                t += Time.unscaledDeltaTime;
+                float n = t / life;
+                float alpha = n < 0.2f
+                    ? n / 0.2f
+                    : 1f - Mathf.Pow((n - 0.2f) / 0.8f, 1.5f);
+                float scale = n < 0.15f
+                    ? Mathf.Lerp(1.4f, 1f, n / 0.15f)
+                    : 1f;
+
+                tmp.color = new Color(0.25f, 1f, 0.45f, alpha);
+                go.transform.localScale = Vector3.one * scale;
+                rt.anchoredPosition += new Vector2(0f, riseSpeed * Time.unscaledDeltaTime);
+                yield return null;
+            }
+
+            Destroy(go);
         }
     }
 }

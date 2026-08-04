@@ -31,6 +31,7 @@ namespace Fields.Economy
             if (earned > 0)
             {
                 CurrencyManager.Instance?.Earn(earned);
+                HUDController.Instance?.TriggerSellFeel(earned);
                 if (!_firstSaleDone)
                 {
                     _firstSaleDone = true;
