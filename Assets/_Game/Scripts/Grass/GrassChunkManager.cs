@@ -35,6 +35,7 @@ namespace Fields.Grass
         List<GrassChunk> _chunks = new List<GrassChunk>();
         Material _matInstance; // per-terrain instance so each field binds its own RT
 
+        Terrain _terrain; // cached for per-blade height sampling
         float[,,] _alphamap;
         int _alphamapW, _alphamapH, _alphamapLayers;
 
@@ -77,19 +78,18 @@ namespace Fields.Grass
             foreach (var c in _chunks) if (c.go != null) Destroy(c.go);
             _chunks.Clear();
 
+            // Find the terrain this field sits on — used for height sampling and splatmap exclusion
+            _terrain = GetComponent<Terrain>() ?? Terrain.activeTerrain;
+
             // Cache terrain splatmap for layer-based exclusion (CPU-side, one-time at Start)
             _alphamap = null;
-            if (excludedLayerIndices != null && excludedLayerIndices.Length > 0)
+            if (excludedLayerIndices != null && excludedLayerIndices.Length > 0 && _terrain != null)
             {
-                var terrain = GetComponent<Terrain>();
-                if (terrain != null)
-                {
-                    var td = terrain.terrainData;
-                    _alphamapW = td.alphamapWidth;
-                    _alphamapH = td.alphamapHeight;
-                    _alphamapLayers = td.alphamapLayers;
-                    _alphamap = td.GetAlphamaps(0, 0, _alphamapW, _alphamapH);
-                }
+                var td = _terrain.terrainData;
+                _alphamapW = td.alphamapWidth;
+                _alphamapH = td.alphamapHeight;
+                _alphamapLayers = td.alphamapLayers;
+                _alphamap = td.GetAlphamaps(0, 0, _alphamapW, _alphamapH);
             }
 
             // Create one material instance per terrain with the RT already bound,
@@ -125,9 +125,9 @@ namespace Fields.Grass
 
             // Pre-build all 3 LOD meshes once; swap refs at runtime (zero GC)
             var lodMeshes = new Mesh[3];
-            lodMeshes[0] = BuildBladeMesh(chunkSize, chunkSize, 1.0f, ox, oz);
-            lodMeshes[1] = BuildBladeMesh(chunkSize, chunkSize, 0.5f, ox, oz);
-            lodMeshes[2] = BuildBladeMesh(chunkSize, chunkSize, 0.2f, ox, oz);
+            lodMeshes[0] = BuildBladeMesh(chunkSize, chunkSize, 1.0f, ox, oz, origin);
+            lodMeshes[1] = BuildBladeMesh(chunkSize, chunkSize, 0.5f, ox, oz, origin);
+            lodMeshes[2] = BuildBladeMesh(chunkSize, chunkSize, 0.2f, ox, oz, origin);
             mf.sharedMesh = lodMeshes[0];
 
             return new GrassChunk { go = go, mr = mr, mf = mf, col = col, row = row,
@@ -135,11 +135,12 @@ namespace Fields.Grass
         }
 
         /// <summary>
-        /// Generates a flat quad mesh for grass blades at given density fraction.
+        /// Generates a terrain-conforming quad mesh for grass blades at given density fraction.
         /// Each "blade" is a vertical quad; final geometry is shaped in the vertex shader.
         /// originX/Z = chunk's local offset within the field (0-based, bottom-left convention).
+        /// chunkWorldOrigin = chunk GO world position, used to convert terrain height to local Y.
         /// </summary>
-        Mesh BuildBladeMesh(float width, float depth, float densityFraction, float originX = 0f, float originZ = 0f)
+        Mesh BuildBladeMesh(float width, float depth, float densityFraction, float originX, float originZ, Vector3 chunkWorldOrigin)
         {
             int maxBlades = Mathf.RoundToInt(width * depth * bladeDensity * densityFraction);
             maxBlades = Mathf.Min(maxBlades, 30000);
@@ -166,6 +167,13 @@ namespace Fields.Grass
                 if (_alphamap != null && IsOnExcludedLayer(maskU, maskV)) continue;
 
                 // Random Y-axis rotation so billboards face different directions
+                // Terrain height at this blade's world XZ position, converted to chunk local Y
+                float worldX = chunkWorldOrigin.x + rx;
+                float worldZ = chunkWorldOrigin.z + rz;
+                float groundY = _terrain != null
+                    ? _terrain.SampleHeight(new Vector3(worldX, 0f, worldZ)) - chunkWorldOrigin.y
+                    : 0f;
+
                 float angle = Random.Range(0f, Mathf.PI); // 0–180° (symmetric quad)
                 float cos = Mathf.Cos(angle);
                 float sin = Mathf.Sin(angle);
@@ -173,10 +181,10 @@ namespace Fields.Grass
                 float oz2 = bladeHalfWidth * sin;
 
                 int v = placed * 4;
-                verts[v + 0] = new Vector3(rx - ox2, 0f,          rz - oz2);
-                verts[v + 1] = new Vector3(rx + ox2, 0f,          rz + oz2);
-                verts[v + 2] = new Vector3(rx - ox2, bladeHeight, rz - oz2);
-                verts[v + 3] = new Vector3(rx + ox2, bladeHeight, rz + oz2);
+                verts[v + 0] = new Vector3(rx - ox2, groundY,               rz - oz2);
+                verts[v + 1] = new Vector3(rx + ox2, groundY,               rz + oz2);
+                verts[v + 2] = new Vector3(rx - ox2, groundY + bladeHeight, rz - oz2);
+                verts[v + 3] = new Vector3(rx + ox2, groundY + bladeHeight, rz + oz2);
 
                 uvs[v + 0] = new Vector2(0f, 0f);
                 uvs[v + 1] = new Vector2(1f, 0f);
