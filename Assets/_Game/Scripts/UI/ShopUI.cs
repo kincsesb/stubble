@@ -188,6 +188,16 @@ namespace Fields.UI
                 ? Fields.Core.LocalizationManager.Instance.Get(key, args)
                 : (args.Length > 0 ? string.Format(key, args) : key);
 
+        static string ToolLocKey(Fields.Core.Data.ToolType t) => t switch
+        {
+            Fields.Core.Data.ToolType.HandSickle    => "tool.handsickle",
+            Fields.Core.Data.ToolType.LongScythe    => "tool.longscythe",
+            Fields.Core.Data.ToolType.StringTrimmer => "tool.trimmer",
+            Fields.Core.Data.ToolType.PushMower     => "tool.pushmower",
+            Fields.Core.Data.ToolType.RideOnMower   => "tool.rideon",
+            _ => t.ToString()
+        };
+
         static string Stars(int level, int max = 3)
         {
             var sb = new System.Text.StringBuilder();
@@ -208,7 +218,7 @@ namespace Fields.UI
                     : $"$ {price}";
                 string btnLabel = owned ? string.Empty : L("shop.buy", price);
 
-                var row = AddRow(data.toolName, detail, btnLabel, owned ? -1 : price);
+                var row = AddRow(L(ToolLocKey(data.toolType)), detail, btnLabel, owned ? -1 : price);
                 if (!owned)
                 {
                     int idx = i;
@@ -251,17 +261,14 @@ namespace Fields.UI
 
                 if (level >= 3)
                 {
-                    AddRow($"{data.toolName}  {stars}", L("shop.maxlevel"), string.Empty, -1);
+                    AddRow($"{L(ToolLocKey(data.toolType))}  {stars}", L("shop.maxlevel"), string.Empty, -1);
                     continue;
                 }
 
                 int price    = data.upgradeCosts[level];
                 int nextLevel = level + 1;
-                string detail = $"{stars}  Lv{level}→{level + 1}" +
-                                $"  Spd:{data.speedLevels[nextLevel]:0.0}×" +
-                                $"  Pwr:{data.powerLevels[nextLevel]:0.0}×" +
-                                $"  $ {price}";
-                var row = AddRow($"{data.toolName}  {stars}", detail, L("shop.upgrade", price), price);
+                string detail = $"{stars}  {L("shop.upgrade.stats", level, level + 1, data.speedLevels[nextLevel], data.powerLevels[nextLevel], price)}";
+                var row = AddRow($"{L(ToolLocKey(data.toolType))}  {stars}", detail, L("shop.upgrade", price), price);
                 int idx = i;
                 row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                 {

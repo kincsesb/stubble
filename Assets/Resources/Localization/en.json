@@ -103,6 +103,70 @@
     { "key": "settings.wm.windowed",      "value": "Windowed" },
     { "key": "settings.quality.low",      "value": "Low" },
     { "key": "settings.quality.medium",   "value": "Medium" },
-    { "key": "settings.quality.high",     "value": "High" }
+    { "key": "settings.quality.high",     "value": "High" },
+
+    { "key": "menu.continue",              "value": "Continue" },
+    { "key": "menu.newgame",               "value": "New Game" },
+    { "key": "menu.playfriends",           "value": "Play with Friends" },
+    { "key": "menu.settings",             "value": "Settings" },
+    { "key": "menu.credits",              "value": "Credits" },
+
+    { "key": "pause.title",               "value": "PAUSE" },
+    { "key": "pause.resume",              "value": "Resume" },
+    { "key": "pause.journal",             "value": "Journal" },
+    { "key": "pause.quit",                "value": "Quit to Menu" },
+
+    { "key": "modal.confirm",             "value": "Confirm" },
+    { "key": "modal.cancel",              "value": "Cancel" },
+
+    { "key": "coop.title",                "value": "Play with Friends" },
+    { "key": "coop.tab.host",             "value": "Host" },
+    { "key": "coop.tab.join",             "value": "Join" },
+    { "key": "coop.back",                 "value": "Back" },
+    { "key": "coop.start",                "value": "Start" },
+    { "key": "coop.invite",               "value": "Invite" },
+
+    { "key": "credits.back",              "value": "Back" },
+    { "key": "settings.title",            "value": "Settings" },
+    { "key": "journal.title",             "value": "Journal" },
+    { "key": "hud.saved",                 "value": "Saved" },
+
+    { "key": "journal.stat.yourheader",   "value": "Your Statistics" },
+    { "key": "journal.session.header",    "value": "Session" },
+    { "key": "journal.label.areacut",     "value": "Area cut:" },
+    { "key": "journal.label.hay",         "value": "Hay collected:" },
+    { "key": "journal.label.squarebales", "value": "Square bales made:" },
+    { "key": "journal.label.roundbales",  "value": "Round bales made:" },
+    { "key": "journal.label.earned",      "value": "Money earned:" },
+    { "key": "journal.label.spent",       "value": "Money spent:" },
+    { "key": "journal.label.distance",    "value": "Distance:" },
+    { "key": "journal.label.swings",      "value": "Total swings:" },
+    { "key": "journal.label.playtime",    "value": "Your playtime:" },
+    { "key": "journal.label.wallet",      "value": "Wallet balance:" },
+    { "key": "journal.label.parcelsdone", "value": "Parcels completed:" },
+    { "key": "journal.label.overall",     "value": "Overall progress:" },
+    { "key": "journal.label.totaltime",   "value": "Total playtime:" },
+
+    { "key": "journal.rec.sec.parcels",   "value": "FASTEST PARCEL" },
+    { "key": "journal.rec.sec.session",   "value": "SESSION RECORDS" },
+    { "key": "journal.rec.sec.fullgame",  "value": "FULL GAME" },
+    { "key": "journal.rec.label.largest", "value": "Largest area cut" },
+    { "key": "journal.rec.label.bales",   "value": "Most bales delivered" },
+    { "key": "journal.rec.label.streak",  "value": "Longest cutting streak" },
+    { "key": "journal.rec.label.time",    "value": "Completion time" },
+
+    { "key": "parcel.label.areacut",      "value": "Area cut:" },
+    { "key": "parcel.label.remaining",    "value": "Remaining:" },
+    { "key": "parcel.label.time",         "value": "Time spent:" },
+    { "key": "parcel.label.hayspawned",   "value": "Hay spawned:" },
+    { "key": "parcel.label.haycollected", "value": "Hay collected:" },
+    { "key": "parcel.label.squarebales",  "value": "Sq. bales:" },
+    { "key": "parcel.label.roundbales",   "value": "Rd. bales:" },
+    { "key": "parcel.label.earned",       "value": "Earned:" },
+    { "key": "parcel.label.infield",      "value": "In field:" },
+    { "key": "parcel.tick.grass",         "value": "[X] Grass cut" },
+    { "key": "parcel.tick.hay",           "value": "[X] Hay clear" },
+
+    { "key": "shop.upgrade.stats",        "value": "Lv{0}→{1}  Spd:{2:0.0}×  Pwr:{3:0.0}×  ${4}" }
   ]
 }

@@ -103,6 +103,70 @@
     { "key": "settings.wm.windowed",       "value": "Ablakos" },
     { "key": "settings.quality.low",       "value": "Alacsony" },
     { "key": "settings.quality.medium",    "value": "Közepes" },
-    { "key": "settings.quality.high",      "value": "Magas" }
+    { "key": "settings.quality.high",      "value": "Magas" },
+
+    { "key": "menu.continue",              "value": "Folytatás" },
+    { "key": "menu.newgame",               "value": "Új játék" },
+    { "key": "menu.playfriends",           "value": "Játék barátokkal" },
+    { "key": "menu.settings",             "value": "Beállítások" },
+    { "key": "menu.credits",              "value": "Köszönet" },
+
+    { "key": "pause.title",               "value": "SZÜNET" },
+    { "key": "pause.resume",              "value": "Folytatás" },
+    { "key": "pause.journal",             "value": "Napló" },
+    { "key": "pause.quit",                "value": "Kilépés a menübe" },
+
+    { "key": "modal.confirm",             "value": "Megerősítés" },
+    { "key": "modal.cancel",              "value": "Mégse" },
+
+    { "key": "coop.title",                "value": "Játék barátokkal" },
+    { "key": "coop.tab.host",             "value": "Szervez" },
+    { "key": "coop.tab.join",             "value": "Csatlakozás" },
+    { "key": "coop.back",                 "value": "Vissza" },
+    { "key": "coop.start",                "value": "Indítás" },
+    { "key": "coop.invite",               "value": "Meghívás" },
+
+    { "key": "credits.back",              "value": "Vissza" },
+    { "key": "settings.title",            "value": "Beállítások" },
+    { "key": "journal.title",             "value": "Napló" },
+    { "key": "hud.saved",                 "value": "Mentve" },
+
+    { "key": "journal.stat.yourheader",   "value": "Saját statisztikák" },
+    { "key": "journal.session.header",    "value": "Munkamenet" },
+    { "key": "journal.label.areacut",     "value": "Levágott terület:" },
+    { "key": "journal.label.hay",         "value": "Összegyűjtött széna:" },
+    { "key": "journal.label.squarebales", "value": "Szögletes bálák:" },
+    { "key": "journal.label.roundbales",  "value": "Kerek bálák:" },
+    { "key": "journal.label.earned",      "value": "Keresett pénz:" },
+    { "key": "journal.label.spent",       "value": "Elköltött pénz:" },
+    { "key": "journal.label.distance",    "value": "Távolság:" },
+    { "key": "journal.label.swings",      "value": "Vágások:" },
+    { "key": "journal.label.playtime",    "value": "Játékidőd:" },
+    { "key": "journal.label.wallet",      "value": "Egyenleg:" },
+    { "key": "journal.label.parcelsdone", "value": "Teljesített parcellák:" },
+    { "key": "journal.label.overall",     "value": "Összes haladás:" },
+    { "key": "journal.label.totaltime",   "value": "Összes játékidő:" },
+
+    { "key": "journal.rec.sec.parcels",   "value": "LEGGYORSABB PARCELLA" },
+    { "key": "journal.rec.sec.session",   "value": "MUNKAMENET REKORDOK" },
+    { "key": "journal.rec.sec.fullgame",  "value": "TELJES JÁTÉK" },
+    { "key": "journal.rec.label.largest", "value": "Legnagyobb terület" },
+    { "key": "journal.rec.label.bales",   "value": "Legtöbb szállított bála" },
+    { "key": "journal.rec.label.streak",  "value": "Leghosszabb sorozat" },
+    { "key": "journal.rec.label.time",    "value": "Teljesítési idő" },
+
+    { "key": "parcel.label.areacut",      "value": "Levágott terület:" },
+    { "key": "parcel.label.remaining",    "value": "Maradék:" },
+    { "key": "parcel.label.time",         "value": "Eltelt idő:" },
+    { "key": "parcel.label.hayspawned",   "value": "Spawnt széna:" },
+    { "key": "parcel.label.haycollected", "value": "Összegyűjtött széna:" },
+    { "key": "parcel.label.squarebales",  "value": "Szögl. bálák:" },
+    { "key": "parcel.label.roundbales",   "value": "Kerek bálák:" },
+    { "key": "parcel.label.earned",       "value": "Keresett:" },
+    { "key": "parcel.label.infield",      "value": "Mezőn:" },
+    { "key": "parcel.tick.grass",         "value": "[X] Fű levágva" },
+    { "key": "parcel.tick.hay",           "value": "[X] Széna kész" },
+
+    { "key": "shop.upgrade.stats",        "value": "Sz{0}→{1}  Seb:{2:0.0}×  Erő:{3:0.0}×  {4} Ft" }
   ]
 }
