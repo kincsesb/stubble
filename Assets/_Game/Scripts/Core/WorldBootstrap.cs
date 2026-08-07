@@ -12,6 +12,8 @@ namespace Fields.Core
     /// </summary>
     public class WorldBootstrap : MonoBehaviour
     {
+        public static WorldBootstrap Instance { get; private set; }
+
         [Header("References")]
         public SaveSystem saveSystem;
         public ParcelBoundary[] parcels = new ParcelBoundary[4];
@@ -22,6 +24,25 @@ namespace Fields.Core
         public GameObject playerRoot;   // hidden until game starts
 
         int _completedParcels;
+
+        /// <summary>Number of non-null ParcelBoundary entries actually wired in the Inspector.</summary>
+        public int ActiveParcelCount
+        {
+            get
+            {
+                int n = 0;
+                foreach (var p in parcels) if (p != null) n++;
+                return Mathf.Max(1, n);
+            }
+        }
+
+        public int CompletedParcels => _completedParcels;
+
+        void Awake()
+        {
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            Instance = this;
+        }
 
         void Start()
         {
@@ -79,7 +100,7 @@ namespace Fields.Core
             GameEvents.FireParcelCompleted(idx, parcelTime);
 
             SteamManager.Instance?.OnParcelComplete(idx);
-            if (_completedParcels >= 4)
+            if (_completedParcels >= ActiveParcelCount)
             {
                 float totalTime = SessionState.Instance?.TotalPlaytime ?? 0f;
                 GameEvents.FireFullGameCompleted(totalTime);

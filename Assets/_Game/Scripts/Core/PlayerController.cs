@@ -48,8 +48,10 @@ namespace Fields.Core
         public float balingThreshold = 60f;
         [Tooltip("Seconds of holding E to produce a bale")]
         public float balingDuration = 2.5f;
-        [Tooltip("SquareBale prefab spawned when baling completes")]
+        [Tooltip("SquareBale prefab spawned when baling completes (no round baler)")]
         public GameObject squareBalePrefab;
+        [Tooltip("Bale prefab used when the round baler upgrade is owned (4× value). Falls back to squareBalePrefab if unassigned.")]
+        public GameObject roundBalePrefab;
 
         [Header("Haptics")]
         [Tooltip("Duration of swing impact rumble in seconds")]
@@ -448,18 +450,25 @@ namespace Fields.Core
                     needed -= sys.ConsumeHayInRadius(transform.position, balingRadius, needed);
                 }
 
+            bool makeRound = Fields.Economy.BalerManager.Instance?.RoundBalerOwned == true;
+            GameObject prefab = makeRound && roundBalePrefab != null ? roundBalePrefab : squareBalePrefab;
+
             Vector3 spawnPos = Fields.Grass.GrassField.SnapToTerrain(transform.position + transform.forward * 1.5f);
-            if (squareBalePrefab != null)
+            if (prefab != null)
             {
-                var baleGO = Object.Instantiate(squareBalePrefab, spawnPos, Quaternion.identity);
+                var baleGO = Object.Instantiate(prefab, spawnPos, Quaternion.identity);
                 var bale   = baleGO.GetComponent<Fields.Hay.SquareBale>();
-                if (bale != null) bale.OriginParcelIndex = CurrentParcelIndex;
-                Fields.Core.GameEvents.FireBaleCreated(CurrentParcelIndex, 0, isRound: false);
+                if (bale != null)
+                {
+                    bale.OriginParcelIndex = CurrentParcelIndex;
+                    bale.IsRound = makeRound;
+                }
+                Fields.Core.GameEvents.FireBaleCreated(CurrentParcelIndex, 0, isRound: makeRound);
                 Fields.Core.GameEvents.FireHayConsumed(CurrentParcelIndex, 0);
-                Debug.Log($"[Baling] COMPLETE — SquareBale spawned at {spawnPos} (parcel {CurrentParcelIndex})");
+                Debug.Log($"[Baling] COMPLETE — {(makeRound ? "RoundBale" : "SquareBale")} spawned at {spawnPos} (parcel {CurrentParcelIndex})");
             }
             else
-                Debug.LogError("[Baling] FAILED — squareBalePrefab is NULL!");
+                Debug.LogError("[Baling] FAILED — balePrefab is NULL!");
         }
 
         public bool IsBaling => _interactHeld && _balingReady && !_balingRequiresFreshPress;

@@ -37,6 +37,9 @@ namespace Fields.Hay
         /// <summary>Parcel where the hay was cut. Set by PlayerController on spawn.</summary>
         public int OriginParcelIndex { get; set; } = 0;
 
+        /// <summary>True when made with the round baler upgrade (4× sale value).</summary>
+        public bool IsRound { get; set; } = false;
+
         Rigidbody _rb;
         bool _isCarried;
 

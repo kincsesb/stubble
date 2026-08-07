@@ -53,7 +53,8 @@ namespace Fields.Economy
             int earned = 0;
             foreach (var bale in bales)
             {
-                int value = Mathf.RoundToInt(bale.HayUnits * hayUnitValue * multiplier);
+                float roundMult = bale.IsRound ? 4f : 1f;
+                int value = Mathf.RoundToInt(bale.HayUnits * hayUnitValue * multiplier * roundMult);
                 earned += value;
                 // Attribute revenue to the parcel the hay was CUT in, not the stand's parcel.
                 Fields.Core.GameEvents.FireBaleSold(bale.OriginParcelIndex, 0, value);

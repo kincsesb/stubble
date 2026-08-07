@@ -51,6 +51,7 @@ namespace Fields.UI
         const float CELL_AREA_M2 = 0.16f;
 
         int _activeTab;
+        bool _didPause;
 
         // ------------------------------------------------------------------ //
         // UIScreen lifecycle
@@ -58,8 +59,23 @@ namespace Fields.UI
 
         protected override void OnScreenPushed()
         {
+            // Pause gameplay if not already paused (e.g. opened directly via J key, not from Pause menu).
+            if (Time.timeScale > 0f)
+            {
+                Time.timeScale = 0f;
+                _didPause = true;
+            }
             SelectTab(0);
             RefreshAll();
+        }
+
+        protected override void OnScreenClosed()
+        {
+            if (_didPause)
+            {
+                Time.timeScale = 1f;
+                _didPause = false;
+            }
         }
 
         protected override void OnScreenResumed()
@@ -134,23 +150,30 @@ namespace Fields.UI
             int wallet = CurrencyManager.Instance?.Money ?? 0;
             SetText(statWallet, $"${wallet}");
 
-            int completed = 0;
-            for (int i = 0; i < 4; i++)
-                if (ss?.GetParcel(i)?.IsCompleted == true) completed++;
+            int completed   = Fields.Core.WorldBootstrap.Instance?.CompletedParcels ?? 0;
+            int totalParcels = Fields.Core.WorldBootstrap.Instance?.ActiveParcelCount ?? 1;
+            SetText(statParcelsCompleted, $"{completed} / {totalParcels}");
+            SetText(statTotalPlaytime,    FormatTime(ss?.TotalPlaytime ?? 0f));
 
-            SetText(statParcelsCompleted,  $"{completed} / 4");
-            SetText(statTotalPlaytime,     FormatTime(ss?.TotalPlaytime ?? 0f));
-
-            // Overall completion — derived from parcel cut cells vs total cells
-            long cutTotal = 0, areaTotal = 0;
-            for (int i = 0; i < 4; i++)
+            // Overall completion — read from the active GrassField (single terrain) or sum parcels with data.
+            float overallPct = 0f;
+            var activeField = Fields.UI.HUDController.Instance?.activeGrassField;
+            if (activeField != null)
             {
-                var parcel = ss?.GetParcel(i);
-                if (parcel == null) continue;
-                cutTotal  += parcel.AreaCutCells;
-                areaTotal += parcel.AreaTotalCells;
+                overallPct = activeField.GetCompletionPercent();
             }
-            float overallPct = areaTotal > 0 ? (float)cutTotal / areaTotal * 100f : 0f;
+            else
+            {
+                long cutTotal = 0, areaTotal = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    var parcel = ss?.GetParcel(i);
+                    if (parcel == null || parcel.AreaTotalCells == 0) continue;
+                    cutTotal  += parcel.AreaCutCells;
+                    areaTotal += parcel.AreaTotalCells;
+                }
+                if (areaTotal > 0) overallPct = (float)cutTotal / areaTotal * 100f;
+            }
             SetText(statOverallCompletion, $"{overallPct:F1}%");
         }
 

@@ -39,23 +39,34 @@ namespace Fields.Economy
             if (_roundBalerOwned || roundBalerData == null) return false;
             if (!CurrencyManager.Instance.TrySpend(roundBalerData.purchaseCost)) return false;
             _roundBalerOwned = true;
+            TrackSpent(roundBalerData.purchaseCost);
             return true;
         }
 
         public bool TryUpgradeBaler()
         {
             if (_balerLevel >= 3) return false;
-            if (!CurrencyManager.Instance.TrySpend(BalerUpgradeCosts[_balerLevel])) return false;
+            int cost = BalerUpgradeCosts[_balerLevel];
+            if (!CurrencyManager.Instance.TrySpend(cost)) return false;
             _balerLevel++;
+            TrackSpent(cost);
             return true;
         }
 
         public bool TryUpgradeHayValue()
         {
             if (_hayValueLevel >= 3) return false;
-            if (!CurrencyManager.Instance.TrySpend(HayValueCosts[_hayValueLevel])) return false;
+            int cost = HayValueCosts[_hayValueLevel];
+            if (!CurrencyManager.Instance.TrySpend(cost)) return false;
             _hayValueLevel++;
+            TrackSpent(cost);
             return true;
+        }
+
+        static void TrackSpent(int amount)
+        {
+            var player = Fields.Core.SessionState.Instance?.GetPlayer(0);
+            if (player != null) player.MoneySpent += amount;
         }
 
         // Save / Load
