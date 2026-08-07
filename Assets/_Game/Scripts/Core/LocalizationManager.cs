@@ -114,11 +114,17 @@ namespace Fields.Core
             { "hud.money",        "$ {0}" },
             { "hud.completion",   "{0}%" },
             { "hud.bales",        "[{0}]" },
+            { "hud.baling_progress", "Baling...  {0}%" },
+            { "hud.baling_ready",    "Hold  [E]  to bale" },
+            { "hud.bale_created",    "✓  Bale Created!" },
+            { "hud.bale_drop_single","Bale dropped" },
+            { "hud.bale_drop_multi", "{0} bales dropped" },
 
             // Shop
             { "shop.tab.tools",    "Tools" },
             { "shop.tab.upgrades", "Upgrades" },
             { "shop.tab.parcels",  "Parcels" },
+            { "shop.balance",      "Balance:  $ {0}" },
             { "shop.buy",         "Buy  ${0}" },
             { "shop.upgrade",     "Upgrade  ${0}" },
             { "shop.owned",       "Owned" },
@@ -126,6 +132,8 @@ namespace Fields.Core
             { "shop.unlock",      "Unlock  ${0}" },
             { "shop.locked",      "Locked" },
             { "shop.notenough",   "Not enough money" },
+            { "shop.upgrades.empty", "No tools owned yet. Buy one in the Tools tab." },
+            { "shop.unlocks.empty",  "No content available." },
 
             // Tool names
             { "tool.handsickle",   "Hand Sickle" },
@@ -139,6 +147,9 @@ namespace Fields.Core
             { "parcel.1.name", "East Meadow" },
             { "parcel.2.name", "Hillside" },
             { "parcel.3.name", "South Plateau" },
+            { "parcel.hay_clear",         "Clear" },
+            { "parcel.status.complete",   "Complete" },
+            { "parcel.status.inprogress", "In Progress" },
 
             // Per-parcel completion pop
             { "endscreen.title",    "Parcel Complete!" },
@@ -233,6 +244,14 @@ namespace Fields.Core
             { "settings.controls.rebinds", "Reset Rebinds" },
             { "settings.revert.countdown", "Reverting in {0}s…" },
             { "settings.revert.confirm",   "Keep Settings" },
+
+            // Co-op screen
+            { "coop.notice",     "Guests start with base tools and their progress is not saved.\nThe host owns the save file." },
+            { "coop.join.empty", "No joinable lobbies found.\nAsk a friend to host and invite you." },
+
+            // Tooltip / context help panel
+            { "tooltip.controls",    "<b>Controls</b>\nWASD / L-Stick — Move\nMouse / R-Stick — Look\nShift / LStick — Sprint\nLMB / West btn — Use tool\nScroll / LB–RB — Switch tool\nE / North btn — Interact\nQ — Drop bale\nJ / View tap — Journal\nTab hold / View hold — This panel\nEsc / Start — Pause" },
+            { "tooltip.tips_header", "<b>Tips</b>" },
 
             // Confirm modal buttons
             { "confirm.ok",     "Confirm" },

@@ -21,18 +21,6 @@ namespace Fields.UI
         public TextMeshProUGUI tooltipText;
         public JournalScreen journalScreen;
 
-        const string CONTROLS =
-            "<b>Controls</b>\n" +
-            "WASD / L-Stick — Move\n" +
-            "Mouse / R-Stick — Look\n" +
-            "Shift / LStick — Sprint\n" +
-            "LMB / West btn — Use tool\n" +
-            "Scroll / LB–RB — Switch tool\n" +
-            "E / North btn — Interact\n" +
-            "Q — Drop bale\n" +
-            "J / View tap — Journal\n" +
-            "Tab hold / View hold — This panel\n" +
-            "Esc / Start — Pause";
 
         InputAction _helpAction;
         InputAction _journalAction;
@@ -140,10 +128,12 @@ namespace Fields.UI
         {
             if (tooltipText == null) return;
             var loc = Fields.Core.LocalizationManager.Instance;
+            string controls = loc != null ? loc.Get("tooltip.controls") : string.Empty;
             string hints = loc != null
                 ? $"{loc.Get("hint.0")}\n{loc.Get("hint.1")}\n{loc.Get("hint.2")}\n{loc.Get("hint.3")}\n{loc.Get("hint.4")}"
                 : string.Empty;
-            tooltipText.text = CONTROLS + (hints.Length > 0 ? "\n\n<b>Tips</b>\n" + hints : string.Empty);
+            string tipsHeader = loc != null ? loc.Get("tooltip.tips_header") : "<b>Tips</b>";
+            tooltipText.text = controls + (hints.Length > 0 ? $"\n\n{tipsHeader}\n" + hints : string.Empty);
         }
 
         void SetVisible(bool show)

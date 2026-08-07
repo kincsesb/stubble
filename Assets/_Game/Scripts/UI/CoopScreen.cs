@@ -33,10 +33,6 @@ namespace Fields.UI
         [Header("Navigation")]
         public Button backButton;
 
-        // Persistent notice text — shown on both panels (spec §3).
-        const string NOTICE =
-            "Guests start with base tools and their progress is not saved.\n" +
-            "The host owns the save file.";
 
         protected override void Awake()
         {
@@ -50,8 +46,16 @@ namespace Fields.UI
 
         protected override void OnScreenPushed()
         {
-            if (noticeText) noticeText.text = NOTICE;
+            RefreshNotice();
             SelectTab(0);
+        }
+
+        void RefreshNotice()
+        {
+            if (noticeText == null) return;
+            var loc = Fields.Core.LocalizationManager.Instance;
+            noticeText.text = loc != null ? loc.Get("coop.notice")
+                : "Guests start with base tools and their progress is not saved.\nThe host owns the save file.";
         }
 
         // ------------------------------------------------------------------ //
@@ -62,8 +66,11 @@ namespace Fields.UI
             if (joinPanel) joinPanel.SetActive(index == 1);
 
             if (emptyStateText && index == 1)
-                emptyStateText.text =
-                    "No joinable lobbies found.\nAsk a friend to host and invite you.";
+            {
+                var loc = Fields.Core.LocalizationManager.Instance;
+                emptyStateText.text = loc != null ? loc.Get("coop.join.empty")
+                    : "No joinable lobbies found.\nAsk a friend to host and invite you.";
+            }
         }
 
         void OnInvite()

@@ -176,7 +176,7 @@ namespace Fields.UI
             MakeTMPChild("Text", container.transform, 0, 20, COL_MONEY, TextAlignmentOptions.Right, stretchFill: true);
             var texts = container.GetComponentsInChildren<TextMeshProUGUI>();
             if (texts.Length > 0)
-                texts[0].text = $"Egyenleg:  $ {money}";
+                texts[0].text = L("shop.balance", money);
         }
 
         // ------------------------------------------------------------------ //
@@ -204,7 +204,7 @@ namespace Fields.UI
                 int price  = data.purchaseCost;
 
                 string detail = owned
-                    ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] Megveve</color>"
+                    ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] {L("shop.owned")}</color>"
                     : $"$ {price}";
                 string btnLabel = owned ? string.Empty : L("shop.buy", price);
 
@@ -223,11 +223,11 @@ namespace Fields.UI
             var bm = Fields.Economy.BalerManager.Instance;
             if (bm?.roundBalerData != null)
             {
-                AddSectionSeparator("Round Bálozo");
+                AddSectionSeparator(L("shop.roundbaler"));
                 bool owned = bm.RoundBalerOwned;
                 int price  = bm.roundBalerData.purchaseCost;
                 string detail = owned
-                    ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] Megveve</color>"
+                    ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] {L("shop.owned")}</color>"
                     : $"$ {price}";
                 var row = AddRow(L("shop.roundbaler"), detail, owned ? string.Empty : L("shop.buy", price), owned ? -1 : price);
                 if (!owned)
@@ -270,9 +270,9 @@ namespace Fields.UI
             }
 
             if (!anyOwned)
-                AddInfoRow("Nincs még megvett eszköz. Vásárolj az Eszközök fülön.");
+                AddInfoRow(L("shop.upgrades.empty"));
 
-            AddSectionSeparator("Bálozo");
+            AddSectionSeparator(L("shop.baler"));
 
             var bm = Fields.Economy.BalerManager.Instance;
             if (bm != null)
@@ -287,7 +287,7 @@ namespace Fields.UI
                 }
                 else AddRow(L("shop.baler"), $"{Stars(3)}  {L("shop.maxlevel")}", string.Empty, -1);
 
-                AddSectionSeparator("Szénaérték");
+                AddSectionSeparator(L("shop.hayvalue"));
 
                 int hvl = bm.HayValueLevel;
                 if (hvl < 3)
@@ -304,7 +304,7 @@ namespace Fields.UI
 
         void BuildUnlocksTab()
         {
-            AddInfoRow("Nincs elérhető tartalom.");
+            AddInfoRow(L("shop.unlocks.empty"));
         }
 
         // ------------------------------------------------------------------ //

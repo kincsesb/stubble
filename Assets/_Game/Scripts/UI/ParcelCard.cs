@@ -54,10 +54,10 @@ namespace Fields.UI
         // 0.4 m × 0.4 m cells → 0.16 m² (GrassField spec §8.4)
         const float CELL_AREA_M2 = 0.16f;
 
-        static readonly string[] ParcelNames =
-        {
-            "Home Paddock", "Middle Meadow", "Far Meadow", "Top Meadow"
-        };
+        static string L(string key, params object[] args) =>
+            LocalizationManager.Instance != null
+                ? LocalizationManager.Instance.Get(key, args)
+                : (args.Length > 0 ? string.Format(key, args) : key);
 
         public void Refresh(int parcelIndex)
         {
@@ -78,7 +78,7 @@ namespace Fields.UI
             if (parcel == null) return;
 
             // Name
-            string name = parcelIndex < ParcelNames.Length ? ParcelNames[parcelIndex] : $"Parcel {parcelIndex}";
+            string name = L($"parcel.{parcelIndex}.name");
             SetText(parcelNameText, name);
 
             // Completion % — authoritative CPU grid; fallback to SessionState counters
@@ -109,7 +109,7 @@ namespace Fields.UI
             long inField = parcel.HayPilesInField;
             if (hayInFieldText != null)
             {
-                hayInFieldText.text  = inField > 0 ? $"{inField}" : "Clear";
+                hayInFieldText.text  = inField > 0 ? $"{inField}" : L("parcel.hay_clear");
                 hayInFieldText.color = inField > 0 ? hayRemainingColor : hayClearColor;
             }
 
@@ -121,7 +121,7 @@ namespace Fields.UI
 
             // Status
             bool complete = parcel.IsCompleted;
-            SetText(statusText, complete ? "Complete" : "In Progress");
+            SetText(statusText, complete ? L("parcel.status.complete") : L("parcel.status.inprogress"));
 
             // Completion condition ticks
             if (grassCutTick != null) grassCutTick.SetActive(parcel.GrassCutComplete);
@@ -155,7 +155,7 @@ namespace Fields.UI
             var data = ParcelManager.Instance.parcels.Length > parcelIndex
                 ? ParcelManager.Instance.parcels[parcelIndex]
                 : null;
-            unlockPriceText.text = data != null ? $"Unlock: ${data.unlockCost}" : "";
+            unlockPriceText.text = data != null ? L("shop.unlock", data.unlockCost) : "";
         }
 
         static void SetText(TextMeshProUGUI t, string v) { if (t != null) t.text = v; }

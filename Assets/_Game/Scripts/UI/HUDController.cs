@@ -293,7 +293,9 @@ namespace Fields.UI
 
                         // Progress text inside the bar
                         if (balingBarLabel != null)
-                            balingBarLabel.text = $"Baling...  {Mathf.RoundToInt(prog * 100)}%";
+                            balingBarLabel.text = LocalizationManager.Instance != null
+                                ? LocalizationManager.Instance.Get("hud.baling_progress", Mathf.RoundToInt(prog * 100))
+                                : $"Baling...  {Mathf.RoundToInt(prog * 100)}%";
                     }
                     else
                     {
@@ -302,7 +304,10 @@ namespace Fields.UI
                         balingBar.color = new Color(0.9f, 0.75f, 0.1f, 0.4f + idle);
                         balingBar.fillAmount = 0f;
                         if (balingBarBg != null) balingBarBg.transform.localScale = Vector3.one;
-                        if (balingBarLabel != null) balingBarLabel.text = "Hold  [E]  to bale";
+                        if (balingBarLabel != null)
+                            balingBarLabel.text = LocalizationManager.Instance != null
+                                ? LocalizationManager.Instance.Get("hud.baling_ready")
+                                : "Hold  [E]  to bale";
                     }
                 }
                 else
@@ -477,7 +482,9 @@ namespace Fields.UI
                 float t = _balingFlashTimer / BALING_FLASH_DURATION;
                 float scale = 1f + Mathf.Sin(t * Mathf.PI) * 0.18f;
                 promptText.transform.localScale = Vector3.one * scale;
-                promptText.text = "✓  Bale Created!";
+                promptText.text = LocalizationManager.Instance != null
+                    ? LocalizationManager.Instance.Get("hud.bale_created")
+                    : "✓  Bale Created!";
                 promptText.color = Color.Lerp(new Color(0.2f, 1f, 0.3f, 0f), new Color(0.2f, 1f, 0.3f, 1f), t);
                 return;
             }
@@ -555,7 +562,11 @@ namespace Fields.UI
         public void TriggerBaleDropFeel(int baleCount)
         {
             _baleDropTimer   = BALE_DROP_DURATION;
-            _baleDropMessage = baleCount == 1 ? "Bála lerakva" : $"{baleCount} bála lerakva";
+            _baleDropMessage = LocalizationManager.Instance != null
+                ? (baleCount == 1
+                    ? LocalizationManager.Instance.Get("hud.bale_drop_single")
+                    : LocalizationManager.Instance.Get("hud.bale_drop_multi", baleCount))
+                : (baleCount == 1 ? "Bale dropped" : $"{baleCount} bales dropped");
         }
 
         public void TriggerSellFeel(int earned)
