@@ -14,6 +14,10 @@ namespace Fields.UI
     /// </summary>
     public class ShopUI : MonoBehaviour
     {
+        public static ShopUI Instance { get; private set; }
+
+        public bool IsOpen => shopPanel != null && shopPanel.activeSelf;
+
         [Header("Panel root (set active to show/hide)")]
         public GameObject shopPanel;
         [Tooltip("Full-screen black overlay that dims the game behind the shop panel")]
@@ -55,12 +59,21 @@ namespace Fields.UI
 
         void Awake()
         {
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            Instance = this;
+
             if (tabTools)    tabTools.onClick.AddListener(() => ShowTab(0));
             if (tabUpgrades) tabUpgrades.onClick.AddListener(() => ShowTab(1));
             if (tabUnlocks)  tabUnlocks.gameObject.SetActive(false);
             if (closeButton) closeButton.onClick.AddListener(Close);
             if (shopPanel)       shopPanel.SetActive(false);
-            if (dimmerOverlay)   dimmerOverlay.SetActive(false);
+            if (dimmerOverlay)
+            {
+                dimmerOverlay.SetActive(false);
+                // Dimmer must not block raycasts so shop panel buttons remain clickable
+                var img = dimmerOverlay.GetComponent<UnityEngine.UI.Image>();
+                if (img != null) img.raycastTarget = false;
+            }
         }
 
         void Start()
@@ -75,6 +88,7 @@ namespace Fields.UI
 
         void OnDestroy()
         {
+            if (Instance == this) Instance = null;
             if (Fields.Core.LocalizationManager.Instance != null)
                 Fields.Core.LocalizationManager.Instance.OnLanguageChanged -= OnLanguageChanged;
         }
@@ -96,6 +110,8 @@ namespace Fields.UI
             Time.timeScale = 0f;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            if (Fields.Core.PlayerController.Instance != null)
+                Fields.Core.PlayerController.Instance.InputLocked = true;
             ShowTab(0);
             // Dynamic UI elements need one frame before their CanvasRenderer materials are assigned.
             // WaitForEndOfFrame works even when timeScale=0.
@@ -115,6 +131,8 @@ namespace Fields.UI
             Time.timeScale = 1f;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            if (Fields.Core.PlayerController.Instance != null)
+                Fields.Core.PlayerController.Instance.InputLocked = false;
         }
 
         // ------------------------------------------------------------------ //

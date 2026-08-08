@@ -113,6 +113,9 @@ namespace Fields.Core
         // When true, HandleMovement/Bob/FOV are suppressed (e.g. riding mower)
         public bool IsMounted { get; set; }
 
+        // When true, all player input is blocked (shop open, etc.)
+        public bool InputLocked { get; set; }
+
         // ------------------------------------------------------------------ //
 
         void Awake()
@@ -148,18 +151,24 @@ namespace Fields.Core
         // Input System callbacks (wired via PlayerInput component)
         // ------------------------------------------------------------------ //
 
-        public void OnMove(InputValue value) => _moveInput = value.Get<Vector2>();
+        public void OnMove(InputValue value)
+        {
+            _moveInput = InputLocked ? Vector2.zero : value.Get<Vector2>();
+        }
 
         public void OnLook(InputValue value) => _lookInput = value.Get<Vector2>();
 
-        public void OnSprint(InputValue value) => _sprintHeld = value.isPressed;
+        public void OnSprint(InputValue value) => _sprintHeld = InputLocked ? false : value.isPressed;
 
         public void OnInteract(InputValue value)
         {
+            if (InputLocked) return;
             _interactHeld = value.isPressed;
             if (value.isPressed)
             {
-                if (_balingReady)
+                // Baling only triggers when looking downward (pitch > 30°) to prevent
+                // accidental baling when trying to pick up bales or interact with stands.
+                if (_balingReady && IsLookingDown)
                     _balingRequiresFreshPress = false; // intentional press → allow baling
                 else
                     TryInteract();
@@ -172,12 +181,12 @@ namespace Fields.Core
 
         public void OnJump(InputValue value)
         {
-            if (value.isPressed) _jumpRequested = true;
+            if (!InputLocked && value.isPressed) _jumpRequested = true;
         }
 
         public void OnDrop(InputValue value)
         {
-            if (value.isPressed && _carriedSquareBales.Count > 0) DropSquareBales();
+            if (!InputLocked && value.isPressed && _carriedSquareBales.Count > 0) DropSquareBales();
         }
 
         // ------------------------------------------------------------------ //
@@ -186,6 +195,11 @@ namespace Fields.Core
 
         void HandleLook()
         {
+            if (InputLocked)
+            {
+                _lookInput = Vector2.zero;
+                return;
+            }
             Vector2 look = _lookInput;
 
             bool isGamepad = look.sqrMagnitude <= 1.01f && !Mouse.current.delta.IsActuated();
@@ -401,7 +415,7 @@ namespace Fields.Core
             // When readiness is lost, require a new E press next time
             if (wasReady && !_balingReady) _balingRequiresFreshPress = true;
 
-            bool canBale = _interactHeld && _balingReady && !_balingRequiresFreshPress;
+            bool canBale = _interactHeld && _balingReady && !_balingRequiresFreshPress && IsLookingDown;
             if (canBale)
             {
                 if (!_balingActive)
@@ -471,9 +485,12 @@ namespace Fields.Core
                 Debug.LogError("[Baling] FAILED — balePrefab is NULL!");
         }
 
-        public bool IsBaling => _interactHeld && _balingReady && !_balingRequiresFreshPress;
+        // Positive pitch = looking down (camera pitched below horizon)
+        public bool IsLookingDown => _pitch > 30f;
+
+        public bool IsBaling => _interactHeld && _balingReady && !_balingRequiresFreshPress && IsLookingDown;
         public float BalingProgress => balingDuration > 0f ? Mathf.Clamp01(_balingTimer / balingDuration) : 0f;
-        public bool BalingReady => _balingReady;
+        public bool BalingReady => _balingReady && IsLookingDown;
 
         // ------------------------------------------------------------------ //
         // Interact
@@ -486,6 +503,7 @@ namespace Fields.Core
         public string GetInteractHint()
         {
             if (IsMounted) return string.Empty;
+            // BalingReady now includes IsLookingDown check — only show hint when looking down at hay
             if (BalingReady)
                 return IsBaling ? "Release [E] to cancel" : "Hay Making  —  Hold  [E]";
 

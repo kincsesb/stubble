@@ -66,6 +66,14 @@ namespace Fields.UI
 
             if (cancelOrPause || cancelOnly)
             {
+                // Shop is outside the UIManager stack — handle it first so ESC closes the shop
+                // instead of opening the pause menu.
+                if (ShopUI.Instance != null && ShopUI.Instance.IsOpen)
+                {
+                    ShopUI.Instance.Close();
+                    return;
+                }
+
                 if (_stack.Count > 0)
                     Pop();
                 else if (cancelOrPause && pauseScreen != null)
