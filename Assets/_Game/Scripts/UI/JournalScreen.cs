@@ -3,6 +3,7 @@ using Fields.Economy;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 namespace Fields.UI
 {
@@ -20,7 +21,7 @@ namespace Fields.UI
         [Header("Parcel tab")]
         public ParcelCard[] parcelCards;  // 4 cards, index matches parcel (0-3)
 
-        [Header("Statistics tab — per player")]
+        [Header("Statistics tab — per player (optional: assign or leave null for auto-build)")]
         public TextMeshProUGUI statAreaCut;
         public TextMeshProUGUI statHayCollected;
         public TextMeshProUGUI statSquareBales;
@@ -31,11 +32,15 @@ namespace Fields.UI
         public TextMeshProUGUI statSwings;
         public TextMeshProUGUI statPlaytime;
 
-        [Header("Statistics tab — session-wide")]
+        [Header("Statistics tab — session-wide (optional)")]
         public TextMeshProUGUI statWallet;
         public TextMeshProUGUI statParcelsCompleted;
         public TextMeshProUGUI statOverallCompletion;
         public TextMeshProUGUI statTotalPlaytime;
+
+        [Header("Dynamic content parents (assign ScrollView Content if Inspector fields above are null)")]
+        public Transform statisticsContent;
+        public Transform recordsContent;
 
         [Header("Records tab")]
         public TextMeshProUGUI recFastestParcel0;
@@ -123,8 +128,20 @@ namespace Fields.UI
         void RefreshParcels()
         {
             if (parcelCards == null) return;
+            int activeCount = Fields.Core.WorldBootstrap.Instance?.ActiveParcelCount ?? parcelCards.Length;
             for (int i = 0; i < parcelCards.Length; i++)
-                parcelCards[i]?.Refresh(i);
+            {
+                if (parcelCards[i] == null) continue;
+                if (i < activeCount)
+                {
+                    parcelCards[i].gameObject.SetActive(true);
+                    parcelCards[i].Refresh(i);
+                }
+                else
+                {
+                    parcelCards[i].gameObject.SetActive(false);
+                }
+            }
         }
 
         // ------------------------------------------------------------------ //
@@ -136,45 +153,50 @@ namespace Fields.UI
             var ss = SessionState.Instance;
             var p  = ss?.GetPlayer(0);
 
-            SetText(statAreaCut,      $"{(p?.AreaCutCells ?? 0) * CELL_AREA_M2:F0} m²");
-            SetText(statHayCollected, $"{p?.HayPilesCollected ?? 0}");
-            SetText(statSquareBales,  $"{p?.SquareBalesMade ?? 0}");
-            SetText(statRoundBales,   $"{p?.RoundBalesMade ?? 0}");
-            SetText(statMoneyEarned,  $"${p?.MoneyEarned ?? 0}");
-            SetText(statMoneySpent,   $"${p?.MoneySpent ?? 0}");
-            SetText(statDistance,     $"{p?.DistanceTravelledM ?? 0:F0} m");
-            SetText(statSwings,       $"{p?.TotalSwings ?? 0}");
-            SetText(statPlaytime,     FormatTime(p?.PlaytimeSeconds ?? 0f));
-
-            // Session-wide
-            int wallet = CurrencyManager.Instance?.Money ?? 0;
-            SetText(statWallet, $"${wallet}");
-
-            int completed   = Fields.Core.WorldBootstrap.Instance?.CompletedParcels ?? 0;
+            int wallet       = CurrencyManager.Instance?.Money ?? 0;
+            int completed    = Fields.Core.WorldBootstrap.Instance?.CompletedParcels ?? 0;
             int totalParcels = Fields.Core.WorldBootstrap.Instance?.ActiveParcelCount ?? 1;
-            SetText(statParcelsCompleted, $"{completed} / {totalParcels}");
-            SetText(statTotalPlaytime,    FormatTime(ss?.TotalPlaytime ?? 0f));
 
-            // Overall completion — read from the active GrassField (single terrain) or sum parcels with data.
             float overallPct = 0f;
             var activeField = Fields.UI.HUDController.Instance?.activeGrassField;
             if (activeField != null)
-            {
                 overallPct = activeField.GetCompletionPercent();
-            }
-            else
-            {
-                long cutTotal = 0, areaTotal = 0;
-                for (int i = 0; i < 4; i++)
-                {
-                    var parcel = ss?.GetParcel(i);
-                    if (parcel == null || parcel.AreaTotalCells == 0) continue;
-                    cutTotal  += parcel.AreaCutCells;
-                    areaTotal += parcel.AreaTotalCells;
-                }
-                if (areaTotal > 0) overallPct = (float)cutTotal / areaTotal * 100f;
-            }
+
+            // ── Update fixed Inspector-assigned TMP fields if they exist ── //
+            SetText(statAreaCut,           $"{(p?.AreaCutCells ?? 0) * CELL_AREA_M2:F0} m²");
+            SetText(statHayCollected,      $"{p?.HayPilesCollected ?? 0}");
+            SetText(statSquareBales,       $"{p?.SquareBalesMade ?? 0}");
+            SetText(statRoundBales,        $"{p?.RoundBalesMade ?? 0}");
+            SetText(statMoneyEarned,       $"${p?.MoneyEarned ?? 0}");
+            SetText(statMoneySpent,        $"${p?.MoneySpent ?? 0}");
+            SetText(statDistance,          $"{p?.DistanceTravelledM ?? 0:F0} m");
+            SetText(statSwings,            $"{p?.TotalSwings ?? 0}");
+            SetText(statPlaytime,          FormatTime(p?.PlaytimeSeconds ?? 0f));
+            SetText(statWallet,            $"${wallet}");
+            SetText(statParcelsCompleted,  $"{completed} / {totalParcels}");
+            SetText(statTotalPlaytime,     FormatTime(ss?.TotalPlaytime ?? 0f));
             SetText(statOverallCompletion, $"{overallPct:F1}%");
+
+            // ── Dynamic fallback: build rows if statisticsContent is assigned ── //
+            if (statisticsContent == null) return;
+            ClearChildren(statisticsContent);
+
+            string Loc(string k) => LocalizationManager.Instance != null ? LocalizationManager.Instance.Get(k) : k;
+
+            AddStatRow(statisticsContent, Loc("journal.label.areacut"),     $"{(p?.AreaCutCells ?? 0) * CELL_AREA_M2:F0} m²");
+            AddStatRow(statisticsContent, Loc("journal.label.hay"),         $"{p?.HayPilesCollected ?? 0}");
+            AddStatRow(statisticsContent, Loc("journal.label.squarebales"), $"{p?.SquareBalesMade ?? 0}");
+            AddStatRow(statisticsContent, Loc("journal.label.roundbales"),  $"{p?.RoundBalesMade ?? 0}");
+            AddStatRow(statisticsContent, Loc("journal.label.earned"),      $"${p?.MoneyEarned ?? 0}");
+            AddStatRow(statisticsContent, Loc("journal.label.spent"),       $"${p?.MoneySpent ?? 0}");
+            AddStatRow(statisticsContent, Loc("journal.label.distance"),    $"{p?.DistanceTravelledM ?? 0:F0} m");
+            AddStatRow(statisticsContent, Loc("journal.label.swings"),      $"{p?.TotalSwings ?? 0}");
+            AddStatRow(statisticsContent, Loc("journal.label.playtime"),    FormatTime(p?.PlaytimeSeconds ?? 0f));
+            AddSectionDivider(statisticsContent);
+            AddStatRow(statisticsContent, Loc("journal.label.wallet"),      $"${wallet}");
+            AddStatRow(statisticsContent, Loc("journal.label.parcelsdone"), $"{completed} / {totalParcels}");
+            AddStatRow(statisticsContent, Loc("journal.label.overall"),     $"{overallPct:F1}%");
+            AddStatRow(statisticsContent, Loc("journal.label.totaltime"),   FormatTime(ss?.TotalPlaytime ?? 0f));
         }
 
         // ------------------------------------------------------------------ //
@@ -184,14 +206,20 @@ namespace Fields.UI
         void RefreshRecords()
         {
             var rec = Fields.Core.RecordsManager.Instance?.Data;
+            int activeCount = Fields.Core.WorldBootstrap.Instance?.ActiveParcelCount ?? 4;
 
-            SetText(recFastestParcel0, FormatParcelTime(rec?.fastestParcelSeconds[0] ?? -1f));
-            SetText(recFastestParcel1, FormatParcelTime(rec?.fastestParcelSeconds[1] ?? -1f));
-            SetText(recFastestParcel2, FormatParcelTime(rec?.fastestParcelSeconds[2] ?? -1f));
-            SetText(recFastestParcel3, FormatParcelTime(rec?.fastestParcelSeconds[3] ?? -1f));
+            // Update fixed Inspector-assigned TMP fields
+            TextMeshProUGUI[] fastestFields = { recFastestParcel0, recFastestParcel1, recFastestParcel2, recFastestParcel3 };
+            for (int i = 0; i < fastestFields.Length; i++)
+            {
+                if (fastestFields[i] == null) continue;
+                fastestFields[i].transform.parent?.gameObject.SetActive(i < activeCount);
+                if (i < activeCount)
+                    SetText(fastestFields[i], FormatParcelTime(rec?.fastestParcelSeconds[i] ?? -1f));
+            }
 
             double areaM2 = rec?.largestAreaCutM2 ?? 0.0;
-            SetText(recLargestArea, areaM2 > 0.0 ? $"{areaM2:F0} m²" : "--");
+            SetText(recLargestArea,   areaM2 > 0.0 ? $"{areaM2:F0} m²" : "--");
 
             int bales = rec?.mostBalesDelivered ?? 0;
             SetText(recMostBales, bales > 0 ? $"{bales}" : "--");
@@ -201,6 +229,31 @@ namespace Fields.UI
 
             float fullGame = rec?.fullGameCompletionSeconds ?? -1f;
             SetText(recFullGame, fullGame >= 0f ? FormatTime(fullGame) : "--");
+
+            // ── Dynamic fallback ── //
+            if (recordsContent == null) return;
+            ClearChildren(recordsContent);
+
+            string Loc(string k) => LocalizationManager.Instance != null ? LocalizationManager.Instance.Get(k) : k;
+
+            AddSectionHeader(recordsContent, Loc("journal.rec.sec.parcels"));
+            for (int i = 0; i < activeCount; i++)
+            {
+                string parcelName = Loc($"journal.rec.fastest{i}");
+                string time = FormatParcelTime(rec?.fastestParcelSeconds[i] ?? -1f);
+                AddStatRow(recordsContent, parcelName, time);
+            }
+
+            AddSectionHeader(recordsContent, Loc("journal.rec.sec.session"));
+            double aM2 = rec?.largestAreaCutM2 ?? 0.0;
+            AddStatRow(recordsContent, Loc("journal.rec.label.largest"), aM2 > 0 ? $"{aM2:F0} m²" : "--");
+            AddStatRow(recordsContent, Loc("journal.rec.label.bales"), (rec?.mostBalesDelivered ?? 0) > 0 ? $"{rec.mostBalesDelivered}" : "--");
+            float strk = rec?.longestCuttingStreakSeconds ?? 0f;
+            AddStatRow(recordsContent, Loc("journal.rec.label.streak"), strk > 0f ? FormatTime(strk) : "--");
+
+            AddSectionHeader(recordsContent, Loc("journal.rec.sec.fullgame"));
+            float fg = rec?.fullGameCompletionSeconds ?? -1f;
+            AddStatRow(recordsContent, Loc("journal.rec.label.time"), fg >= 0f ? FormatTime(fg) : "--");
         }
 
         static string FormatParcelTime(float seconds) =>
@@ -221,6 +274,61 @@ namespace Fields.UI
             int m = (int)((seconds % 3600) / 60);
             int s = (int)(seconds % 60);
             return h > 0 ? $"{h}h {m:D2}m" : $"{m}m {s:D2}s";
+        }
+
+        // ── Dynamic row builders ── //
+
+        static void ClearChildren(Transform parent)
+        {
+            for (int i = parent.childCount - 1; i >= 0; i--)
+                DestroyImmediate(parent.GetChild(i).gameObject);
+        }
+
+        static void AddStatRow(Transform parent, string label, string value)
+        {
+            var row = new GameObject("Row", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+            row.transform.SetParent(parent, false);
+            var rt = row.GetComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(0, 28);
+            var hlg = row.GetComponent<HorizontalLayoutGroup>();
+            hlg.padding = new RectOffset(8, 8, 2, 2);
+            hlg.childForceExpandWidth = true;
+
+            MakeLabel(row.transform, label, TextAlignmentOptions.Left,  new Color(0.75f, 0.75f, 0.75f));
+            MakeLabel(row.transform, value, TextAlignmentOptions.Right, Color.white);
+        }
+
+        static void AddSectionHeader(Transform parent, string title)
+        {
+            var go = new GameObject("Header", typeof(RectTransform), typeof(TextMeshProUGUI));
+            go.transform.SetParent(parent, false);
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 26);
+            var tmp = go.GetComponent<TextMeshProUGUI>();
+            tmp.text = title;
+            tmp.fontSize = 13;
+            tmp.fontStyle = TMPro.FontStyles.Bold;
+            tmp.color = new Color(0.4f, 0.85f, 0.5f);
+            tmp.alignment = TextAlignmentOptions.Left;
+        }
+
+        static void AddSectionDivider(Transform parent)
+        {
+            var go = new GameObject("Div", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 8);
+        }
+
+        static void MakeLabel(Transform parent, string text, TextAlignmentOptions align, Color color)
+        {
+            var go = new GameObject("Lbl", typeof(RectTransform), typeof(TextMeshProUGUI));
+            go.transform.SetParent(parent, false);
+            var tmp = go.GetComponent<TextMeshProUGUI>();
+            tmp.text = text;
+            tmp.fontSize = 14;
+            tmp.color = color;
+            tmp.alignment = align;
+            tmp.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+            tmp.overflowMode = TextOverflowModes.Ellipsis;
         }
     }
 }

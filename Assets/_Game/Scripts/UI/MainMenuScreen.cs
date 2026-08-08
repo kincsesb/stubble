@@ -78,14 +78,24 @@ namespace Fields.UI
             if (SaveSystem.HasSave)
             {
                 var loc = Fields.Core.LocalizationManager.Instance;
-                confirmModal?.Show(
-                    header:    loc != null ? loc.Get("menu.overwrite.header") : "New Game",
-                    body:      loc != null ? loc.Get("menu.overwrite.body")   : "Starting a new game will overwrite your existing save. This cannot be undone.",
-                    onConfirm: () =>
-                    {
-                        SaveSystem.Instance?.DeleteSave();
-                        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-                    });
+                System.Action doNewGame = () =>
+                {
+                    Fields.Core.WorldBootstrap.PendingFreshStart = true;
+                    SaveSystem.Instance?.DeleteSave();
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                };
+
+                if (confirmModal != null)
+                {
+                    confirmModal.Show(
+                        header:    loc != null ? loc.Get("menu.overwrite.header") : "New Game",
+                        body:      loc != null ? loc.Get("menu.overwrite.body")   : "Starting a new game will overwrite your existing save. This cannot be undone.",
+                        onConfirm: doNewGame);
+                }
+                else
+                {
+                    doNewGame();
+                }
             }
             else
             {
@@ -128,7 +138,7 @@ namespace Fields.UI
         // Game start
         // ------------------------------------------------------------------ //
 
-        void StartGame()
+        public void StartGame()
         {
             Fields.Core.SessionState.Instance?.StartSinglePlayer();
             Fields.Core.RecordsManager.Instance?.ResetSessionState();

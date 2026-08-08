@@ -214,7 +214,8 @@ namespace Fields.Core
 
             float scale = isGamepad ? gamepadSensitivity * Time.deltaTime : mouseSensitivity;
 
-            _yaw += look.x * scale;
+            if (!IsMounted)
+                _yaw += look.x * scale;
             _pitch -= look.y * scale;
             _pitch = Mathf.Clamp(_pitch, lookPitchMin, lookPitchMax);
 
@@ -222,6 +223,9 @@ namespace Fields.Core
             if (cameraRoot != null)
                 cameraRoot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
         }
+
+        /// <summary>Called by mounted vehicles to keep the camera facing vehicle forward.</summary>
+        public void SyncMountedYaw(float worldYaw) => _yaw = worldYaw;
 
         void HandleMovement()
         {
@@ -421,6 +425,9 @@ namespace Fields.Core
                 if (!_balingActive)
                 {
                     _balingActive = true;
+                    // Lock cursor so it doesn't show during the baling hold
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
                     // Auto-switch to barehand so tools don't fire during baling
                     _toolHolder?.EquipBareHand();
                 }
@@ -500,12 +507,17 @@ namespace Fields.Core
         // Interact hint (used by HUD)
         // ------------------------------------------------------------------ //
 
+        static string L(string key) =>
+            Fields.Core.LocalizationManager.Instance != null
+                ? Fields.Core.LocalizationManager.Instance.Get(key)
+                : key;
+
         public string GetInteractHint()
         {
             if (IsMounted) return string.Empty;
             // BalingReady now includes IsLookingDown check — only show hint when looking down at hay
             if (BalingReady)
-                return IsBaling ? "Release [E] to cancel" : "Hay Making  —  Hold  [E]";
+                return IsBaling ? L("hud.baling_cancel") : L("hud.baling_start");
 
             // Forward raycast for eye-level objects
             var origin  = cameraRoot != null ? cameraRoot.position : transform.position + Vector3.up * 1.6f;
@@ -513,19 +525,19 @@ namespace Fields.Core
             if (Physics.Raycast(origin, forward, out RaycastHit hit, 4f))
             {
                 if (hit.collider.GetComponentInParent<Fields.Hay.SquareBale>() != null)
-                    return CarriedBaleCount < 3 ? "Pick Up Bale  —  [E]" : "Carrying max bales  (3/3)";
+                    return CarriedBaleCount < 3 ? L("hud.pickup_bale") : L("hud.carry_full");
                 if (hit.collider.GetComponentInParent<IInteractable>() != null)
-                    return "Interact  —  [E]";
+                    return L("hud.interact");
             }
             // Ground proximity for bales (bale at feet, player looking forward)
             var groundFront = transform.position + forward * 2f + Vector3.up * 0.5f;
             foreach (var col in Physics.OverlapSphere(groundFront, 1.5f))
             {
                 if (col.GetComponentInParent<Fields.Hay.SquareBale>() != null)
-                    return CarriedBaleCount < 3 ? "Pick Up Bale  —  [E]" : "Carrying max bales  (3/3)";
+                    return CarriedBaleCount < 3 ? L("hud.pickup_bale") : L("hud.carry_full");
             }
 
-            if (CarriedBaleCount > 0) return "Drop Bales  —  [G]";
+            if (CarriedBaleCount > 0) return L("hud.drop_bales");
             return string.Empty;
         }
 

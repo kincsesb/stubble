@@ -1,4 +1,5 @@
 using Fields.Grass;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,7 +7,7 @@ namespace Fields.Tools
 {
     /// <summary>
     /// Ride-On Mower — arcade kinematic vehicle. Player mounts on OnEquip.
-    /// Speed ramps 0 → full in 1.5 s. Body roll/pitch from velocity.
+    /// Speed ramps 0 → full in 1.5 s. Body roll/pitch + wheel spin + steering from velocity.
     /// Cuts a wide capsule trail while the deck is engaged.
     /// Anti-pattern #6: NO realistic physics — arcade steering only.
     /// </summary>
@@ -23,15 +24,29 @@ namespace Fields.Tools
         public Transform deckCenter;
         public float baseDeckWidth = 0.9f;
 
-        [Header("Feel")]
+        [Header("Feel — Body")]
         [Tooltip("Max body roll in degrees when turning")]
         public float maxBodyRoll = 4f;
         [Tooltip("Max body pitch in degrees on slopes")]
         public float maxBodyPitch = 6f;
 
+        [Header("Feel — Wheels (rolling)")]
+        [Tooltip("All parts that should spin when driving — both sides, front + rear")]
+        public Transform[] driveWheels = new Transform[0];
+        [Tooltip("Approximate wheel radius in model-local units (unscaled)")]
+        public float wheelRadius = 0.23f;
+
+        [Header("Feel — Steering wheel")]
+        [Tooltip("tripo_part_19 — steering wheel mesh")]
+        public Transform steeringWheel;
+        [Tooltip("Max steering wheel rotation angle in degrees")]
+        public float maxSteeringAngle = 120f;
+
         [Header("Mounted Camera Offset")]
         [Tooltip("Camera local position while seated")]
         public Vector3 seatedCamOffset = new Vector3(0f, 0.6f, 0.3f);
+
+        // ------------------------------------------------------------------ //
 
         CharacterController _cc;
         GrassField _targetField;
@@ -44,13 +59,26 @@ namespace Fields.Tools
         bool _deckEngaged = true;
         bool _mounted;
 
-        // Smooth body roll / pitch
+        // Body feel smoothing
         float _rollVelocity, _pitchVelocity;
         float _smoothedRoll, _smoothedPitch;
+
+        // Wheel rolling — accumulated angle in degrees
+        float _wheelRotAngle;
+
+        // Steering spring (Feel MMSpringFloat)
+        MMSpringFloat _steeringSpring = new MMSpringFloat
+        {
+            Damping   = 0.55f,
+            Frequency = 8f
+        };
 
         // Original camera local position (restored on dismount)
         Transform _mountedCamera;
         Vector3 _origCamLocalPos;
+
+        // Original parent (restored on dismount so ToolHolder can manage the tool)
+        Transform _originalParent;
 
         // ------------------------------------------------------------------ //
 
@@ -74,12 +102,18 @@ namespace Fields.Tools
 
             _mounted = true;
 
-            // Lock player movement and teleport them to mower seat
+            // Detach from player hierarchy so the mower's CharacterController can move freely
+            // without conflicting with the player's own CharacterController.
+            _originalParent = transform.parent;
+            transform.SetParent(null, worldPositionStays: true);
+
             var player = Fields.Core.PlayerController.Instance;
             if (player != null)
             {
                 player.IsMounted = true;
                 player.transform.position = transform.position;
+                // Mower drives in transform.right (+90° from root forward); sync camera to match.
+                player.SyncMountedYaw(transform.eulerAngles.y + 90f);
             }
 
             // Shift camera to seated offset
@@ -89,12 +123,18 @@ namespace Fields.Tools
                 _origCamLocalPos = _mountedCamera.localPosition;
                 _mountedCamera.localPosition = seatedCamOffset;
             }
+
+            // Auto-start engine immediately on mount
+            if (!_engineRunning) StartEngine();
         }
 
         public override void OnUnequip()
         {
             base.OnUnequip();
             _mounted = false;
+
+            if (_originalParent != null)
+                transform.SetParent(_originalParent, worldPositionStays: true);
 
             var player = Fields.Core.PlayerController.Instance;
             if (player != null) player.IsMounted = false;
@@ -106,8 +146,7 @@ namespace Fields.Tools
 
         public override void OnUsePrimary(bool pressed)
         {
-            if (pressed && !_engineRunning) StartEngine();
-            else if (!pressed && _engineRunning) StopEngine();
+            if (pressed) { if (_engineRunning) StopEngine(); else StartEngine(); }
         }
 
         // ------------------------------------------------------------------ //
@@ -118,9 +157,13 @@ namespace Fields.Tools
 
             if (!_isEquipped || !_mounted) return;
 
-            // Keep player position synced to mower seat
             var player = Fields.Core.PlayerController.Instance;
-            if (player != null) player.transform.position = transform.position;
+            if (player != null)
+            {
+                player.transform.position = transform.position;
+                // Keep camera yaw locked to mower driving direction (transform.right = +90° offset).
+                player.SyncMountedYaw(transform.eulerAngles.y + 90f);
+            }
 
             ReadInput();
 
@@ -137,9 +180,8 @@ namespace Fields.Tools
 
         void ReadInput()
         {
-            // Prefer new Input System; fall back to legacy axis if neither device active
-            var kb  = Keyboard.current;
-            var gp  = Gamepad.current;
+            var kb = Keyboard.current;
+            var gp = Gamepad.current;
 
             float drive = 0f, turn = 0f;
             if (gp != null)
@@ -149,9 +191,9 @@ namespace Fields.Tools
             }
             if (kb != null)
             {
-                if (kb.wKey.isPressed || kb.upArrowKey.isPressed)   drive += 1f;
-                if (kb.sKey.isPressed || kb.downArrowKey.isPressed) drive -= 1f;
-                if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) turn  -= 1f;
+                if (kb.wKey.isPressed || kb.upArrowKey.isPressed)    drive += 1f;
+                if (kb.sKey.isPressed || kb.downArrowKey.isPressed)  drive -= 1f;
+                if (kb.aKey.isPressed || kb.leftArrowKey.isPressed)  turn  -= 1f;
                 if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) turn  += 1f;
             }
             _driveInput = Mathf.Clamp(drive, -1f, 1f);
@@ -160,18 +202,16 @@ namespace Fields.Tools
 
         void DriveAndSteer()
         {
-            // Acceleration ramp (0 → topSpeed * CurrentSpeed in accelerationTime seconds)
             float targetSpeed = _driveInput * topSpeed * CurrentSpeed;
             float accel = topSpeed / Mathf.Max(0.01f, accelerationTime);
             _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, accel * Time.deltaTime);
 
-            // Steering (only while moving)
             if (Mathf.Abs(_currentSpeed) > 0.05f)
                 transform.Rotate(Vector3.up, _turnInput * turnSpeed * Time.deltaTime * Mathf.Sign(_currentSpeed));
 
-            // Move via CharacterController (applies gravity automatically)
-            Vector3 move = transform.forward * _currentSpeed;
-            move.y -= 9.81f; // gravity
+            // Model's visual front = transform.right (90° offset from root Z).
+            Vector3 move = transform.right * _currentSpeed;
+            move.y -= 9.81f;
             _cc.Move(move * Time.deltaTime);
         }
 
@@ -194,14 +234,15 @@ namespace Fields.Tools
 
         void ApplyBodyFeel()
         {
-            // Roll: lean into turns, scaled by speed
+            var visual = transform.childCount > 0 ? transform.GetChild(0) : transform;
+
+            // ── Body roll / pitch ──────────────────────────────────────────── //
             float speedFactor = Mathf.Clamp01(Mathf.Abs(_currentSpeed) / topSpeed);
             float targetRoll  = -_turnInput * maxBodyRoll * speedFactor;
-            _smoothedRoll = Mathf.SmoothDamp(_smoothedRoll, targetRoll, ref _rollVelocity, 0.15f);
+            _smoothedRoll  = Mathf.SmoothDamp(_smoothedRoll,  targetRoll,  ref _rollVelocity,  0.15f);
 
-            // Pitch: read slope from CharacterController ground normal
             float targetPitch = 0f;
-            if (_cc.isGrounded)
+            if (_cc != null && _cc.isGrounded)
             {
                 if (Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, out var hit, 0.8f))
                     targetPitch = -Vector3.SignedAngle(Vector3.up, hit.normal, transform.right);
@@ -209,9 +250,26 @@ namespace Fields.Tools
             targetPitch = Mathf.Clamp(targetPitch, -maxBodyPitch, maxBodyPitch);
             _smoothedPitch = Mathf.SmoothDamp(_smoothedPitch, targetPitch, ref _pitchVelocity, 0.2f);
 
-            // Apply to visual body (this transform's child, or self if no visual child)
-            var visual = transform.childCount > 0 ? transform.GetChild(0) : transform;
-            visual.localRotation = Quaternion.Euler(_smoothedPitch, 0f, _smoothedRoll);
+            // Base X=-90 corrects imported model orientation; pitch/roll are additive feel.
+            visual.localRotation = Quaternion.Euler(-90f + _smoothedPitch, 0f, _smoothedRoll);
+
+            // ── All drive wheels — spin on Y based on drive speed ───────────── //
+            float degreesPerSec = (_currentSpeed / Mathf.Max(0.001f, wheelRadius)) * Mathf.Rad2Deg;
+            _wheelRotAngle += degreesPerSec * Time.deltaTime;
+
+            foreach (var wheel in driveWheels)
+            {
+                if (wheel == null) continue;
+                wheel.localRotation = Quaternion.Euler(0f, _wheelRotAngle, 0f);
+            }
+
+            // ── Steering wheel ─────────────────────────────────────────────── //
+            if (steeringWheel != null)
+            {
+                _steeringSpring.TargetValue = _turnInput * maxSteeringAngle;
+                _steeringSpring.UpdateSpringValue(Time.deltaTime);
+                steeringWheel.localRotation = Quaternion.Euler(0f, 0f, _steeringSpring.CurrentValue);
+            }
         }
 
         GrassField FindNearestField(Vector3 near)

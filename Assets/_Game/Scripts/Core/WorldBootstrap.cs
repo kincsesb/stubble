@@ -38,6 +38,9 @@ namespace Fields.Core
 
         public int CompletedParcels => _completedParcels;
 
+        /// <summary>Set before scene reload to skip the main menu and start a fresh game immediately.</summary>
+        public static bool PendingFreshStart { get; set; }
+
         void Awake()
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -66,7 +69,19 @@ namespace Fields.Core
             if (mainMenuScreen != null)
             {
                 if (playerRoot != null) playerRoot.SetActive(false);
-                UIManager.Instance?.Push(mainMenuScreen);
+
+                if (PendingFreshStart)
+                {
+                    PendingFreshStart = false;
+                    // Reset session state since SessionState survives scene reload
+                    Fields.Core.SessionState.Instance?.StartSinglePlayer();
+                    Fields.Core.RecordsManager.Instance?.ResetSessionState();
+                    mainMenuScreen.StartGame();
+                }
+                else
+                {
+                    UIManager.Instance?.Push(mainMenuScreen);
+                }
             }
         }
 
