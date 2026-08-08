@@ -22,7 +22,7 @@ namespace Fields.Tools
 
         [Header("Deck")]
         public Transform deckCenter;
-        public float baseDeckWidth = 0.9f;
+        public float baseDeckWidth = 1.8f;
 
         [Header("Feel — Body")]
         [Tooltip("Max body roll in degrees when turning")]
@@ -44,7 +44,7 @@ namespace Fields.Tools
 
         [Header("Mounted Camera Offset")]
         [Tooltip("Camera local position while seated")]
-        public Vector3 seatedCamOffset = new Vector3(0f, 0.6f, 0.3f);
+        public Vector3 seatedCamOffset = new Vector3(0f, 0.5f, -1.2f);
 
         // ------------------------------------------------------------------ //
 
@@ -85,13 +85,18 @@ namespace Fields.Tools
         protected override void OnEngineStarted()
         {
             _currentSpeed = 0f;
-            Fields.Audio.ToolAudioManager.Instance?.StartTractor();
+            var audio = Fields.Audio.ToolAudioManager.Instance;
+            audio?.StartTractor();
+            audio?.StartPushMower();
+            if (audio != null && audio.pushMowerLoop != null)
+                audio.pushMowerLoop.volume = audio.masterVolume * 0.5f;
         }
 
         protected override void OnEngineStopped()
         {
             _currentSpeed = 0f;
             Fields.Audio.ToolAudioManager.Instance?.StopTractor();
+            Fields.Audio.ToolAudioManager.Instance?.StopPushMower();
         }
 
         public override void OnEquip()

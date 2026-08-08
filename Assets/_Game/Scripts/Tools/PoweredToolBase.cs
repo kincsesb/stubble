@@ -23,7 +23,8 @@ namespace Fields.Tools
 
         protected void StartEngine()
         {
-            if (_fuel <= 0f) return;
+            // TODO: re-enable fuel check when fuel system is ready
+            // if (_fuel <= 0f) return;
             _engineRunning = true;
             OnEngineStarted();
         }
@@ -37,8 +38,9 @@ namespace Fields.Tools
         protected virtual void Update()
         {
             if (!_isEquipped || !_engineRunning) return;
-            _fuel = Mathf.Max(0f, _fuel - fuelConsumptionPerSecond * Time.deltaTime);
-            if (_fuel <= 0f) StopEngine();
+            // TODO: re-enable fuel drain when fuel system is ready
+            // _fuel = Mathf.Max(0f, _fuel - fuelConsumptionPerSecond * Time.deltaTime);
+            // if (_fuel <= 0f) StopEngine();
         }
 
         protected virtual void OnEngineStarted() { }
