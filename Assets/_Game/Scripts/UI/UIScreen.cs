@@ -103,8 +103,9 @@ namespace Fields.UI
         void SetInteractable(bool on)
         {
             if (_group == null) return;
-            _group.interactable    = on;
-            _group.blocksRaycasts  = on;
+            _group.ignoreParentGroups = on;
+            _group.interactable       = on;
+            _group.blocksRaycasts     = on;
         }
 
         void SaveFocus()
