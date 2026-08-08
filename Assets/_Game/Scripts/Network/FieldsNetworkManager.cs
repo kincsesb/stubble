@@ -19,6 +19,23 @@ namespace Fields.Network
 
         int _spawnIndex;
 
+        public override void Awake()
+        {
+            base.Awake();
+            // Disable FizzySteamworks in Awake (before it can call InitRelayNetworkAccess)
+            // so it doesn't log "Steamworks is not initialized" when Steam is not running.
+#if STEAMWORKS_NET
+            bool steamUp = Steamworks.SteamAPI.IsSteamRunning();
+#else
+            bool steamUp = false;
+#endif
+            if (!steamUp)
+            {
+                var fizzy = GetComponent<Mirror.FizzySteam.FizzySteamworks>();
+                if (fizzy != null) fizzy.enabled = false;
+            }
+        }
+
         public override void Start()
         {
             base.Start();
@@ -34,7 +51,15 @@ namespace Fields.Network
                 var kcp = GetComponent<KcpTransport>() ?? gameObject.AddComponent<KcpTransport>();
                 Transport.active = kcp;
                 autoCreatePlayer = false; // scene already has the player GO; don't spawn a second one
+
+                // Temporarily disable TerrainColliders so Mirror's SpawnObjects SetActive call
+                // doesn't trigger "TerrainCollider: MeshCollider is not supported" engine warning.
+                var terrainCols = FindObjectsByType<TerrainCollider>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (var tc in terrainCols) tc.enabled = false;
+
                 StartHost();
+
+                foreach (var tc in terrainCols) tc.enabled = true;
             }
         }
 

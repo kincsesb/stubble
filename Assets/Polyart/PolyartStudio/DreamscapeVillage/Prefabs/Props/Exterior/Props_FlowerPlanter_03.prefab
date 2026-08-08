@@ -24,6 +24,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8520683665672561158}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -31,7 +32,6 @@ Transform:
   m_Children:
   - {fileID: 8433879671789588734}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!205 &8227169705019042154
 LODGroup:
@@ -57,6 +57,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 3731315589162623656}
     m_Modifications:
     - target: {fileID: 100000, guid: abc00000000010340073230921148249, type: 3}
@@ -108,10 +109,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2300000, guid: abc00000000010340073230921148249, type: 3}
-      propertyPath: m_Materials.Array.data[3]
+      propertyPath: 'm_Materials.Array.data[3]'
       value: 
-      objectReference: {fileID: 2100000, guid: 60c262df2f1b5eb47ace4c3923a227a3, type: 2}
+      objectReference: {fileID: 2100000, guid: 38554d4a02a6a6549946aa18118e7786, type: 2}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 100000, guid: abc00000000010340073230921148249, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5804307099857521971}
   m_SourcePrefab: {fileID: 100100000, guid: abc00000000010340073230921148249, type: 3}
 --- !u!4 &8433879671789588734 stripped
 Transform:
@@ -131,8 +138,16 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8433879671790079198}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Size: {x: 0.46, y: 0.34, z: 4.41}
   m_Center: {x: -0.18, y: 0.14, z: -0.02399081}
