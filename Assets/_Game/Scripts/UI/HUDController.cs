@@ -3,6 +3,7 @@ using Fields.Core;
 using Fields.Economy;
 using Fields.Grass;
 using Fields.Tools;
+using MoreMountains.Tools;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,8 +19,8 @@ namespace Fields.UI
     {
         public static HUDController Instance { get; private set; }
         [Header("Bars")]
-        public Image staminaBar;
-        public Image fuelBar;
+        public MMProgressBar staminaBar;
+        public MMProgressBar fuelBar;
 
         [Header("Money")]
         public TextMeshProUGUI moneyText;
@@ -33,10 +34,8 @@ namespace Fields.UI
         public TextMeshProUGUI baleCountText;
 
         [Header("Baling progress")]
-        [Tooltip("Assign a bar Image (fillMethod=Horizontal). Created from code if null.")]
-        public Image balingBar;
-        [Tooltip("Optional background behind the baling bar.")]
-        public Image balingBarBg;
+        [Tooltip("Assign an MMProgressBar. Created from code if null.")]
+        public MMProgressBar balingBar;
         [Tooltip("Label inside the bar showing progress %. Auto-created.")]
         public TextMeshProUGUI balingBarLabel;
 
@@ -53,6 +52,11 @@ namespace Fields.UI
         public PlayerController player;
         public ToolHolder toolHolder;
         public GrassField activeGrassField;
+
+        // Cached foreground images for per-frame color tinting
+        Image _staminaFgImg;
+        Image _fuelFgImg;
+        Image _balingFgImg;
 
         // Money animation
         float _displayedMoney;
@@ -117,6 +121,8 @@ namespace Fields.UI
             }
             EnsureBalingBar();
             EnsurePromptText();
+            _staminaFgImg = staminaBar?.ForegroundBar?.GetComponent<Image>();
+            _fuelFgImg    = fuelBar?.ForegroundBar?.GetComponent<Image>();
         }
 
         void BuildFloatingCanvas()
@@ -133,31 +139,38 @@ namespace Fields.UI
         {
             if (balingBar != null) return;
 
-            // Dark background track
-            var bgGO = new GameObject("BalingBarBg", typeof(RectTransform), typeof(Image));
+            // Container: background Image + MMProgressBar
+            var bgGO = new GameObject("BalingBarContainer", typeof(RectTransform), typeof(Image));
             bgGO.transform.SetParent(transform, false);
             var bgRT = bgGO.GetComponent<RectTransform>();
             bgRT.anchorMin = new Vector2(0.5f, 0f);
             bgRT.anchorMax = new Vector2(0.5f, 0f);
             bgRT.anchoredPosition = new Vector2(0f, 78f);
             bgRT.sizeDelta = new Vector2(360f, 20f);
-            balingBarBg = bgGO.GetComponent<Image>();
-            balingBarBg.color = new Color(0f, 0f, 0f, 0.55f);
+            bgGO.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
             bgGO.SetActive(false);
 
-            // Fill bar (child of bg)
-            var go = new GameObject("BalingBar", typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(bgGO.transform, false);
-            var rt = go.GetComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = new Vector2(2f, 2f);
-            rt.offsetMax = new Vector2(-2f, -2f);
-            balingBar = go.GetComponent<Image>();
-            balingBar.color = new Color(0.9f, 0.7f, 0.1f);
-            balingBar.type = Image.Type.Filled;
-            balingBar.fillMethod = Image.FillMethod.Horizontal;
-            balingBar.fillAmount = 0f;
+            // ForegroundBar fill (child, full size, left-pivot so LocalScale fills left-to-right)
+            var fgGO = new GameObject("BalingBarFill", typeof(RectTransform), typeof(Image));
+            fgGO.transform.SetParent(bgGO.transform, false);
+            var fgRT = fgGO.GetComponent<RectTransform>();
+            fgRT.pivot      = new Vector2(0f, 0.5f);
+            fgRT.anchorMin  = Vector2.zero;
+            fgRT.anchorMax  = Vector2.one;
+            fgRT.offsetMin  = new Vector2(2f, 2f);
+            fgRT.offsetMax  = new Vector2(-2f, -2f);
+            _balingFgImg = fgGO.GetComponent<Image>();
+            _balingFgImg.color = new Color(0.9f, 0.7f, 0.1f);
+
+            // MMProgressBar on container
+            balingBar = bgGO.AddComponent<MMProgressBar>();
+            balingBar.ForegroundBar = fgGO.transform;
+            balingBar.FillMode = MMProgressBar.FillModes.LocalScale;
+            balingBar.BarDirection = MMProgressBar.BarDirections.LeftToRight;
+            balingBar.TimeScale = MMProgressBar.TimeScales.UnscaledTime;
+            balingBar.LerpForegroundBar = true;
+            balingBar.LerpForegroundBarSpeedIncreasing = 20f;
+            balingBar.LerpForegroundBarSpeedDecreasing = 20f;
 
             // Label centered over the bar
             var labelGO = new GameObject("BalingBarLabel", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -231,65 +244,54 @@ namespace Fields.UI
                 : player.StaminaNormalized;
             if (staminaBar != null)
             {
-                bool showStamina = stamina < 0.999f;
-                staminaBar.gameObject.SetActive(showStamina);
-                if (showStamina)
+                staminaBar.gameObject.SetActive(true);
+                staminaBar.SetBar01(stamina);
+                Color staminaColor = stamina > 0.6f
+                    ? Color.Lerp(new Color(1f, 0.75f, 0f), new Color(0.15f, 0.85f, 0.25f), (stamina - 0.6f) / 0.4f)
+                    : Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.75f, 0f), stamina / 0.6f);
+                if (stamina < 0.25f)
                 {
-                    staminaBar.fillAmount = stamina;
-                    Color staminaColor = stamina > 0.6f
-                        ? Color.Lerp(new Color(1f, 0.75f, 0f), new Color(0.15f, 0.85f, 0.25f), (stamina - 0.6f) / 0.4f)
-                        : Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.75f, 0f), stamina / 0.6f);
-                    // Critical stamina: urgent pulse
-                    if (stamina < 0.25f)
-                    {
-                        float pulse = (Mathf.Sin(Time.time * 8f) + 1f) * 0.5f;
-                        staminaColor = Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.5f, 0.1f), pulse);
-                        float scl = 1f + pulse * 0.12f;
-                        staminaBar.transform.localScale = new Vector3(scl, scl, 1f);
-                        if (stamina < 0.15f && _staminaLowTimer <= 0f)
+                    float pulse = (Mathf.Sin(Time.time * 8f) + 1f) * 0.5f;
+                    staminaColor = Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.5f, 0.1f), pulse);
+                    float scl = 1f + pulse * 0.12f;
+                    staminaBar.transform.localScale = new Vector3(scl, scl, 1f);
+                    if (stamina < 0.15f && _staminaLowTimer <= 0f)
                     {
                         _staminaLowTimer = STAMINA_LOW_PULSE;
                         Fields.Feel.GameFeelController.Instance?.StartShake(0.12f, 0.012f, 20f);
                     }
-                    }
-                    else
-                    {
-                        staminaBar.transform.localScale = Vector3.one;
-                    }
-                    staminaBar.color = staminaColor;
                 }
                 else
                 {
                     staminaBar.transform.localScale = Vector3.one;
                 }
+                if (_staminaFgImg != null) _staminaFgImg.color = staminaColor;
             }
 
             // Baling progress bar
             if (balingBar != null)
             {
                 bool show = player.BalingReady || player.IsBaling;
-                // Show bg + bar together
-                if (balingBarBg != null) balingBarBg.gameObject.SetActive(show);
-                else balingBar.gameObject.SetActive(show);
+                balingBar.gameObject.SetActive(show);
 
                 if (show)
                 {
                     float prog = player.BalingProgress;
-                    balingBar.fillAmount = prog;
+                    balingBar.SetBar01(prog);
 
                     if (player.IsBaling)
                     {
                         // Pulse brightness while filling
                         float pulse = (Mathf.Sin(Time.time * 8f) + 1f) * 0.1f;
-                        balingBar.color = Color.Lerp(
+                        Color balingColor = Color.Lerp(
                             new Color(0.95f, 0.70f, 0.05f),
                             new Color(0.20f, 0.95f, 0.25f),
                             prog) + new Color(pulse, pulse, pulse, 0f);
+                        if (_balingFgImg != null) _balingFgImg.color = balingColor;
 
                         // Scale bar slightly while active (feel)
                         float scl = 1f + Mathf.Sin(Time.time * 6f) * 0.015f;
-                        if (balingBarBg != null)
-                            balingBarBg.transform.localScale = new Vector3(scl, 1f + scl * 0.03f, 1f);
+                        balingBar.transform.localScale = new Vector3(scl, 1f + scl * 0.03f, 1f);
 
                         // Progress text inside the bar
                         if (balingBarLabel != null)
@@ -301,9 +303,9 @@ namespace Fields.UI
                     {
                         // Ready but not baling: dim gold idle pulse
                         float idle = (Mathf.Sin(Time.time * 1.5f) + 1f) * 0.15f;
-                        balingBar.color = new Color(0.9f, 0.75f, 0.1f, 0.4f + idle);
-                        balingBar.fillAmount = 0f;
-                        if (balingBarBg != null) balingBarBg.transform.localScale = Vector3.one;
+                        if (_balingFgImg != null) _balingFgImg.color = new Color(0.9f, 0.75f, 0.1f, 0.4f + idle);
+                        balingBar.SetBar01(0f);
+                        balingBar.transform.localScale = Vector3.one;
                         if (balingBarLabel != null)
                             balingBarLabel.text = LocalizationManager.Instance != null
                                 ? LocalizationManager.Instance.Get("hud.baling_ready")
@@ -312,7 +314,7 @@ namespace Fields.UI
                 }
                 else
                 {
-                    if (balingBarBg != null) balingBarBg.transform.localScale = Vector3.one;
+                    balingBar.transform.localScale = Vector3.one;
                     if (balingBarLabel != null) balingBarLabel.text = "";
                 }
             }
@@ -330,12 +332,12 @@ namespace Fields.UI
                 fuelBar.gameObject.SetActive(showFuel);
                 if (showFuel)
                 {
-                    fuelBar.fillAmount = fuel;
+                    fuelBar.SetBar01(fuel);
                     // Color: blue (full) → orange → red (empty)
                     Color fuelColor = fuel > 0.3f
                         ? Color.Lerp(new Color(1f, 0.55f, 0.05f), new Color(0.15f, 0.55f, 1f), (fuel - 0.3f) / 0.7f)
                         : Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.55f, 0.05f), fuel / 0.3f);
-                    fuelBar.color = fuelColor;
+                    if (_fuelFgImg != null) _fuelFgImg.color = fuelColor;
                 }
             }
         }

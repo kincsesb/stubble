@@ -101,6 +101,11 @@ namespace Fields.Core
         bool _balingActive;                     // tracks baling-in-progress to detect start transition
         Fields.Hay.HayAccumulationSystem[] _hayAccumSystems;
 
+        // Camera lock (frozen during baling)
+        bool _lookLocked;
+        float _lockedYaw;
+        float _lockedPitch;
+
         // Vertical velocity (gravity + jump, accumulated across frames)
         float _yVelocity;
 
@@ -198,6 +203,13 @@ namespace Fields.Core
             if (InputLocked)
             {
                 _lookInput = Vector2.zero;
+                return;
+            }
+            if (_lookLocked)
+            {
+                transform.rotation = Quaternion.Euler(0f, _lockedYaw, 0f);
+                if (cameraRoot != null)
+                    cameraRoot.localRotation = Quaternion.Euler(_lockedPitch, 0f, 0f);
                 return;
             }
             Vector2 look = _lookInput;
@@ -425,6 +437,9 @@ namespace Fields.Core
                 if (!_balingActive)
                 {
                     _balingActive = true;
+                    _lookLocked  = true;
+                    _lockedYaw   = _yaw;
+                    _lockedPitch = _pitch;
                     // Lock cursor so it doesn't show during the baling hold
                     Cursor.lockState = CursorLockMode.Locked;
                     Cursor.visible = false;
@@ -438,6 +453,7 @@ namespace Fields.Core
             else
             {
                 _balingTimer = 0f;
+                if (_balingActive) _lookLocked = false;
                 _balingActive = false;
             }
         }

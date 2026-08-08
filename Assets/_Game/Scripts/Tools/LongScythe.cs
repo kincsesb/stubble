@@ -32,7 +32,7 @@ namespace Fields.Tools
         protected override void OnSweepBegin()
         {
             _prevSweepTip = CalcFanTip(0f);
-            TryConsumeStamina(14f);
+            TryConsumeStamina(5f);
         }
 
         protected override void OnSweepTick(float rawTimer)

@@ -16676,6 +16676,7 @@ GameObject:
   - component: {fileID: 239781817}
   - component: {fileID: 239781819}
   - component: {fileID: 239781818}
+  - component: {fileID: 239781900}
   m_Layer: 0
   m_Name: FuelBar_BG
   m_TagString: Untagged
@@ -16741,6 +16742,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 239781816}
   m_CullTransparentMesh: 1
+--- !u!114 &239781900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 239781816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a42a23ce4f9ed24abde69beacbef2f4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: MoreMountains.Tools::MoreMountains.Tools.MMProgressBar
+  PlayerID:
+  ForegroundBar: {fileID: 465198301}
+  DelayedBarDecreasing: {fileID: 0}
+  DelayedBarIncreasing: {fileID: 0}
+  BarDirection: 0
+  FillMode: 0
+  BarFillMode: 0
+  LerpForegroundBar: 1
+  LerpForegroundBarSpeedDecreasing: 15
+  LerpForegroundBarSpeedIncreasing: 15
+  LerpForegroundBarDurationDecreasing: 0.2
+  LerpForegroundBarDurationIncreasing: 0.2
+  TimeScale: 1
+  BumpScaleOnChange: 1
+  BumpDuration: 0.2
+  BumpScaleAnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  DebugNewTargetValue: 0.5
+  SetInitialFillValueOnStart: 0
+  InitialFillValue: 0
+  HideOnIdle: 0
+  IdleDelay: 1
+  HideDelay: 0.2
 --- !u!1 &239947265
 GameObject:
   m_ObjectHideFlags: 0
@@ -27604,8 +27662,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2a1c166528474d5fa4197512f6129ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.UI.HUDController
-  staminaBar: {fileID: 1469522200}
-  fuelBar: {fileID: 465198299}
+  staminaBar: {fileID: 886532900}
+  fuelBar: {fileID: 239781900}
   moneyText: {fileID: 1617980004}
   moneyAnimDuration: 0.4
   completionText: {fileID: 1063050006}
@@ -31628,7 +31686,7 @@ RectTransform:
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0, y: 0.5}
 --- !u!1 &465419900
 GameObject:
   m_ObjectHideFlags: 0
@@ -56570,6 +56628,7 @@ GameObject:
   - component: {fileID: 886532853}
   - component: {fileID: 886532855}
   - component: {fileID: 886532854}
+  - component: {fileID: 886532900}
   m_Layer: 0
   m_Name: StaminaBar_BG
   m_TagString: Untagged
@@ -56635,6 +56694,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 886532852}
   m_CullTransparentMesh: 1
+--- !u!114 &886532900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 886532852}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a42a23ce4f9ed24abde69beacbef2f4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: MoreMountains.Tools::MoreMountains.Tools.MMProgressBar
+  PlayerID:
+  ForegroundBar: {fileID: 1469522202}
+  DelayedBarDecreasing: {fileID: 0}
+  DelayedBarIncreasing: {fileID: 0}
+  BarDirection: 0
+  FillMode: 0
+  BarFillMode: 0
+  LerpForegroundBar: 1
+  LerpForegroundBarSpeedDecreasing: 15
+  LerpForegroundBarSpeedIncreasing: 15
+  LerpForegroundBarDurationDecreasing: 0.2
+  LerpForegroundBarDurationIncreasing: 0.2
+  TimeScale: 1
+  BumpScaleOnChange: 1
+  BumpDuration: 0.2
+  BumpScaleAnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  DebugNewTargetValue: 0.5
+  SetInitialFillValueOnStart: 0
+  InitialFillValue: 0
+  HideOnIdle: 0
+  IdleDelay: 1
+  HideDelay: 0.2
 --- !u!1001 &889998518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -97060,7 +97176,7 @@ RectTransform:
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0, y: 0.5}
 --- !u!4 &1470088563 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1030972208, guid: abc00000000006814118857949545578, type: 3}
