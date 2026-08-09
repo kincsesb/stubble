@@ -27924,6 +27924,8 @@ MonoBehaviour:
   moneyText: {fileID: 1617980004}
   moneyAnimDuration: 0.4
   completionText: {fileID: 1063050006}
+  grassCutBar: {fileID: 0}
+  grassCutBarLabel: {fileID: 0}
   baleCountText: {fileID: 1082834409}
   balingBar: {fileID: 0}
   balingBarLabel: {fileID: 0}
@@ -70423,7 +70425,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1063050006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -87430,7 +87432,7 @@ MonoBehaviour:
   balingThreshold: 60
   balingDuration: 2.5
   squareBalePrefab: {fileID: 4311098249806456269, guid: 2a9dee61bd7a54850b993f728cc41291, type: 3}
-  roundBalePrefab: {fileID: 0}
+  roundBalePrefab: {fileID: 7106720738307038435, guid: 8c3a381f1c5d644a6a83de52ecd6b3db, type: 3}
   hapticSwingDuration: 0.12
   hapticSwingLow: 0.3
   hapticSwingHigh: 0.6

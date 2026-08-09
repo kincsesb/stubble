@@ -122,26 +122,62 @@ namespace Fields.UI
         }
 
         // ------------------------------------------------------------------ //
-        // Parcels tab
+        // Parcels tab — single aggregated card
         // ------------------------------------------------------------------ //
 
         void RefreshParcels()
         {
-            if (parcelCards == null) return;
-            int activeCount = Fields.Core.WorldBootstrap.Instance?.ActiveParcelCount ?? parcelCards.Length;
-            for (int i = 0; i < parcelCards.Length; i++)
+            if (parcelCards == null || parcelCards.Length == 0) return;
+
+            var ss = SessionState.Instance;
+            int activeCount = Fields.Core.WorldBootstrap.Instance?.ActiveParcelCount ?? 1;
+
+            // Aggregate all parcel data into one combined view
+            long totalAreaCut = 0, totalAreaTotal = 0;
+            long totalHaySpawned = 0, totalHayCollected = 0, totalHayInField = 0;
+            long totalSquareBales = 0, totalRoundBales = 0;
+            long totalMoneyEarned = 0;
+            float totalTime = 0f;
+
+            for (int i = 0; i < activeCount; i++)
             {
-                if (parcelCards[i] == null) continue;
-                if (i < activeCount)
-                {
-                    parcelCards[i].gameObject.SetActive(true);
-                    parcelCards[i].Refresh(i);
-                }
-                else
-                {
-                    parcelCards[i].gameObject.SetActive(false);
-                }
+                var p = ss?.GetParcel(i);
+                if (p == null) continue;
+                totalAreaCut      += p.AreaCutCells;
+                totalAreaTotal    += p.AreaTotalCells;
+                totalHaySpawned   += p.HayPilesSpawned;
+                totalHayCollected += p.HayPilesCollected;
+                totalHayInField   += p.HayPilesInField;
+                totalSquareBales  += p.SquareBalesMade;
+                totalRoundBales   += p.RoundBalesMade;
+                totalMoneyEarned  += p.MoneyEarned;
+                totalTime         += p.TimeSpentSeconds;
             }
+
+            // Completion: authoritative from active GrassField
+            float completionPct = 0f;
+            var activeField = Fields.UI.HUDController.Instance?.activeGrassField;
+            if (activeField != null)
+                completionPct = activeField.GetCompletionPercent();
+            else if (totalAreaTotal > 0)
+                completionPct = (float)totalAreaCut / totalAreaTotal * 100f;
+
+            string name = LocalizationManager.Instance != null
+                ? LocalizationManager.Instance.Get("journal.all_fields")
+                : "Field";
+
+            // Show only card 0 with aggregated data; hide the rest
+            if (parcelCards[0] != null)
+            {
+                parcelCards[0].gameObject.SetActive(true);
+                parcelCards[0].RefreshAggregated(name, completionPct,
+                    totalAreaCut, totalAreaTotal,
+                    totalHaySpawned, totalHayCollected, totalHayInField,
+                    totalSquareBales, totalRoundBales,
+                    totalMoneyEarned, totalTime);
+            }
+            for (int i = 1; i < parcelCards.Length; i++)
+                if (parcelCards[i] != null) parcelCards[i].gameObject.SetActive(false);
         }
 
         // ------------------------------------------------------------------ //

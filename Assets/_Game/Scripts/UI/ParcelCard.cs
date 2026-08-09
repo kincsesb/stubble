@@ -59,6 +59,37 @@ namespace Fields.UI
                 ? LocalizationManager.Instance.Get(key, args)
                 : (args.Length > 0 ? string.Format(key, args) : key);
 
+        public void RefreshAggregated(string name, float completionPct,
+            long areaCut, long areaTotal,
+            long haySpawned, long hayCollected, long hayInField,
+            long squareBales, long roundBales,
+            long moneyEarned, float timeSeconds)
+        {
+            if (lockedOverlay != null) lockedOverlay.SetActive(false);
+            ShowUnlockedContent(true);
+            if (unlockPriceText != null) unlockPriceText.gameObject.SetActive(false);
+
+            SetText(parcelNameText,    name);
+            SetText(completionPctText, $"{completionPct:F1}%");
+            SetText(areaCutText,       $"{areaCut * CELL_AREA_M2:F0} m²");
+            SetText(areaRemainingText, $"{(areaTotal - areaCut) * CELL_AREA_M2:F0} m²");
+            SetText(haySpawnedText,    $"{haySpawned}");
+            SetText(hayCollectedText,  $"{hayCollected}");
+            if (hayInFieldText != null)
+            {
+                hayInFieldText.text  = hayInField > 0 ? $"{hayInField}" : L("parcel.hay_clear");
+                hayInFieldText.color = hayInField > 0 ? hayRemainingColor : hayClearColor;
+            }
+            SetText(squareBalesText,  $"{squareBales}");
+            SetText(roundBalesText,   $"{roundBales}");
+            SetText(moneyEarnedText,  $"${moneyEarned}");
+            SetText(timeSpentText,    FormatTime(timeSeconds));
+
+            if (statusText != null) statusText.gameObject.SetActive(false);
+            if (grassCutTick != null) grassCutTick.SetActive(completionPct >= 100f);
+            if (hayClearTick != null) hayClearTick.SetActive(hayInField <= 0 && haySpawned > 0);
+        }
+
         public void Refresh(int parcelIndex)
         {
             bool unlocked = ParcelManager.Instance == null || ParcelManager.Instance.IsUnlocked(parcelIndex);

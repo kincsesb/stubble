@@ -115,6 +115,10 @@ namespace Fields.Core
         // External velocity (applied next move frame)
         Vector3 _externalVelocity;
 
+        // Round bale pushing
+        Fields.Hay.RoundBale _nearestBale;
+        Fields.Hay.RoundBale _pushingBale;
+
         // When true, HandleMovement/Bob/FOV are suppressed (e.g. riding mower)
         public bool IsMounted { get; set; }
 
@@ -144,7 +148,9 @@ namespace Fields.Core
         void Update()
         {
             HandleLook();
+            ScanNearestBale();
             HandleMovement();
+            HandleRoundBalePush();
             HandleBob();
             HandleFOV();
             HandleHaptics();
@@ -171,16 +177,30 @@ namespace Fields.Core
             _interactHeld = value.isPressed;
             if (value.isPressed)
             {
-                // Baling only triggers when looking downward (pitch > 30°) to prevent
-                // accidental baling when trying to pick up bales or interact with stands.
                 if (_balingReady && IsLookingDown)
-                    _balingRequiresFreshPress = false; // intentional press → allow baling
+                {
+                    _balingRequiresFreshPress = false;
+                }
+                else if (_pushingBale == null && _nearestBale != null)
+                {
+                    // Start pushing the round bale
+                    _pushingBale = _nearestBale;
+                    _pushingBale.StartPush(this);
+                    _balingRequiresFreshPress = true; // prevent accidental baling
+                }
                 else
+                {
                     TryInteract();
+                }
             }
             else
             {
-                _balingRequiresFreshPress = true; // release resets: next hold must be a new press
+                _balingRequiresFreshPress = true;
+                if (_pushingBale != null)
+                {
+                    _pushingBale.StopPush();
+                    _pushingBale = null;
+                }
             }
         }
 
@@ -242,6 +262,14 @@ namespace Fields.Core
         void HandleMovement()
         {
             if (IsMounted) return;
+            if (_pushingBale != null)
+            {
+                // Only apply gravity — XZ movement is controlled by bale push
+                if (!_cc.isGrounded) _yVelocity += Physics.gravity.y * Time.deltaTime;
+                else _yVelocity = -2f;
+                _cc.Move(new Vector3(0f, _yVelocity * Time.deltaTime, 0f));
+                return;
+            }
             // Block WASD movement while baling; keep gravity + jump ticking normally
             Vector2 moveInput = IsBaling ? Vector2.zero : _moveInput;
             bool moving = moveInput.sqrMagnitude > 0.01f && _cc.isGrounded;
@@ -418,6 +446,47 @@ namespace Fields.Core
             _externalVelocity += force;
         }
 
+        /// <summary>Snap the player's XZ position (used by RoundBale to keep player at bale edge).</summary>
+        public void SetPositionXZ(Vector3 worldPos)
+        {
+            Vector3 delta = new Vector3(worldPos.x - transform.position.x, 0f, worldPos.z - transform.position.z);
+            _cc.Move(delta);
+        }
+
+        // ------------------------------------------------------------------ //
+        // Round bale interaction
+        // ------------------------------------------------------------------ //
+
+        void ScanNearestBale()
+        {
+            if (_pushingBale != null) return; // already pushing one
+
+            _nearestBale = null;
+            float closestSq = float.MaxValue;
+            foreach (var col in Physics.OverlapSphere(transform.position, 3.5f))
+            {
+                var rb = col.GetComponentInParent<Fields.Hay.RoundBale>();
+                if (rb == null || !rb.CanStartPush(this)) continue;
+                float dSq = (rb.transform.position - transform.position).sqrMagnitude;
+                if (dSq < closestSq) { closestSq = dSq; _nearestBale = rb; }
+            }
+        }
+
+        void HandleRoundBalePush()
+        {
+            if (_pushingBale == null) return;
+
+            // Safety: stop if bale got too far
+            if ((_pushingBale.transform.position - transform.position).sqrMagnitude > 25f)
+            {
+                _pushingBale.StopPush();
+                _pushingBale = null;
+                return;
+            }
+
+            _pushingBale.PushUpdate(_moveInput.y, _moveInput.x);
+        }
+
         // ------------------------------------------------------------------ //
         // Baling (hold E on cut grass — accumulation-grid based)
         // ------------------------------------------------------------------ //
@@ -531,9 +600,16 @@ namespace Fields.Core
         public string GetInteractHint()
         {
             if (IsMounted) return string.Empty;
+
+            // Pushing a bale takes priority over all other hints
+            if (_pushingBale != null) return L("hud.bale_push_active");
+
             // BalingReady now includes IsLookingDown check — only show hint when looking down at hay
             if (BalingReady)
                 return IsBaling ? L("hud.baling_cancel") : L("hud.baling_start");
+
+            // Round bale nearby — offer push hint before other interactions
+            if (_nearestBale != null) return L("hud.bale_push_start");
 
             // Forward raycast for eye-level objects
             var origin  = cameraRoot != null ? cameraRoot.position : transform.position + Vector3.up * 1.6f;

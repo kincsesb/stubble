@@ -29,6 +29,10 @@ namespace Fields.UI
 
         [Header("Completion")]
         public TextMeshProUGUI completionText;
+        [Tooltip("Progress bar for field completion. Auto-created if null.")]
+        public MMProgressBar grassCutBar;
+        [Tooltip("Label inside the grass cut bar. Auto-created.")]
+        public TextMeshProUGUI grassCutBarLabel;
 
         [Header("Carry indicator")]
         public TextMeshProUGUI baleCountText;
@@ -57,6 +61,7 @@ namespace Fields.UI
         Image _staminaFgImg;
         Image _fuelFgImg;
         Image _balingFgImg;
+        Image _grassCutFgImg;
 
         // Money animation
         float _displayedMoney;
@@ -120,6 +125,7 @@ namespace Fields.UI
                 CurrencyManager.Instance.OnMoneyChanged += OnMoneyChanged;
             }
             EnsureBalingBar();
+            EnsureGrassCutBar();
             EnsurePromptText();
             _staminaFgImg = staminaBar?.ForegroundBar?.GetComponent<Image>();
             _fuelFgImg    = fuelBar?.ForegroundBar?.GetComponent<Image>();
@@ -186,6 +192,64 @@ namespace Fields.UI
             balingBarLabel.alignment = TextAlignmentOptions.Center;
             balingBarLabel.color = new Color(1f, 1f, 1f, 0.9f);
             balingBarLabel.text = "";
+        }
+
+        void EnsureGrassCutBar()
+        {
+            if (grassCutBar != null)
+            {
+                _grassCutFgImg = grassCutBar.ForegroundBar?.GetComponent<Image>();
+                if (completionText != null) completionText.gameObject.SetActive(false);
+                return;
+            }
+
+            var bgGO = new GameObject("GrassCutBarContainer", typeof(RectTransform), typeof(Image));
+            bgGO.transform.SetParent(transform, false);
+            var bgRT = bgGO.GetComponent<RectTransform>();
+            bgRT.anchorMin = new Vector2(0.5f, 1f);
+            bgRT.anchorMax = new Vector2(0.5f, 1f);
+            bgRT.anchoredPosition = new Vector2(0f, -36f);
+            bgRT.sizeDelta = new Vector2(340f, 22f);
+            bgGO.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.4f);
+
+            var fgGO = new GameObject("GrassCutFill", typeof(RectTransform), typeof(Image));
+            fgGO.transform.SetParent(bgGO.transform, false);
+            var fgRT = fgGO.GetComponent<RectTransform>();
+            fgRT.pivot     = new Vector2(0f, 0.5f);
+            fgRT.anchorMin = Vector2.zero;
+            fgRT.anchorMax = Vector2.one;
+            fgRT.offsetMin = new Vector2(2f, 2f);
+            fgRT.offsetMax = new Vector2(-2f, -2f);
+            _grassCutFgImg = fgGO.GetComponent<Image>();
+            _grassCutFgImg.color = new Color(0.25f, 0.8f, 0.3f, 0.85f);
+
+            grassCutBar = bgGO.AddComponent<MMProgressBar>();
+            grassCutBar.ForegroundBar = fgGO.transform;
+            grassCutBar.FillMode = MMProgressBar.FillModes.LocalScale;
+            grassCutBar.BarDirection = MMProgressBar.BarDirections.LeftToRight;
+            grassCutBar.TimeScale = MMProgressBar.TimeScales.UnscaledTime;
+            grassCutBar.LerpForegroundBar = true;
+            grassCutBar.LerpForegroundBarSpeedIncreasing = 4f;
+            grassCutBar.LerpForegroundBarSpeedDecreasing = 4f;
+
+            // Label inside the bar
+            var lGO = new GameObject("GrassCutLabel", typeof(RectTransform), typeof(TextMeshProUGUI));
+            lGO.transform.SetParent(bgGO.transform, false);
+            var lRT = lGO.GetComponent<RectTransform>();
+            lRT.anchorMin = Vector2.zero;
+            lRT.anchorMax = Vector2.one;
+            lRT.offsetMin = Vector2.zero;
+            lRT.offsetMax = Vector2.zero;
+            grassCutBarLabel = lGO.GetComponent<TextMeshProUGUI>();
+            grassCutBarLabel.fontSize = 12;
+            grassCutBarLabel.fontStyle = TMPro.FontStyles.Bold;
+            grassCutBarLabel.alignment = TextAlignmentOptions.Center;
+            grassCutBarLabel.color = new Color(1f, 1f, 1f, 0.9f);
+            grassCutBarLabel.text = "";
+
+            grassCutBar.SetBar01(0f);
+            // completionText replaced by the bar — always hide it
+            if (completionText != null) completionText.gameObject.SetActive(false);
         }
 
         void EnsurePromptText()
@@ -357,11 +421,25 @@ namespace Fields.UI
 
         void UpdateCompletion()
         {
-            if (completionText == null || activeGrassField == null) return;
+            if (activeGrassField == null) return;
             float pct = activeGrassField.GetCompletionPercent();
-            completionText.text = Fields.Core.LocalizationManager.Instance != null
-                ? Fields.Core.LocalizationManager.Instance.Get("hud.completion", (int)pct)
-                : $"{pct:F0}%";
+
+            // Grass cut progress bar
+            if (grassCutBar != null)
+            {
+                grassCutBar.SetBar01(pct / 100f);
+                if (_grassCutFgImg != null)
+                    _grassCutFgImg.color = Color.Lerp(
+                        new Color(0.6f, 0.85f, 0.3f, 0.85f),
+                        new Color(0.15f, 0.9f, 0.25f, 0.85f),
+                        pct / 100f);
+            }
+
+            // Label inside the bar (only source of the % display)
+            if (grassCutBarLabel != null)
+                grassCutBarLabel.text = Fields.Core.LocalizationManager.Instance != null
+                    ? Fields.Core.LocalizationManager.Instance.Get("hud.completion", (int)pct)
+                    : $"{pct:F0}%";
 
             // Milestone flash
             int milestone = 0;
@@ -376,13 +454,19 @@ namespace Fields.UI
             {
                 _milestoneFlashTimer -= Time.deltaTime;
                 float t = _milestoneFlashTimer / MILESTONE_FLASH_DURATION;
-                completionText.color = Color.Lerp(Color.white, new Color(0.3f, 1f, 0.3f), t);
-                completionText.transform.localScale = Vector3.one * Mathf.Lerp(1f, 1.25f, t);
+                if (grassCutBarLabel != null)
+                {
+                    grassCutBarLabel.color = Color.Lerp(Color.white, new Color(0.3f, 1f, 0.3f), t);
+                    grassCutBarLabel.transform.localScale = Vector3.one * Mathf.Lerp(1f, 1.2f, t);
+                }
             }
             else
             {
-                completionText.color = Color.white;
-                completionText.transform.localScale = Vector3.one;
+                if (grassCutBarLabel != null)
+                {
+                    grassCutBarLabel.color = new Color(1f, 1f, 1f, 0.9f);
+                    grassCutBarLabel.transform.localScale = Vector3.one;
+                }
             }
         }
 

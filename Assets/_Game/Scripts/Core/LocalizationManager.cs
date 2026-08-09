@@ -114,11 +114,19 @@ namespace Fields.Core
             { "hud.money",        "$ {0}" },
             { "hud.completion",   "{0}%" },
             { "hud.bales",        "[{0}]" },
-            { "hud.baling_progress", "Baling...  {0}%" },
-            { "hud.baling_ready",    "Hold  [E]  to bale" },
-            { "hud.bale_created",    "✓  Bale Created!" },
-            { "hud.bale_drop_single","Bale dropped" },
-            { "hud.bale_drop_multi", "{0} bales dropped" },
+            { "hud.baling_progress",  "Baling...  {0}%" },
+            { "hud.baling_ready",     "Hold  [E]  to bale" },
+            { "hud.baling_start",     "Hold  [E]  to bale" },
+            { "hud.baling_cancel",    "Release  [E]  to cancel" },
+            { "hud.bale_created",     "Bale Created!" },
+            { "hud.bale_drop_single", "Bale dropped" },
+            { "hud.bale_drop_multi",  "{0} bales dropped" },
+            { "hud.pickup_bale",      "[E]  Pick up bale" },
+            { "hud.carry_full",       "Hands full" },
+            { "hud.drop_bales",       "[Q]  Drop bales" },
+            { "hud.interact",         "[E]  Interact" },
+            { "hud.bale_push_start",  "[E]  Push bale" },
+            { "hud.bale_push_active", "[WASD]  Roll / Rotate  |  [E]  Release" },
 
             // Shop
             { "shop.tab.tools",    "Tools" },
@@ -195,6 +203,7 @@ namespace Fields.Core
             { "journal.tab.statistics",    "Statistics" },
             { "journal.tab.records",       "Records" },
             { "journal.close",             "Close" },
+            { "journal.all_fields",        "Field" },
 
             // Journal statistics labels
             { "journal.stat.areacut",      "Area Cut" },
