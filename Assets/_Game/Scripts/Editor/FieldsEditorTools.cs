@@ -38,7 +38,7 @@ public static class FieldsEditorTools
             return;
         }
 
-        int fieldCount = 0, hayCount = 0;
+        int fieldCount = 0, hayCount = 0, baleCount = 0;
 
         foreach (var field in Object.FindObjectsByType<GrassField>(FindObjectsSortMode.None))
         {
@@ -52,9 +52,20 @@ public static class FieldsEditorTools
             hayCount++;
         }
 
+        foreach (var rb in Object.FindObjectsByType<RoundBale>(FindObjectsSortMode.None))
+        {
+            Object.Destroy(rb.gameObject);
+            baleCount++;
+        }
+
+        foreach (var sb in Object.FindObjectsByType<SquareBale>(FindObjectsSortMode.None))
+        {
+            Object.Destroy(sb.gameObject);
+        }
+
         Fields.Save.SaveSystem.Instance?.DeleteSave();
 
-        Debug.Log($"[Fields] Reset: {fieldCount} grass fields, {hayCount} hay systems. Save deleted.");
+        Debug.Log($"[Fields] Reset: {fieldCount} grass fields, {hayCount} hay systems, {baleCount} round bales. Save deleted.");
     }
 
     [MenuItem("Fields/Reset Grass + Hay (Play Mode only)", validate = true)]

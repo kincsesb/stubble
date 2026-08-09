@@ -16,7 +16,13 @@ namespace Fields.Feel
         [Tooltip("Fraction of duration spent growing to overshoot")]
         [Range(0.3f, 0.8f)] public float growFraction = 0.55f;
 
-        void Start() => StartCoroutine(PopIn());
+        Vector3 _baseScale;
+
+        void Start()
+        {
+            _baseScale = transform.localScale;
+            StartCoroutine(PopIn());
+        }
 
         IEnumerator PopIn()
         {
@@ -30,23 +36,21 @@ namespace Fields.Feel
                 float scale;
                 if (elapsed <= growEnd)
                 {
-                    // Ease-out grow to overshoot
                     float n = elapsed / growEnd;
                     float eased = 1f - Mathf.Pow(1f - n, 2f);
                     scale = Mathf.Lerp(0f, overshoot, eased);
                 }
                 else
                 {
-                    // Settle back to 1
                     float n = (elapsed - growEnd) / (duration - growEnd);
                     float eased = 1f - Mathf.Pow(1f - n, 3f);
                     scale = Mathf.Lerp(overshoot, 1f, eased);
                 }
-                transform.localScale = Vector3.one * scale;
+                transform.localScale = _baseScale * scale;
                 yield return null;
             }
-            transform.localScale = Vector3.one;
-            Destroy(this); // self-remove — one-shot
+            transform.localScale = _baseScale;
+            Destroy(this);
         }
     }
 }

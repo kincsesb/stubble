@@ -111,6 +111,15 @@ namespace Fields.Hay
 
         void OnTriggerEnter(Collider other)
         {
+            // Round bale rolled into the zone
+            var roundBale = other.GetComponentInParent<RoundBale>();
+            if (roundBale != null)
+            {
+                SellRoundBale(roundBale);
+                return;
+            }
+
+            // Square bales carried by player
             var player = other.GetComponentInParent<PlayerController>();
             if (player == null) return;
 
@@ -119,6 +128,7 @@ namespace Fields.Hay
 
             int total = CalcTotal(bales.Count);
             CurrencyManager.Instance?.Earn(total);
+            Fields.UI.HUDController.Instance?.TriggerSellFeel(total);
             player.DropSquareBales();
 
             // Destroy the dropped bales immediately — they were just sold
@@ -130,7 +140,18 @@ namespace Fields.Hay
             }
 
             if (saleEffect != null) saleEffect.Play();
-            Debug.Log($"[DeliveryZone] Sold {bales.Count} bale(s) for ${total}");
+            Debug.Log($"[DeliveryZone] Sold {bales.Count} square bale(s) for ${total}");
+        }
+
+        void SellRoundBale(RoundBale bale)
+        {
+            int earned = CalcRoundBaleTotal();
+            CurrencyManager.Instance?.Earn(earned);
+            Fields.UI.HUDController.Instance?.TriggerSellFeel(earned);
+            if (saleEffect != null) saleEffect.Play();
+            Debug.Log($"[DeliveryZone] Sold round bale for ${earned}");
+            bale.StopPush();
+            Object.Destroy(bale.gameObject);
         }
 
         int CalcTotal(int baleCount)
@@ -138,6 +159,13 @@ namespace Fields.Hay
             var bm = Fields.Economy.BalerManager.Instance;
             float mult = bm != null ? bm.HayValueMultiplier : 1f;
             return Mathf.RoundToInt(pricePerBale * baleCount * mult);
+        }
+
+        int CalcRoundBaleTotal()
+        {
+            var bm = Fields.Economy.BalerManager.Instance;
+            float mult = bm != null ? bm.HayValueMultiplier : 1f;
+            return Mathf.RoundToInt(pricePerBale * 4 * mult);
         }
     }
 }

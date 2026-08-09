@@ -298,8 +298,17 @@ namespace Fields.UI
 
         // ------------------------------------------------------------------ //
 
+        bool IsGameActive => player != null && player.gameObject.activeInHierarchy;
+
         void UpdateBars()
         {
+            if (!IsGameActive)
+            {
+                if (staminaBar != null) staminaBar.gameObject.SetActive(false);
+                if (balingBar  != null) balingBar.gameObject.SetActive(false);
+                if (fuelBar    != null) fuelBar.gameObject.SetActive(false);
+                return;
+            }
             if (player == null) return;
 
             // Stamina: melee tool pool when equipped, else player sprint pool
@@ -421,7 +430,13 @@ namespace Fields.UI
 
         void UpdateCompletion()
         {
+            if (!IsGameActive)
+            {
+                if (grassCutBar != null) grassCutBar.gameObject.SetActive(false);
+                return;
+            }
             if (activeGrassField == null) return;
+            if (grassCutBar != null) grassCutBar.gameObject.SetActive(true);
             float pct = activeGrassField.GetCompletionPercent();
 
             // Grass cut progress bar
