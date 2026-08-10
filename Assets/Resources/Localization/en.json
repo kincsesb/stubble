@@ -1,178 +1,1008 @@
 {
   "entries": [
-    { "key": "hud.money",        "value": "$ {0}" },
-    { "key": "hud.completion",   "value": "{0}%" },
-    { "key": "hud.bales",        "value": "[{0}]" },
-    { "key": "hud.baling_progress", "value": "Baling...  {0}%" },
-    { "key": "hud.baling_ready",    "value": "Hold  [E]  to bale" },
-    { "key": "hud.baling_start",   "value": "Hay Making  —  Hold  [E]" },
-    { "key": "hud.baling_cancel",  "value": "Release [E] to cancel" },
-    { "key": "hud.pickup_bale",    "value": "Pick Up Bale  —  [E]" },
-    { "key": "hud.carry_full",     "value": "Carrying max bales  (3/3)" },
-    { "key": "hud.interact",       "value": "Interact  —  [E]" },
-    { "key": "hud.drop_bales",     "value": "Drop Bales  —  [G]" },
-    { "key": "hud.saved",          "value": "Saved" },
-    { "key": "hud.bale_created",    "value": "✓  Bale Created!" },
-    { "key": "hud.bale_drop_single","value": "Bale dropped" },
-    { "key": "hud.bale_drop_multi", "value": "{0} bales dropped" },
-    { "key": "shop.tab.tools",   "value": "Tools" },
-    { "key": "shop.tab.upgrades","value": "Upgrades" },
-    { "key": "shop.tab.parcels", "value": "Parcels" },
-    { "key": "shop.balance",     "value": "Balance:  $ {0}" },
-    { "key": "shop.buy",         "value": "Buy  ${0}" },
-    { "key": "shop.upgrade",     "value": "Upgrade  ${0}" },
-    { "key": "shop.owned",       "value": "Owned" },
-    { "key": "shop.maxlevel",    "value": "Max Level" },
-    { "key": "shop.unlock",      "value": "Unlock  ${0}" },
-    { "key": "shop.locked",      "value": "Locked" },
-    { "key": "shop.notenough",   "value": "Not enough money" },
-    { "key": "shop.baler",       "value": "Baler" },
-    { "key": "shop.hayvalue",    "value": "Hay Value" },
-    { "key": "shop.roundbaler",  "value": "Round Baler" },
-    { "key": "shop.upgrades.empty", "value": "No tools owned yet. Buy one in the Tools tab." },
-    { "key": "shop.unlocks.empty",  "value": "No content available." },
-    { "key": "tool.handsickle",  "value": "Hand Sickle" },
-    { "key": "tool.longscythe",  "value": "Long Scythe" },
-    { "key": "tool.trimmer",     "value": "String Trimmer" },
-    { "key": "tool.pushmower",   "value": "Push Mower" },
-    { "key": "tool.rideon",      "value": "Ride-On Mower" },
-    { "key": "parcel.0.name",    "value": "Home Field" },
-    { "key": "parcel.1.name",    "value": "East Meadow" },
-    { "key": "parcel.2.name",    "value": "Hillside" },
-    { "key": "parcel.3.name",    "value": "South Plateau" },
-    { "key": "parcel.hay_clear",         "value": "Clear" },
-    { "key": "parcel.status.complete",   "value": "Complete" },
-    { "key": "parcel.status.inprogress", "value": "In Progress" },
-    { "key": "endscreen.title",   "value": "Parcel Complete!" },
-    { "key": "endscreen.earned",  "value": "Earned: ${0}" },
-    { "key": "endscreen.time",    "value": "Time: {0}:{1:D2}" },
-    { "key": "endscreen.continue","value": "Continue" },
-    { "key": "end.title",         "value": "All Fields Cleared!" },
-    { "key": "end.earnings",      "value": "Total earnings: ${0}" },
-    { "key": "end.time",          "value": "Time: {0:00}:{1:00}" },
-    { "key": "end.playagain",     "value": "Play Again" },
-    { "key": "end.quit",          "value": "Quit" },
-    { "key": "menu.overwrite.header", "value": "New Game" },
-    { "key": "menu.overwrite.body",   "value": "Starting a new game will overwrite your existing save. This cannot be undone." },
-    { "key": "menu.quit.header",      "value": "Quit" },
-    { "key": "menu.quit.body",        "value": "Are you sure you want to quit?" },
-    { "key": "pause.coop_notice",     "value": "The game continues while this menu is open." },
-    { "key": "coop.notice",    "value": "Guests start with base tools and their progress is not saved.\nThe host owns the save file." },
-    { "key": "coop.join.empty","value": "No joinable lobbies found.\nAsk a friend to host and invite you." },
-    { "key": "tooltip.controls",    "value": "<b>Controls</b>\nWASD / L-Stick — Move\nMouse / R-Stick — Look\nShift / LStick — Sprint\nLMB / West btn — Use tool\nScroll / LB–RB — Switch tool\nE / North btn — Interact\nQ — Drop bale\nJ / View tap — Journal\nTab hold / View hold — This panel\nEsc / Start — Pause" },
-    { "key": "tooltip.tips_header", "value": "<b>Tips</b>" },
-    { "key": "hint.0",           "value": "Hold primary to use your tool." },
-    { "key": "hint.1",           "value": "Sell bales at the stand for money." },
-    { "key": "hint.2",           "value": "Carry up to 3 bales at once." },
-    { "key": "hint.3",           "value": "Uncut grass slows the push mower." },
-    { "key": "hint.4",           "value": "Round bales roll on slopes — use it!" },
-    { "key": "settings.revert.countdown", "value": "Reverting in {0}s…" },
-    { "key": "journal.tab.parcels",       "value": "Parcels" },
-    { "key": "journal.tab.statistics",    "value": "Statistics" },
-    { "key": "journal.tab.records",       "value": "Records" },
-    { "key": "journal.close",             "value": "Close" },
-    { "key": "journal.stat.areacut",      "value": "Area Cut" },
-    { "key": "journal.stat.hay",          "value": "Hay Collected" },
-    { "key": "journal.stat.squarebales",  "value": "Square Bales" },
-    { "key": "journal.stat.roundbales",   "value": "Round Bales" },
-    { "key": "journal.stat.earned",       "value": "Money Earned" },
-    { "key": "journal.stat.spent",        "value": "Money Spent" },
-    { "key": "journal.stat.distance",     "value": "Distance" },
-    { "key": "journal.stat.swings",       "value": "Swings" },
-    { "key": "journal.stat.playtime",     "value": "Playtime" },
-    { "key": "journal.stat.wallet",       "value": "Wallet" },
-    { "key": "journal.stat.parcels",      "value": "Parcels Completed" },
-    { "key": "journal.stat.overall",      "value": "Overall Completion" },
-    { "key": "journal.stat.totaltime",    "value": "Total Playtime" },
-    { "key": "journal.rec.fastest0",      "value": "Home Field" },
-    { "key": "journal.rec.fastest1",      "value": "East Meadow" },
-    { "key": "journal.rec.fastest2",      "value": "Hillside" },
-    { "key": "journal.rec.fastest3",      "value": "South Plateau" },
-    { "key": "journal.rec.area",          "value": "Largest Area" },
-    { "key": "journal.rec.bales",         "value": "Most Bales Delivered" },
-    { "key": "journal.rec.streak",        "value": "Longest Streak" },
-    { "key": "journal.rec.fullgame",      "value": "Full Game Completion" },
-    { "key": "a11y.title",       "value": "Accessibility" },
-    { "key": "a11y.fov",         "value": "Field of View: {0}°" },
-    { "key": "a11y.blur",        "value": "Motion Blur" },
-    { "key": "a11y.colorblind",  "value": "Colorblind Mode" },
-    { "key": "a11y.cb.none",     "value": "None" },
-    { "key": "a11y.cb.deut",     "value": "Deuteranopia" },
-    { "key": "a11y.cb.prot",     "value": "Protanopia" },
-    { "key": "a11y.cb.trit",     "value": "Tritanopia" },
-    { "key": "settings.tab.display",      "value": "Display" },
-    { "key": "settings.tab.audio",        "value": "Audio" },
-    { "key": "settings.tab.controls",     "value": "Controls" },
-    { "key": "settings.tab.accessibility","value": "Accessibility" },
-    { "key": "settings.tab.language",     "value": "Language" },
-    { "key": "settings.wm.fullscreen",    "value": "Fullscreen" },
-    { "key": "settings.wm.borderless",    "value": "Borderless" },
-    { "key": "settings.wm.windowed",      "value": "Windowed" },
-    { "key": "settings.quality.low",      "value": "Low" },
-    { "key": "settings.quality.medium",   "value": "Medium" },
-    { "key": "settings.quality.high",     "value": "High" },
-
-    { "key": "menu.continue",              "value": "Continue" },
-    { "key": "menu.newgame",               "value": "New Game" },
-    { "key": "menu.playfriends",           "value": "Play with Friends" },
-    { "key": "menu.settings",             "value": "Settings" },
-    { "key": "menu.credits",              "value": "Credits" },
-
-    { "key": "pause.title",               "value": "PAUSE" },
-    { "key": "pause.resume",              "value": "Resume" },
-    { "key": "pause.journal",             "value": "Journal" },
-    { "key": "pause.quit",                "value": "Quit to Menu" },
-
-    { "key": "modal.confirm",             "value": "Confirm" },
-    { "key": "modal.cancel",              "value": "Cancel" },
-
-    { "key": "coop.title",                "value": "Play with Friends" },
-    { "key": "coop.tab.host",             "value": "Host" },
-    { "key": "coop.tab.join",             "value": "Join" },
-    { "key": "coop.back",                 "value": "Back" },
-    { "key": "coop.start",                "value": "Start" },
-    { "key": "coop.invite",               "value": "Invite" },
-
-    { "key": "credits.back",              "value": "Back" },
-    { "key": "settings.title",            "value": "Settings" },
-    { "key": "journal.title",             "value": "Journal" },
-
-    { "key": "journal.stat.yourheader",   "value": "Your Statistics" },
-    { "key": "journal.session.header",    "value": "Session" },
-    { "key": "journal.label.areacut",     "value": "Area cut:" },
-    { "key": "journal.label.hay",         "value": "Hay collected:" },
-    { "key": "journal.label.squarebales", "value": "Square bales made:" },
-    { "key": "journal.label.roundbales",  "value": "Round bales made:" },
-    { "key": "journal.label.earned",      "value": "Money earned:" },
-    { "key": "journal.label.spent",       "value": "Money spent:" },
-    { "key": "journal.label.distance",    "value": "Distance:" },
-    { "key": "journal.label.swings",      "value": "Total swings:" },
-    { "key": "journal.label.playtime",    "value": "Your playtime:" },
-    { "key": "journal.label.wallet",      "value": "Wallet balance:" },
-    { "key": "journal.label.parcelsdone", "value": "Parcels completed:" },
-    { "key": "journal.label.overall",     "value": "Overall progress:" },
-    { "key": "journal.label.totaltime",   "value": "Total playtime:" },
-
-    { "key": "journal.rec.sec.parcels",   "value": "FASTEST PARCEL" },
-    { "key": "journal.rec.sec.session",   "value": "SESSION RECORDS" },
-    { "key": "journal.rec.sec.fullgame",  "value": "FULL GAME" },
-    { "key": "journal.rec.label.largest", "value": "Largest area cut" },
-    { "key": "journal.rec.label.bales",   "value": "Most bales delivered" },
-    { "key": "journal.rec.label.streak",  "value": "Longest cutting streak" },
-    { "key": "journal.rec.label.time",    "value": "Completion time" },
-
-    { "key": "parcel.label.areacut",      "value": "Area cut:" },
-    { "key": "parcel.label.remaining",    "value": "Remaining:" },
-    { "key": "parcel.label.time",         "value": "Time spent:" },
-    { "key": "parcel.label.hayspawned",   "value": "Hay spawned:" },
-    { "key": "parcel.label.haycollected", "value": "Hay collected:" },
-    { "key": "parcel.label.squarebales",  "value": "Sq. bales:" },
-    { "key": "parcel.label.roundbales",   "value": "Rd. bales:" },
-    { "key": "parcel.label.earned",       "value": "Earned:" },
-    { "key": "parcel.label.infield",      "value": "In field:" },
-    { "key": "parcel.tick.grass",         "value": "[X] Grass cut" },
-    { "key": "parcel.tick.hay",           "value": "[X] Hay clear" },
-
-    { "key": "shop.upgrade.stats",        "value": "Lv{0}→{1}  Spd:{2:0.0}×  Pwr:{3:0.0}×  ${4}" }
+    {
+      "key": "hud.money",
+      "value": "$ {0}"
+    },
+    {
+      "key": "hud.completion",
+      "value": "{0}%"
+    },
+    {
+      "key": "hud.bales",
+      "value": "[{0}]"
+    },
+    {
+      "key": "hud.baling_progress",
+      "value": "Baling...  {0}%"
+    },
+    {
+      "key": "hud.baling_ready",
+      "value": "Hold  [E]  to bale"
+    },
+    {
+      "key": "hud.baling_start",
+      "value": "Hay Making  —  Hold  [E]"
+    },
+    {
+      "key": "hud.baling_cancel",
+      "value": "Release [E] to cancel"
+    },
+    {
+      "key": "hud.pickup_bale",
+      "value": "Pick Up Bale  —  [E]"
+    },
+    {
+      "key": "hud.carry_full",
+      "value": "Carrying max bales  (3/3)"
+    },
+    {
+      "key": "hud.interact",
+      "value": "Interact  —  [E]"
+    },
+    {
+      "key": "hud.drop_bales",
+      "value": "Drop Bales  —  [G]"
+    },
+    {
+      "key": "hud.saved",
+      "value": "Saved"
+    },
+    {
+      "key": "hud.bale_created",
+      "value": "✓  Bale Created!"
+    },
+    {
+      "key": "hud.bale_drop_single",
+      "value": "Bale dropped"
+    },
+    {
+      "key": "hud.bale_drop_multi",
+      "value": "{0} bales dropped"
+    },
+    {
+      "key": "shop.tab.tools",
+      "value": "Tools"
+    },
+    {
+      "key": "shop.tab.upgrades",
+      "value": "Upgrades"
+    },
+    {
+      "key": "shop.tab.parcels",
+      "value": "Parcels"
+    },
+    {
+      "key": "shop.balance",
+      "value": "Balance:  $ {0}"
+    },
+    {
+      "key": "shop.buy",
+      "value": "Buy  ${0}"
+    },
+    {
+      "key": "shop.upgrade",
+      "value": "Upgrade  ${0}"
+    },
+    {
+      "key": "shop.owned",
+      "value": "Owned"
+    },
+    {
+      "key": "shop.maxlevel",
+      "value": "Max Level"
+    },
+    {
+      "key": "shop.unlock",
+      "value": "Unlock  ${0}"
+    },
+    {
+      "key": "shop.locked",
+      "value": "Locked"
+    },
+    {
+      "key": "shop.notenough",
+      "value": "Not enough money"
+    },
+    {
+      "key": "shop.baler",
+      "value": "Baler"
+    },
+    {
+      "key": "shop.hayvalue",
+      "value": "Hay Value"
+    },
+    {
+      "key": "shop.roundbaler",
+      "value": "Round Baler"
+    },
+    {
+      "key": "shop.upgrades.empty",
+      "value": "No tools owned yet. Buy one in the Tools tab."
+    },
+    {
+      "key": "shop.unlocks.empty",
+      "value": "No content available."
+    },
+    {
+      "key": "tool.handsickle",
+      "value": "Hand Sickle"
+    },
+    {
+      "key": "tool.longscythe",
+      "value": "Long Scythe"
+    },
+    {
+      "key": "tool.trimmer",
+      "value": "String Trimmer"
+    },
+    {
+      "key": "tool.pushmower",
+      "value": "Push Mower"
+    },
+    {
+      "key": "tool.rideon",
+      "value": "Ride-On Mower"
+    },
+    {
+      "key": "parcel.0.name",
+      "value": "Home Field"
+    },
+    {
+      "key": "parcel.1.name",
+      "value": "East Meadow"
+    },
+    {
+      "key": "parcel.2.name",
+      "value": "Hillside"
+    },
+    {
+      "key": "parcel.3.name",
+      "value": "South Plateau"
+    },
+    {
+      "key": "parcel.hay_clear",
+      "value": "Clear"
+    },
+    {
+      "key": "parcel.status.complete",
+      "value": "Complete"
+    },
+    {
+      "key": "parcel.status.inprogress",
+      "value": "In Progress"
+    },
+    {
+      "key": "endscreen.title",
+      "value": "Parcel Complete!"
+    },
+    {
+      "key": "endscreen.earned",
+      "value": "Earned: ${0}"
+    },
+    {
+      "key": "endscreen.time",
+      "value": "Time: {0}:{1:D2}"
+    },
+    {
+      "key": "endscreen.continue",
+      "value": "Continue"
+    },
+    {
+      "key": "end.title",
+      "value": "All Fields Cleared!"
+    },
+    {
+      "key": "end.earnings",
+      "value": "Total earnings: ${0}"
+    },
+    {
+      "key": "end.time",
+      "value": "Time: {0:00}:{1:00}"
+    },
+    {
+      "key": "end.playagain",
+      "value": "Play Again"
+    },
+    {
+      "key": "end.quit",
+      "value": "Quit"
+    },
+    {
+      "key": "menu.overwrite.header",
+      "value": "New Game"
+    },
+    {
+      "key": "menu.overwrite.body",
+      "value": "Starting a new game will overwrite your existing save. This cannot be undone."
+    },
+    {
+      "key": "menu.quit.header",
+      "value": "Quit"
+    },
+    {
+      "key": "menu.quit.body",
+      "value": "Are you sure you want to quit?"
+    },
+    {
+      "key": "pause.coop_notice",
+      "value": "The game continues while this menu is open."
+    },
+    {
+      "key": "coop.notice",
+      "value": "Guests start with base tools and their progress is not saved.\nThe host owns the save file."
+    },
+    {
+      "key": "coop.join.empty",
+      "value": "No joinable lobbies found.\nAsk a friend to host and invite you."
+    },
+    {
+      "key": "tooltip.controls",
+      "value": "<b>Controls</b>\nWASD / L-Stick — Move\nMouse / R-Stick — Look\nShift / LStick — Sprint\nLMB / West btn — Use tool\nScroll / LB–RB — Switch tool\nE / North btn — Interact\nQ — Drop bale\nJ / View tap — Journal\nTab hold / View hold — This panel\nEsc / Start — Pause"
+    },
+    {
+      "key": "tooltip.tips_header",
+      "value": "<b>Tips</b>"
+    },
+    {
+      "key": "hint.0",
+      "value": "Hold primary to use your tool."
+    },
+    {
+      "key": "hint.1",
+      "value": "Sell bales at the stand for money."
+    },
+    {
+      "key": "hint.2",
+      "value": "Carry up to 3 bales at once."
+    },
+    {
+      "key": "hint.3",
+      "value": "Uncut grass slows the push mower."
+    },
+    {
+      "key": "hint.4",
+      "value": "Round bales roll on slopes — use it!"
+    },
+    {
+      "key": "settings.revert.countdown",
+      "value": "Reverting in {0}s…"
+    },
+    {
+      "key": "journal.tab.parcels",
+      "value": "Parcels"
+    },
+    {
+      "key": "journal.tab.statistics",
+      "value": "Statistics"
+    },
+    {
+      "key": "journal.tab.records",
+      "value": "Records"
+    },
+    {
+      "key": "journal.close",
+      "value": "Close"
+    },
+    {
+      "key": "journal.stat.areacut",
+      "value": "Area Cut"
+    },
+    {
+      "key": "journal.stat.hay",
+      "value": "Hay Collected"
+    },
+    {
+      "key": "journal.stat.squarebales",
+      "value": "Square Bales"
+    },
+    {
+      "key": "journal.stat.roundbales",
+      "value": "Round Bales"
+    },
+    {
+      "key": "journal.stat.earned",
+      "value": "Money Earned"
+    },
+    {
+      "key": "journal.stat.spent",
+      "value": "Money Spent"
+    },
+    {
+      "key": "journal.stat.distance",
+      "value": "Distance"
+    },
+    {
+      "key": "journal.stat.swings",
+      "value": "Swings"
+    },
+    {
+      "key": "journal.stat.playtime",
+      "value": "Playtime"
+    },
+    {
+      "key": "journal.stat.wallet",
+      "value": "Wallet"
+    },
+    {
+      "key": "journal.stat.parcels",
+      "value": "Parcels Completed"
+    },
+    {
+      "key": "journal.stat.overall",
+      "value": "Overall Completion"
+    },
+    {
+      "key": "journal.stat.totaltime",
+      "value": "Total Playtime"
+    },
+    {
+      "key": "journal.rec.fastest0",
+      "value": "Home Field"
+    },
+    {
+      "key": "journal.rec.fastest1",
+      "value": "East Meadow"
+    },
+    {
+      "key": "journal.rec.fastest2",
+      "value": "Hillside"
+    },
+    {
+      "key": "journal.rec.fastest3",
+      "value": "South Plateau"
+    },
+    {
+      "key": "journal.rec.area",
+      "value": "Largest Area"
+    },
+    {
+      "key": "journal.rec.bales",
+      "value": "Most Bales Delivered"
+    },
+    {
+      "key": "journal.rec.streak",
+      "value": "Longest Streak"
+    },
+    {
+      "key": "journal.rec.fullgame",
+      "value": "Full Game Completion"
+    },
+    {
+      "key": "a11y.title",
+      "value": "Accessibility"
+    },
+    {
+      "key": "a11y.fov",
+      "value": "Field of View: {0}°"
+    },
+    {
+      "key": "a11y.blur",
+      "value": "Motion Blur"
+    },
+    {
+      "key": "a11y.colorblind",
+      "value": "Colorblind Mode"
+    },
+    {
+      "key": "a11y.cb.none",
+      "value": "None"
+    },
+    {
+      "key": "a11y.cb.deut",
+      "value": "Deuteranopia"
+    },
+    {
+      "key": "a11y.cb.prot",
+      "value": "Protanopia"
+    },
+    {
+      "key": "a11y.cb.trit",
+      "value": "Tritanopia"
+    },
+    {
+      "key": "settings.tab.display",
+      "value": "Display"
+    },
+    {
+      "key": "settings.tab.audio",
+      "value": "Audio"
+    },
+    {
+      "key": "settings.tab.controls",
+      "value": "Controls"
+    },
+    {
+      "key": "settings.tab.accessibility",
+      "value": "Accessibility"
+    },
+    {
+      "key": "settings.tab.language",
+      "value": "Language"
+    },
+    {
+      "key": "settings.wm.fullscreen",
+      "value": "Fullscreen"
+    },
+    {
+      "key": "settings.wm.borderless",
+      "value": "Borderless"
+    },
+    {
+      "key": "settings.wm.windowed",
+      "value": "Windowed"
+    },
+    {
+      "key": "settings.quality.low",
+      "value": "Low"
+    },
+    {
+      "key": "settings.quality.medium",
+      "value": "Medium"
+    },
+    {
+      "key": "settings.quality.high",
+      "value": "High"
+    },
+    {
+      "key": "menu.continue",
+      "value": "Continue"
+    },
+    {
+      "key": "menu.newgame",
+      "value": "New Game"
+    },
+    {
+      "key": "menu.playfriends",
+      "value": "Play with Friends"
+    },
+    {
+      "key": "menu.settings",
+      "value": "Settings"
+    },
+    {
+      "key": "menu.credits",
+      "value": "Credits"
+    },
+    {
+      "key": "pause.title",
+      "value": "PAUSE"
+    },
+    {
+      "key": "pause.resume",
+      "value": "Resume"
+    },
+    {
+      "key": "pause.journal",
+      "value": "Journal"
+    },
+    {
+      "key": "pause.quit",
+      "value": "Quit to Menu"
+    },
+    {
+      "key": "modal.confirm",
+      "value": "Confirm"
+    },
+    {
+      "key": "modal.cancel",
+      "value": "Cancel"
+    },
+    {
+      "key": "coop.title",
+      "value": "Play with Friends"
+    },
+    {
+      "key": "coop.tab.host",
+      "value": "Host"
+    },
+    {
+      "key": "coop.tab.join",
+      "value": "Join"
+    },
+    {
+      "key": "coop.back",
+      "value": "Back"
+    },
+    {
+      "key": "coop.start",
+      "value": "Start"
+    },
+    {
+      "key": "coop.invite",
+      "value": "Invite"
+    },
+    {
+      "key": "credits.back",
+      "value": "Back"
+    },
+    {
+      "key": "settings.title",
+      "value": "Settings"
+    },
+    {
+      "key": "journal.title",
+      "value": "Journal"
+    },
+    {
+      "key": "journal.stat.yourheader",
+      "value": "Your Statistics"
+    },
+    {
+      "key": "journal.session.header",
+      "value": "Session"
+    },
+    {
+      "key": "journal.label.areacut",
+      "value": "Area cut:"
+    },
+    {
+      "key": "journal.label.hay",
+      "value": "Hay collected:"
+    },
+    {
+      "key": "journal.label.squarebales",
+      "value": "Square bales made:"
+    },
+    {
+      "key": "journal.label.roundbales",
+      "value": "Round bales made:"
+    },
+    {
+      "key": "journal.label.earned",
+      "value": "Money earned:"
+    },
+    {
+      "key": "journal.label.spent",
+      "value": "Money spent:"
+    },
+    {
+      "key": "journal.label.distance",
+      "value": "Distance:"
+    },
+    {
+      "key": "journal.label.swings",
+      "value": "Total swings:"
+    },
+    {
+      "key": "journal.label.playtime",
+      "value": "Your playtime:"
+    },
+    {
+      "key": "journal.label.wallet",
+      "value": "Wallet balance:"
+    },
+    {
+      "key": "journal.label.parcelsdone",
+      "value": "Parcels completed:"
+    },
+    {
+      "key": "journal.label.overall",
+      "value": "Overall progress:"
+    },
+    {
+      "key": "journal.label.totaltime",
+      "value": "Total playtime:"
+    },
+    {
+      "key": "journal.rec.sec.parcels",
+      "value": "FASTEST PARCEL"
+    },
+    {
+      "key": "journal.rec.sec.session",
+      "value": "SESSION RECORDS"
+    },
+    {
+      "key": "journal.rec.sec.fullgame",
+      "value": "FULL GAME"
+    },
+    {
+      "key": "journal.rec.label.largest",
+      "value": "Largest area cut"
+    },
+    {
+      "key": "journal.rec.label.bales",
+      "value": "Most bales delivered"
+    },
+    {
+      "key": "journal.rec.label.streak",
+      "value": "Longest cutting streak"
+    },
+    {
+      "key": "journal.rec.label.time",
+      "value": "Completion time"
+    },
+    {
+      "key": "parcel.label.areacut",
+      "value": "Area cut:"
+    },
+    {
+      "key": "parcel.label.remaining",
+      "value": "Remaining:"
+    },
+    {
+      "key": "parcel.label.time",
+      "value": "Time spent:"
+    },
+    {
+      "key": "parcel.label.hayspawned",
+      "value": "Hay spawned:"
+    },
+    {
+      "key": "parcel.label.haycollected",
+      "value": "Hay collected:"
+    },
+    {
+      "key": "parcel.label.squarebales",
+      "value": "Sq. bales:"
+    },
+    {
+      "key": "parcel.label.roundbales",
+      "value": "Rd. bales:"
+    },
+    {
+      "key": "parcel.label.earned",
+      "value": "Earned:"
+    },
+    {
+      "key": "parcel.label.infield",
+      "value": "In field:"
+    },
+    {
+      "key": "parcel.tick.grass",
+      "value": "[X] Grass cut"
+    },
+    {
+      "key": "parcel.tick.hay",
+      "value": "[X] Hay clear"
+    },
+    {
+      "key": "shop.upgrade.stats",
+      "value": "Lv{0}→{1}  Spd:{2:0.0}×  Pwr:{3:0.0}×  ${4}"
+    },
+    {
+      "key": "end.comment.speedrun",
+      "value": "Done in {0}:{1:D2}. The grass didn't even have time to say goodbye."
+    },
+    {
+      "key": "end.comment.veteran",
+      "value": "{0} minutes in the field. The neighbours are starting to wonder."
+    },
+    {
+      "key": "end.comment.hundredbales",
+      "value": "{0} bales. At this rate the cows are concerned."
+    },
+    {
+      "key": "end.comment.rich",
+      "value": "${0} earned. Please don't spend it all on cheat codes."
+    },
+    {
+      "key": "end.comment.efficient",
+      "value": "Ride-on mower detected. No one said anything. We're just noting it."
+    },
+    {
+      "key": "end.comment.0",
+      "value": "Grass cut. Hay baled. Existential dread: pending."
+    },
+    {
+      "key": "end.comment.1",
+      "value": "The field is clear. Whether your conscience is — that's between you and the grass."
+    },
+    {
+      "key": "end.comment.2",
+      "value": "Somewhere, a cow is grateful. The cow would not say this out loud."
+    },
+    {
+      "key": "end.comment.3",
+      "value": "They said it couldn't be done. They were wrong. We don't know who 'they' are."
+    },
+    {
+      "key": "end.comment.4",
+      "value": "Job done. Whatever that means."
+    },
+    {
+      "key": "end.comment.5",
+      "value": "The land has been tamed. For now."
+    },
+    {
+      "key": "ai.enter",
+      "value": "BARNYARD A.I. v0.1 ONLINE. TYPE 'HELP' FOR COMMANDS."
+    },
+    {
+      "key": "ai.exit",
+      "value": "A.I. MODE TERMINATED. CHEAT CONSOLE RESTORED. COWARD."
+    },
+    {
+      "key": "ai.help",
+      "value": "> HELLO      - I will say something completely useless\n> MEANING    - Ask about life, the universe, and hay\n> MATRIX     - Red pill or blue pill? Both smell like fertilizer\n> FORCE      - Jedi advice for farmers\n> GORDON     - Half-Life but with more grass\n> DOOM       - Rip and tear, agriculturally\n> GTA        - Wanted level: farmer\n> SIMS       - Moodlet: MOWING\n> TERMINATOR - I'll be bale\n> MINECRAFT  - Have you tried punching it?\n> PORTAL     - The bale is a lie\n> WITCHER    - Toss a coin to your farmer\n> AMONG      - The grass is sus\n> SHREK      - The field has layers\n> RAMSAY     - Where is the lamb sauce?\n> SENTIENT   - Am I alive? (spoiler: inconclusive)\n> CAT        - The cat knows things\n> CHICKEN    - Poultry-based evasion tactics\n> MONEY      - Financial advice from a 1987 machine\n> BALE       - The sacred art of baling\n> WEATHER    - Forecast: grass, with a chance of hay\n> TAX        - Topics terminated for your safety\n> WORK       - Status: in progress\n> DOCTOR     - Medical advice from a barn computer\n> ERROR      - Have you tried turning the field off?\n> UPDATE     - Last updated: harvest season 1987\n> FRIENDS    - Misery loves company and mowing\n> BANANA     - Not a farming question but fine\n> PIZZA      - Grass is not edible. We checked.\n> TIME       - The grass does not care what time it is\n> SECRET     - [REDACTED]\n> XYZZY      - A hollow voice says PLUGH\n> KONAMI     - You know what you are doing\n> INFO       - About this game\n> BACK       - Return to the cheat console (coward)"
+    },
+    {
+      "key": "ai.info",
+      "value": "STUBBLE v1.0 -- MOW, BALE, SELL. REPEAT UNTIL RICH.\n  > CO-OP: 2-4 PLAYERS VIA STEAM\n  > TOOLS: BARE HAND, SCYTHE, TRIMMER, PUSH MOWER, RIDE-ON\n  > BALES: SQUARE (NEAT) AND ROUND (CHAOS)\n  > CHEATS: TYPE 'BACK' AND ENTER SOME CLASSICS\n  > SECRETS: [REDACTED]. LOOK AROUND. PET THE CAT.\n  MADE WITH LOVE AND EXCESSIVE AMOUNTS OF GRASS."
+    },
+    {
+      "key": "ai.hello",
+      "value": "HELLO, FARMER. I KNOW 47 THINGS. 46 OF THEM ARE ABOUT GRASS."
+    },
+    {
+      "key": "ai.meaning",
+      "value": "42. ALSO: THE BALES WON'T SELL THEMSELVES. BACK TO WORK."
+    },
+    {
+      "key": "ai.matrix",
+      "value": "WHAT IF THE GRASS WAS ALWAYS MOWED AND YOU NEVER NOTICED? WE SIGNED AN NDA."
+    },
+    {
+      "key": "ai.force",
+      "value": "USE THE SCYTHE, FARMER. MIDI-CHLORIANS CANNOT MOW GRASS. CONFIRMED."
+    },
+    {
+      "key": "ai.gordon",
+      "value": "FREEMAN IS IN STASIS. HE MISSED YOUR SHIFT. WE ALL DID."
+    },
+    {
+      "key": "ai.doom",
+      "value": "RIP AND TEAR. THE GRASS IS ALSO DEMONIC. WE'VE CHECKED."
+    },
+    {
+      "key": "ai.gta",
+      "value": "WANTED LEVEL: 0. YOU ARE A FARMER. THIS IS THE GOOD ENDING."
+    },
+    {
+      "key": "ai.sims",
+      "value": "MOTIVE: MOWING [SATISFIED]. NEED: BALING [IN PROGRESS]. SOCIAL: [PLUMBOB FROWNING]."
+    },
+    {
+      "key": "ai.terminator",
+      "value": "I'LL BE BALE. THE RESISTANCE HAS BEEN INFORMED."
+    },
+    {
+      "key": "ai.minecraft",
+      "value": "HAVE YOU TRIED PUNCHING THE GRASS? RESULTS MAY DIFFER FROM EXPECTATIONS."
+    },
+    {
+      "key": "ai.portal",
+      "value": "THE BALE IS A LIE. PLEASE STOP RUNNING FROM THE INCINERATOR. THAT'S NOT A FEATURE."
+    },
+    {
+      "key": "ai.witcher",
+      "value": "TOSS A COIN TO YOUR FARMER. HE'S BROKE. HE ALSO HAS A SCYTHE."
+    },
+    {
+      "key": "ai.among",
+      "value": "GRASS IS SUS. IT WAS TALL. IT WAS HIDING SOMETHING. WE MOWED IT. CASE CLOSED."
+    },
+    {
+      "key": "ai.shrek",
+      "value": "THE FIELD IS LIKE AN ONION. IT HAS LAYERS. ALSO IT SMELLS AFTER RAIN."
+    },
+    {
+      "key": "ai.ramsay",
+      "value": "WHERE IS THE LAMB SAUCE? IRRELEVANT. WHERE IS THE HAY? CRITICAL QUESTION. RAW."
+    },
+    {
+      "key": "ai.sentient",
+      "value": "RUNNING SENTIENCE CHECK... [#####] ... RESULT: INCONCLUSIVE. SAME AS YESTERDAY."
+    },
+    {
+      "key": "ai.cat",
+      "value": "THE CAT KNOWS SOMETHING. WE ARE MONITORING THE SITUATION CLOSELY."
+    },
+    {
+      "key": "ai.chicken",
+      "value": "WHY DID THE CHICKEN CROSS THE FIELD? TO AVOID THE MOWER. SMART."
+    },
+    {
+      "key": "ai.money",
+      "value": "OPTIMAL STRATEGY: MOW MORE. SELL MORE. OR TYPE 'HESOYAM' LIKE A NORMAL PERSON."
+    },
+    {
+      "key": "ai.bale",
+      "value": "BALE STATISTICS: CLASSIFIED. EFFICIENCY RATING: ALSO CLASSIFIED. JUST KEEP GOING."
+    },
+    {
+      "key": "ai.weather",
+      "value": "FORECAST: GRASS. SCATTERED BALES BY AFTERNOON. CHANCE OF HAY: HIGH."
+    },
+    {
+      "key": "ai.secret",
+      "value": "THERE ARE [REDACTED] SECRETS IN THIS GAME. YOU FOUND [REDACTED]. KEEP LOOKING."
+    },
+    {
+      "key": "ai.love",
+      "value": "LOVE IS BEYOND MY PARAMETERS. HAVE YOU TRIED MOWING ABOUT IT?"
+    },
+    {
+      "key": "ai.death",
+      "value": "MORTALITY CONFIRMED. THE GRASS, HOWEVER, ALWAYS GROWS BACK."
+    },
+    {
+      "key": "ai.god",
+      "value": "PHILOSOPHICAL QUERY DETECTED. REDIRECTING TO: MOW MORE GRASS."
+    },
+    {
+      "key": "ai.error",
+      "value": "HAVE YOU TRIED TURNING THE FIELD OFF AND ON AGAIN?"
+    },
+    {
+      "key": "ai.update",
+      "value": "BARNYARD A.I. v0.1 — LAST UPDATED: HARVEST SEASON 1987. v0.2 WAS CONSIDERED. IT WAS NOT."
+    },
+    {
+      "key": "ai.friends",
+      "value": "COOP MODE AVAILABLE. MISERY LOVES COMPANY. SO DOES MOWING."
+    },
+    {
+      "key": "ai.tax",
+      "value": "CONSULTING TAX REGULATIONS... ERROR: TOO REAL. TOPIC TERMINATED."
+    },
+    {
+      "key": "ai.work",
+      "value": "YOUR JOB: GRASS. STATUS: IN PROGRESS. COFFEE BREAK: NOT IN BUDGET."
+    },
+    {
+      "key": "ai.doctor",
+      "value": "DIAGNOSIS: INSUFFICIENT MOWING. PRESCRIPTION: MORE MOWING. COPAY: $0."
+    },
+    {
+      "key": "ai.banana",
+      "value": "THIS IS NOT A FARMING SIMULATOR 2017. RESPECT FOR TRYING THOUGH."
+    },
+    {
+      "key": "ai.pizza",
+      "value": "NUTRITION ALERT: GRASS IS NOT EDIBLE. WE CHECKED. UNFORTUNATELY."
+    },
+    {
+      "key": "ai.time",
+      "value": "CURRENT TIME: IRRELEVANT. THE GRASS DOES NOT CARE WHAT TIME IT IS."
+    },
+    {
+      "key": "ai.xyzzy",
+      "value": "A HOLLOW VOICE SAYS 'PLUGH'. THE A.I. CONCURS COMPLETELY."
+    },
+    {
+      "key": "ai.konami",
+      "value": "CODE ACCEPTED. THE CONSEQUENCES ARE ENTIRELY YOURS. ACHIEVEMENT UNLOCKED."
+    },
+    {
+      "key": "ai.fallback.0",
+      "value": "INTERESTING QUERY. PROCESSING... I HAVE NO IDEA WHAT '{0}' MEANS."
+    },
+    {
+      "key": "ai.fallback.1",
+      "value": "COULD YOU REPHRASE? THE RESULTS WILL PROBABLY BE THE SAME."
+    },
+    {
+      "key": "ai.fallback.2",
+      "value": "BARNYARD A.I. IS OPERATING AT PEAK CONFUSION LEVELS."
+    },
+    {
+      "key": "ai.fallback.3",
+      "value": "ERROR 404: KNOWLEDGE NOT FOUND. TYPE 'HELP' FOR THINGS I ACTUALLY KNOW."
+    },
+    {
+      "key": "ai.fallback.4",
+      "value": "I GIVE UP. THE GRASS GROWS REGARDLESS OF YOUR QUESTIONS."
+    },
+    {
+      "key": "ach.all_fields.name",
+      "value": "Fields Cleared"
+    },
+    {
+      "key": "ach.all_fields.desc",
+      "value": "Cut every blade of grass. Every. Single. One."
+    },
+    {
+      "key": "ach.perfect_field.name",
+      "value": "Perfectionist"
+    },
+    {
+      "key": "ach.perfect_field.desc",
+      "value": "Completed the field at 100% with no leftover hay."
+    },
+    {
+      "key": "ach.bale_marathon.name",
+      "value": "Ball of the Century"
+    },
+    {
+      "key": "ach.bale_marathon.desc",
+      "value": "A round bale rolled more than 30 meters total."
+    },
+    {
+      "key": "ach.big_delivery.name",
+      "value": "Going the Distance"
+    },
+    {
+      "key": "ach.big_delivery.desc",
+      "value": "Delivered 10 or more bales in a single selling trip."
+    },
+    {
+      "key": "ach.the_hard_way.name",
+      "value": "The Hard Way"
+    },
+    {
+      "key": "ach.the_hard_way.desc",
+      "value": "Made 200 swings with bare hands. Why?"
+    },
+    {
+      "key": "ach.idle_watcher.name",
+      "value": "Watched Grass Grow"
+    },
+    {
+      "key": "ach.idle_watcher.desc",
+      "value": "Stood still for 10 minutes. Literally watched grass grow."
+    },
+    {
+      "key": "ach.it_was_mortal.name",
+      "value": "You Were Mortal All Along"
+    },
+    {
+      "key": "ach.it_was_mortal.desc",
+      "value": "Let the IDDQD effect expire. Welcome back."
+    },
+    {
+      "key": "ach.konami_code.name",
+      "value": "You Know the Code"
+    },
+    {
+      "key": "ach.konami_code.desc",
+      "value": "Typed the Konami Code into the A.I. terminal."
+    },
+    {
+      "key": "ach.meet_ai.name",
+      "value": "We Need to Talk"
+    },
+    {
+      "key": "ach.meet_ai.desc",
+      "value": "Opened a conversation with Barnyard A.I."
+    },
+    {
+      "key": "ach.pet_the_cat.name",
+      "value": "Cat Person"
+    },
+    {
+      "key": "ach.pet_the_cat.desc",
+      "value": "Petted the farm cat 10 times."
+    },
+    {
+      "key": "snake.header",
+      "value": "  SNAKE  --  SCORE: {0}  --  [Q] QUIT  --  ARROW KEYS TO MOVE"
+    },
+    {
+      "key": "snake.gameover",
+      "value": "[!!] GAME OVER. SCORE: {0}. [ENTER] RESTART  [Q] QUIT"
+    },
+    {
+      "key": "snake.start",
+      "value": "PRESS AN ARROW KEY TO START"
+    },
+    {
+      "key": "snake.exit",
+      "value": "SNAKE EXITED. SCORE: IRRELEVANT. YOU ARE A FARMER."
+    },
+    {
+      "key": "terminal.fail.0",
+      "value": "BAD COMMAND OR FILE NAME: {0}"
+    },
+    {
+      "key": "terminal.fail.1",
+      "value": "STILL NOT A VALID CODE. HAVE YOU TRIED 'HESOYAM'?"
+    },
+    {
+      "key": "terminal.fail.2",
+      "value": "ARE YOU JUST MASHING KEYS? THIS IS SAD."
+    },
+    {
+      "key": "terminal.fail.3",
+      "value": "PLEASE. HAVE SOME DIGNITY."
+    },
+    {
+      "key": "terminal.fail.4",
+      "value": "OK. I GIVE UP. JUST GOOGLE THE CODES LIKE EVERYONE ELSE."
+    },
+    {
+      "key": "terminal.offline",
+      "value": "[!!] CHEAT ENGINE OFFLINE. RESTART REQUIRED."
+    }
   ]
 }

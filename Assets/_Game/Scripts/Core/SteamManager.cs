@@ -23,12 +23,9 @@ namespace Fields.Core
         // Client to provide final list; placeholders below.
         public static class Achievements
         {
+            // ── Core progression ────────────────────────────────────────────── //
             public const string FIRST_CUT        = "ACH_FIRST_CUT";
-            public const string PARCEL1_COMPLETE  = "ACH_PARCEL1_COMPLETE";
-            public const string PARCEL2_COMPLETE  = "ACH_PARCEL2_COMPLETE";
-            public const string PARCEL3_COMPLETE  = "ACH_PARCEL3_COMPLETE";
-            public const string PARCEL4_COMPLETE  = "ACH_PARCEL4_COMPLETE";
-            public const string ALL_PARCELS       = "ACH_ALL_PARCELS";
+            public const string ALL_FIELDS        = "ACH_ALL_FIELDS";      // All grass cut (replaces parcel system)
             public const string FIRST_BALE        = "ACH_FIRST_BALE";
             public const string TEN_BALES         = "ACH_TEN_BALES";
             public const string HUNDRED_BALES     = "ACH_HUNDRED_BALES";
@@ -36,18 +33,57 @@ namespace Fields.Core
             public const string EARN_100          = "ACH_EARN_100";
             public const string EARN_1000         = "ACH_EARN_1000";
             public const string EARN_10000        = "ACH_EARN_10000";
+            public const string PERFECT_FIELD     = "ACH_PERFECT_FIELD";   // 100% complete
+
+            // ── Tools ────────────────────────────────────────────────────────── //
+            public const string BUY_SCYTHE        = "ACH_BUY_SCYTHE";
             public const string BUY_TRIMMER       = "ACH_BUY_TRIMMER";
             public const string BUY_PUSH_MOWER    = "ACH_BUY_PUSH_MOWER";
             public const string BUY_RIDE_ON       = "ACH_BUY_RIDE_ON";
-            public const string BUY_SCYTHE        = "ACH_BUY_SCYTHE";
             public const string MAX_UPGRADE       = "ACH_MAX_UPGRADE";
-            public const string SPEED_RUN         = "ACH_SPEED_RUN";     // Parcel 1 under 3 min
+
+            // ── Baling & rolling ─────────────────────────────────────────────── //
             public const string ROUND_BALE        = "ACH_ROUND_BALE";
-            public const string BALE_ROLL         = "ACH_BALE_ROLL";     // Round bale rolls > 10m
+            public const string BALE_ROLL         = "ACH_BALE_ROLL";       // Round bale rolls > 10 m
+            public const string BALE_MARATHON     = "ACH_BALE_MARATHON";   // Round bale rolls > 30 m total
+            public const string BIG_DELIVERY      = "ACH_BIG_DELIVERY";    // Sell 10+ bales in one trip
+
+            // ── Speed & skill ────────────────────────────────────────────────── //
+            public const string SPEED_RUN         = "ACH_SPEED_RUN";       // Full game under 30 min
+            public const string THE_HARD_WAY      = "ACH_THE_HARD_WAY";    // 200 swings with bare hand
+
+            // ── Co-op ────────────────────────────────────────────────────────── //
             public const string COOP_CUT          = "ACH_COOP_CUT";
             public const string COOP_BALE         = "ACH_COOP_BALE";
-            public const string PERFECT_PARCEL    = "ACH_PERFECT_PARCEL"; // 100% cut, no leftover
-            public const string SUNRISE            = "ACH_SUNRISE";       // Play at 6 AM real time
+
+            // ── Secret / easter egg ──────────────────────────────────────────── //
+            public const string HESOYAM           = "ACH_HESOYAM";         // Used hesoyam cheat
+            public const string MOTHERLODE        = "ACH_MOTHERLODE";      // Used motherlode cheat
+            public const string DOOM              = "ACH_DOOM";            // Used iddqd cheat
+            public const string IT_WAS_MORTAL     = "ACH_IT_WAS_MORTAL";   // IDDQD expired naturally
+            public const string KONAMI_CODE        = "ACH_KONAMI_CODE";     // Typed konami in AI terminal
+            public const string MEET_AI            = "ACH_MEET_AI";         // Opened AI mode
+            public const string XYZZY              = "ACH_XYZZY";           // Used xyzzy cheat
+            public const string PET_THE_CAT        = "ACH_PET_THE_CAT";     // Petted cat 10 times
+            public const string IDLE_WATCHER       = "ACH_IDLE_WATCHER";    // Stood still 10 min
+            public const string SUNRISE            = "ACH_SUNRISE";         // Play at 6 AM real time
+        }
+
+        // ── Achievement thresholds (referenced by game systems) ──────────── //
+        public static class Thresholds
+        {
+            public const int   BALES_TEN          = 10;
+            public const int   BALES_HUNDRED      = 100;
+            public const int   EARN_100           = 100;
+            public const int   EARN_1000          = 1000;
+            public const int   EARN_10000         = 10000;
+            public const float BALE_ROLL_SHORT_M  = 10f;
+            public const float BALE_ROLL_LONG_M   = 30f;
+            public const int   BIG_DELIVERY_BALES = 10;
+            public const int   HARD_WAY_SWINGS    = 200;
+            public const int   PET_CAT_COUNT      = 10;
+            public const float IDLE_SECONDS       = 600f;   // 10 minutes
+            public const float SPEEDRUN_SECONDS   = 1800f;  // 30 minutes
         }
 
         // ------------------------------------------------------------------ //
@@ -99,7 +135,7 @@ namespace Fields.Core
         }
 
         /// <summary>Unlocks a Steam achievement. Safe to call before Steam is ready — silently ignored.</summary>
-        public void UnlockAchievement(string achievementId)
+        public void UnlockAchievement(string achievementId, bool triggerFeel = true)
         {
 #if STEAMWORKS_NET
             if (!_steamInitialised) return;
@@ -108,6 +144,8 @@ namespace Fields.Core
 #else
             Debug.Log($"[Steam stub] Achievement unlocked: {achievementId}");
 #endif
+            if (triggerFeel)
+                Fields.Feel.GameFeelController.Instance?.TriggerAchievementFeel();
         }
 
         /// <summary>Upload save data to Steam Cloud. Overwrites previous slot.</summary>
@@ -149,18 +187,8 @@ namespace Fields.Core
         // Convenience wrappers called from game systems
         // ------------------------------------------------------------------ //
 
-        public void OnFirstCut()          => UnlockAchievement(Achievements.FIRST_CUT);
-        public void OnParcelComplete(int idx)
-        {
-            string[] ids = {
-                Achievements.PARCEL1_COMPLETE,
-                Achievements.PARCEL2_COMPLETE,
-                Achievements.PARCEL3_COMPLETE,
-                Achievements.PARCEL4_COMPLETE
-            };
-            if (idx >= 0 && idx < ids.Length) UnlockAchievement(ids[idx]);
-        }
-        public void OnAllParcelsComplete() => UnlockAchievement(Achievements.ALL_PARCELS);
+        public void OnFirstCut()           => UnlockAchievement(Achievements.FIRST_CUT);
+        public void OnAllFieldsComplete()  => UnlockAchievement(Achievements.ALL_FIELDS);
         public void OnFirstBale()          => UnlockAchievement(Achievements.FIRST_BALE);
         public void OnFirstSale()          => UnlockAchievement(Achievements.FIRST_SALE);
         public void OnEarnMoney(int total)

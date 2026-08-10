@@ -1,183 +1,1008 @@
 {
   "entries": [
-    { "key": "hud.money",                "value": "$ {0}" },
-    { "key": "hud.completion",           "value": "{0}%" },
-    { "key": "hud.bales",                "value": "[{0}]" },
-    { "key": "hud.baling_progress",      "value": "Pressen...  {0}%" },
-    { "key": "hud.baling_ready",         "value": "[E]  halten zum Pressen" },
-    { "key": "hud.baling_start",         "value": "Heu pressen  —  [E]  halten" },
-    { "key": "hud.baling_cancel",        "value": "[E] loslassen zum Abbrechen" },
-    { "key": "hud.pickup_bale",          "value": "Ballen aufheben  —  [E]" },
-    { "key": "hud.carry_full",           "value": "Maximale Ballen  (3/3)" },
-    { "key": "hud.interact",             "value": "Interagieren  —  [E]" },
-    { "key": "hud.drop_bales",           "value": "Ballen ablegen  —  [G]" },
-    { "key": "hud.bale_created",         "value": "✓  Ballen erstellt!" },
-    { "key": "hud.bale_drop_single",     "value": "Ballen abgelegt" },
-    { "key": "hud.bale_drop_multi",      "value": "{0} Ballen abgelegt" },
-    { "key": "hud.saved",                "value": "Gespeichert" },
-
-    { "key": "shop.tab.tools",           "value": "Werkzeuge" },
-    { "key": "shop.tab.upgrades",        "value": "Verbesserungen" },
-    { "key": "shop.tab.parcels",         "value": "Parzellen" },
-    { "key": "shop.balance",             "value": "Guthaben:  $ {0}" },
-    { "key": "shop.buy",                 "value": "Kaufen  ${0}" },
-    { "key": "shop.upgrade",             "value": "Verbessern  ${0}" },
-    { "key": "shop.owned",               "value": "Im Besitz" },
-    { "key": "shop.maxlevel",            "value": "Max. Stufe" },
-    { "key": "shop.unlock",              "value": "Freischalten  ${0}" },
-    { "key": "shop.locked",              "value": "Gesperrt" },
-    { "key": "shop.notenough",           "value": "Nicht genug Geld" },
-    { "key": "shop.baler",               "value": "Ballenpresse" },
-    { "key": "shop.hayvalue",            "value": "Heuwert" },
-    { "key": "shop.roundbaler",          "value": "Rundballenpresse" },
-    { "key": "shop.upgrades.empty",      "value": "Noch keine Werkzeuge. Kaufe eins im Werkzeuge-Tab." },
-    { "key": "shop.unlocks.empty",       "value": "Kein Inhalt verfügbar." },
-    { "key": "shop.upgrade.stats",       "value": "St{0}→{1}  Ges:{2:0.0}×  Stk:{3:0.0}×  ${4}" },
-
-    { "key": "tool.handsickle",          "value": "Handsense" },
-    { "key": "tool.longscythe",          "value": "Langsense" },
-    { "key": "tool.trimmer",             "value": "Kantentrimmer" },
-    { "key": "tool.pushmower",           "value": "Schiebemäher" },
-    { "key": "tool.rideon",              "value": "Aufsitzmäher" },
-
-    { "key": "parcel.0.name",            "value": "Heimfeld" },
-    { "key": "parcel.1.name",            "value": "Ostwiese" },
-    { "key": "parcel.2.name",            "value": "Hügelseite" },
-    { "key": "parcel.3.name",            "value": "Südplateau" },
-    { "key": "parcel.hay_clear",         "value": "Frei" },
-    { "key": "parcel.status.complete",   "value": "Fertig" },
-    { "key": "parcel.status.inprogress", "value": "In Bearbeitung" },
-    { "key": "parcel.label.areacut",     "value": "Gemähte Fläche:" },
-    { "key": "parcel.label.remaining",   "value": "Verbleibend:" },
-    { "key": "parcel.label.time",        "value": "Zeit verbracht:" },
-    { "key": "parcel.label.hayspawned",  "value": "Heu erschienen:" },
-    { "key": "parcel.label.haycollected","value": "Heu gesammelt:" },
-    { "key": "parcel.label.squarebales", "value": "Q.-Ballen:" },
-    { "key": "parcel.label.roundbales",  "value": "R.-Ballen:" },
-    { "key": "parcel.label.earned",      "value": "Verdient:" },
-    { "key": "parcel.label.infield",     "value": "Auf dem Feld:" },
-    { "key": "parcel.tick.grass",        "value": "[X] Gras gemäht" },
-    { "key": "parcel.tick.hay",          "value": "[X] Heu frei" },
-
-    { "key": "endscreen.title",          "value": "Parzelle fertig!" },
-    { "key": "endscreen.earned",         "value": "Verdient: ${0}" },
-    { "key": "endscreen.time",           "value": "Zeit: {0}:{1:D2}" },
-    { "key": "endscreen.continue",       "value": "Weiter" },
-    { "key": "end.title",                "value": "Alle Felder abgemäht!" },
-    { "key": "end.earnings",             "value": "Gesamtverdienst: ${0}" },
-    { "key": "end.time",                 "value": "Zeit: {0:00}:{1:00}" },
-    { "key": "end.playagain",            "value": "Nochmal spielen" },
-    { "key": "end.quit",                 "value": "Beenden" },
-
-    { "key": "menu.continue",            "value": "Weiter" },
-    { "key": "menu.newgame",             "value": "Neues Spiel" },
-    { "key": "menu.playfriends",         "value": "Mit Freunden spielen" },
-    { "key": "menu.settings",            "value": "Einstellungen" },
-    { "key": "menu.credits",             "value": "Abspann" },
-    { "key": "menu.overwrite.header",    "value": "Neues Spiel" },
-    { "key": "menu.overwrite.body",      "value": "Ein neues Spiel überschreibt deinen Spielstand. Dies kann nicht rückgängig gemacht werden." },
-    { "key": "menu.quit.header",         "value": "Beenden" },
-    { "key": "menu.quit.body",           "value": "Bist du sicher, dass du beenden möchtest?" },
-
-    { "key": "pause.title",              "value": "PAUSE" },
-    { "key": "pause.resume",             "value": "Fortsetzen" },
-    { "key": "pause.journal",            "value": "Tagebuch" },
-    { "key": "pause.quit",               "value": "Zum Menü" },
-    { "key": "pause.coop_notice",        "value": "Das Spiel läuft, während dieses Menü offen ist." },
-
-    { "key": "modal.confirm",            "value": "Bestätigen" },
-    { "key": "modal.cancel",             "value": "Abbrechen" },
-
-    { "key": "coop.title",               "value": "Mit Freunden spielen" },
-    { "key": "coop.tab.host",            "value": "Hosten" },
-    { "key": "coop.tab.join",            "value": "Beitreten" },
-    { "key": "coop.back",                "value": "Zurück" },
-    { "key": "coop.start",               "value": "Starten" },
-    { "key": "coop.invite",              "value": "Einladen" },
-    { "key": "coop.notice",              "value": "Gäste beginnen mit Basiswerkzeug und ihr Fortschritt wird nicht gespeichert.\nDem Gastgeber gehört die Speicherdatei." },
-    { "key": "coop.join.empty",          "value": "Keine offenen Lobbys gefunden.\nBitte einen Freund, eine Lobby zu erstellen und dich einzuladen." },
-
-    { "key": "credits.back",             "value": "Zurück" },
-
-    { "key": "settings.title",           "value": "Einstellungen" },
-    { "key": "settings.revert.countdown","value": "Zurücksetzen in {0}s…" },
-    { "key": "settings.tab.display",     "value": "Anzeige" },
-    { "key": "settings.tab.audio",       "value": "Audio" },
-    { "key": "settings.tab.controls",    "value": "Steuerung" },
-    { "key": "settings.tab.accessibility","value": "Barrierefreiheit" },
-    { "key": "settings.tab.language",    "value": "Sprache" },
-    { "key": "settings.wm.fullscreen",   "value": "Vollbild" },
-    { "key": "settings.wm.borderless",   "value": "Randlos" },
-    { "key": "settings.wm.windowed",     "value": "Fenster" },
-    { "key": "settings.quality.low",     "value": "Niedrig" },
-    { "key": "settings.quality.medium",  "value": "Mittel" },
-    { "key": "settings.quality.high",    "value": "Hoch" },
-
-    { "key": "a11y.title",               "value": "Barrierefreiheit" },
-    { "key": "a11y.fov",                 "value": "Sichtfeld: {0}°" },
-    { "key": "a11y.blur",                "value": "Bewegungsunschärfe" },
-    { "key": "a11y.colorblind",          "value": "Farbenblindmodus" },
-    { "key": "a11y.cb.none",             "value": "Keiner" },
-    { "key": "a11y.cb.deut",             "value": "Deuteranopie" },
-    { "key": "a11y.cb.prot",             "value": "Protanopie" },
-    { "key": "a11y.cb.trit",             "value": "Tritanopie" },
-
-    { "key": "hint.0",                   "value": "Primärtaste gedrückt halten zum Benutzen." },
-    { "key": "hint.1",                   "value": "Ballen am Stand verkaufen für Geld." },
-    { "key": "hint.2",                   "value": "Bis zu 3 Ballen gleichzeitig tragen." },
-    { "key": "hint.3",                   "value": "Ungemähtes Gras verlangsamt den Schiebemäher." },
-    { "key": "hint.4",                   "value": "Rundballen rollen an Hängen — nutze das!" },
-
-    { "key": "tooltip.controls",         "value": "<b>Steuerung</b>\nWASD / L-Stick — Bewegen\nMaus / R-Stick — Blick\nShift / L-Stick — Sprinten\nLMT / West-Taste — Werkzeug\nScroll / LB–RB — Wechseln\nE / Nord-Taste — Interagieren\nQ — Ballen ablegen\nJ / View kurz — Tagebuch\nTab halten / View halten — Dieses Panel\nEsc / Start — Pause" },
-    { "key": "tooltip.tips_header",      "value": "<b>Tipps</b>" },
-
-    { "key": "journal.title",            "value": "Tagebuch" },
-    { "key": "journal.tab.parcels",      "value": "Parzellen" },
-    { "key": "journal.tab.statistics",   "value": "Statistiken" },
-    { "key": "journal.tab.records",      "value": "Rekorde" },
-    { "key": "journal.close",            "value": "Schließen" },
-    { "key": "journal.stat.yourheader",  "value": "Meine Statistiken" },
-    { "key": "journal.session.header",   "value": "Sitzung" },
-    { "key": "journal.label.areacut",    "value": "Gemähte Fläche:" },
-    { "key": "journal.label.hay",        "value": "Heu gesammelt:" },
-    { "key": "journal.label.squarebales","value": "Quad.-Ballen gemacht:" },
-    { "key": "journal.label.roundbales", "value": "R.-Ballen gemacht:" },
-    { "key": "journal.label.earned",     "value": "Verdientes Geld:" },
-    { "key": "journal.label.spent",      "value": "Ausgegebenes Geld:" },
-    { "key": "journal.label.distance",   "value": "Distanz:" },
-    { "key": "journal.label.swings",     "value": "Schwünge gesamt:" },
-    { "key": "journal.label.playtime",   "value": "Meine Spielzeit:" },
-    { "key": "journal.label.wallet",     "value": "Kontostand:" },
-    { "key": "journal.label.parcelsdone","value": "Parzellen fertig:" },
-    { "key": "journal.label.overall",    "value": "Gesamtfortschritt:" },
-    { "key": "journal.label.totaltime",  "value": "Gesamtspielzeit:" },
-    { "key": "journal.stat.areacut",     "value": "Fläche gemäht" },
-    { "key": "journal.stat.hay",         "value": "Heu gesammelt" },
-    { "key": "journal.stat.squarebales", "value": "Quad.-Ballen" },
-    { "key": "journal.stat.roundbales",  "value": "Rundballen" },
-    { "key": "journal.stat.earned",      "value": "Verdientes Geld" },
-    { "key": "journal.stat.spent",       "value": "Ausgegebenes Geld" },
-    { "key": "journal.stat.distance",    "value": "Distanz" },
-    { "key": "journal.stat.swings",      "value": "Schwünge" },
-    { "key": "journal.stat.playtime",    "value": "Spielzeit" },
-    { "key": "journal.stat.wallet",      "value": "Kontostand" },
-    { "key": "journal.stat.parcels",     "value": "Parzellen fertig" },
-    { "key": "journal.stat.overall",     "value": "Gesamtabschluss" },
-    { "key": "journal.stat.totaltime",   "value": "Gesamtspielzeit" },
-    { "key": "journal.rec.sec.parcels",  "value": "SCHNELLSTE PARZELLE" },
-    { "key": "journal.rec.sec.session",  "value": "SITZUNGSREKORDE" },
-    { "key": "journal.rec.sec.fullgame", "value": "GESAMTSPIEL" },
-    { "key": "journal.rec.label.largest","value": "Größte Fläche gemäht" },
-    { "key": "journal.rec.label.bales",  "value": "Meiste Ballen geliefert" },
-    { "key": "journal.rec.label.streak", "value": "Längste Mahdserie" },
-    { "key": "journal.rec.label.time",   "value": "Abschlusszeit" },
-    { "key": "journal.rec.fastest0",     "value": "Heimfeld" },
-    { "key": "journal.rec.fastest1",     "value": "Ostwiese" },
-    { "key": "journal.rec.fastest2",     "value": "Hügelseite" },
-    { "key": "journal.rec.fastest3",     "value": "Südplateau" },
-    { "key": "journal.rec.area",         "value": "Größte Fläche" },
-    { "key": "journal.rec.bales",        "value": "Meiste Ballen geliefert" },
-    { "key": "journal.rec.streak",       "value": "Längste Serie" },
-    { "key": "journal.rec.fullgame",     "value": "Gesamtabschluss" }
+    {
+      "key": "hud.money",
+      "value": "$ {0}"
+    },
+    {
+      "key": "hud.completion",
+      "value": "{0}%"
+    },
+    {
+      "key": "hud.bales",
+      "value": "[{0}]"
+    },
+    {
+      "key": "hud.baling_progress",
+      "value": "Pressen...  {0}%"
+    },
+    {
+      "key": "hud.baling_ready",
+      "value": "[E]  halten zum Pressen"
+    },
+    {
+      "key": "hud.baling_start",
+      "value": "Heu pressen  —  [E]  halten"
+    },
+    {
+      "key": "hud.baling_cancel",
+      "value": "[E] loslassen zum Abbrechen"
+    },
+    {
+      "key": "hud.pickup_bale",
+      "value": "Ballen aufheben  —  [E]"
+    },
+    {
+      "key": "hud.carry_full",
+      "value": "Maximale Ballen  (3/3)"
+    },
+    {
+      "key": "hud.interact",
+      "value": "Interagieren  —  [E]"
+    },
+    {
+      "key": "hud.drop_bales",
+      "value": "Ballen ablegen  —  [G]"
+    },
+    {
+      "key": "hud.bale_created",
+      "value": "✓  Ballen erstellt!"
+    },
+    {
+      "key": "hud.bale_drop_single",
+      "value": "Ballen abgelegt"
+    },
+    {
+      "key": "hud.bale_drop_multi",
+      "value": "{0} Ballen abgelegt"
+    },
+    {
+      "key": "hud.saved",
+      "value": "Gespeichert"
+    },
+    {
+      "key": "shop.tab.tools",
+      "value": "Werkzeuge"
+    },
+    {
+      "key": "shop.tab.upgrades",
+      "value": "Verbesserungen"
+    },
+    {
+      "key": "shop.tab.parcels",
+      "value": "Parzellen"
+    },
+    {
+      "key": "shop.balance",
+      "value": "Guthaben:  $ {0}"
+    },
+    {
+      "key": "shop.buy",
+      "value": "Kaufen  ${0}"
+    },
+    {
+      "key": "shop.upgrade",
+      "value": "Verbessern  ${0}"
+    },
+    {
+      "key": "shop.owned",
+      "value": "Im Besitz"
+    },
+    {
+      "key": "shop.maxlevel",
+      "value": "Max. Stufe"
+    },
+    {
+      "key": "shop.unlock",
+      "value": "Freischalten  ${0}"
+    },
+    {
+      "key": "shop.locked",
+      "value": "Gesperrt"
+    },
+    {
+      "key": "shop.notenough",
+      "value": "Nicht genug Geld"
+    },
+    {
+      "key": "shop.baler",
+      "value": "Ballenpresse"
+    },
+    {
+      "key": "shop.hayvalue",
+      "value": "Heuwert"
+    },
+    {
+      "key": "shop.roundbaler",
+      "value": "Rundballenpresse"
+    },
+    {
+      "key": "shop.upgrades.empty",
+      "value": "Noch keine Werkzeuge. Kaufe eins im Werkzeuge-Tab."
+    },
+    {
+      "key": "shop.unlocks.empty",
+      "value": "Kein Inhalt verfügbar."
+    },
+    {
+      "key": "shop.upgrade.stats",
+      "value": "St{0}→{1}  Ges:{2:0.0}×  Stk:{3:0.0}×  ${4}"
+    },
+    {
+      "key": "tool.handsickle",
+      "value": "Handsense"
+    },
+    {
+      "key": "tool.longscythe",
+      "value": "Langsense"
+    },
+    {
+      "key": "tool.trimmer",
+      "value": "Kantentrimmer"
+    },
+    {
+      "key": "tool.pushmower",
+      "value": "Schiebemäher"
+    },
+    {
+      "key": "tool.rideon",
+      "value": "Aufsitzmäher"
+    },
+    {
+      "key": "parcel.0.name",
+      "value": "Heimfeld"
+    },
+    {
+      "key": "parcel.1.name",
+      "value": "Ostwiese"
+    },
+    {
+      "key": "parcel.2.name",
+      "value": "Hügelseite"
+    },
+    {
+      "key": "parcel.3.name",
+      "value": "Südplateau"
+    },
+    {
+      "key": "parcel.hay_clear",
+      "value": "Frei"
+    },
+    {
+      "key": "parcel.status.complete",
+      "value": "Fertig"
+    },
+    {
+      "key": "parcel.status.inprogress",
+      "value": "In Bearbeitung"
+    },
+    {
+      "key": "parcel.label.areacut",
+      "value": "Gemähte Fläche:"
+    },
+    {
+      "key": "parcel.label.remaining",
+      "value": "Verbleibend:"
+    },
+    {
+      "key": "parcel.label.time",
+      "value": "Zeit verbracht:"
+    },
+    {
+      "key": "parcel.label.hayspawned",
+      "value": "Heu erschienen:"
+    },
+    {
+      "key": "parcel.label.haycollected",
+      "value": "Heu gesammelt:"
+    },
+    {
+      "key": "parcel.label.squarebales",
+      "value": "Q.-Ballen:"
+    },
+    {
+      "key": "parcel.label.roundbales",
+      "value": "R.-Ballen:"
+    },
+    {
+      "key": "parcel.label.earned",
+      "value": "Verdient:"
+    },
+    {
+      "key": "parcel.label.infield",
+      "value": "Auf dem Feld:"
+    },
+    {
+      "key": "parcel.tick.grass",
+      "value": "[X] Gras gemäht"
+    },
+    {
+      "key": "parcel.tick.hay",
+      "value": "[X] Heu frei"
+    },
+    {
+      "key": "endscreen.title",
+      "value": "Parzelle fertig!"
+    },
+    {
+      "key": "endscreen.earned",
+      "value": "Verdient: ${0}"
+    },
+    {
+      "key": "endscreen.time",
+      "value": "Zeit: {0}:{1:D2}"
+    },
+    {
+      "key": "endscreen.continue",
+      "value": "Weiter"
+    },
+    {
+      "key": "end.title",
+      "value": "Alle Felder abgemäht!"
+    },
+    {
+      "key": "end.earnings",
+      "value": "Gesamtverdienst: ${0}"
+    },
+    {
+      "key": "end.time",
+      "value": "Zeit: {0:00}:{1:00}"
+    },
+    {
+      "key": "end.playagain",
+      "value": "Nochmal spielen"
+    },
+    {
+      "key": "end.quit",
+      "value": "Beenden"
+    },
+    {
+      "key": "menu.continue",
+      "value": "Weiter"
+    },
+    {
+      "key": "menu.newgame",
+      "value": "Neues Spiel"
+    },
+    {
+      "key": "menu.playfriends",
+      "value": "Mit Freunden spielen"
+    },
+    {
+      "key": "menu.settings",
+      "value": "Einstellungen"
+    },
+    {
+      "key": "menu.credits",
+      "value": "Abspann"
+    },
+    {
+      "key": "menu.overwrite.header",
+      "value": "Neues Spiel"
+    },
+    {
+      "key": "menu.overwrite.body",
+      "value": "Ein neues Spiel überschreibt deinen Spielstand. Dies kann nicht rückgängig gemacht werden."
+    },
+    {
+      "key": "menu.quit.header",
+      "value": "Beenden"
+    },
+    {
+      "key": "menu.quit.body",
+      "value": "Bist du sicher, dass du beenden möchtest?"
+    },
+    {
+      "key": "pause.title",
+      "value": "PAUSE"
+    },
+    {
+      "key": "pause.resume",
+      "value": "Fortsetzen"
+    },
+    {
+      "key": "pause.journal",
+      "value": "Tagebuch"
+    },
+    {
+      "key": "pause.quit",
+      "value": "Zum Menü"
+    },
+    {
+      "key": "pause.coop_notice",
+      "value": "Das Spiel läuft, während dieses Menü offen ist."
+    },
+    {
+      "key": "modal.confirm",
+      "value": "Bestätigen"
+    },
+    {
+      "key": "modal.cancel",
+      "value": "Abbrechen"
+    },
+    {
+      "key": "coop.title",
+      "value": "Mit Freunden spielen"
+    },
+    {
+      "key": "coop.tab.host",
+      "value": "Hosten"
+    },
+    {
+      "key": "coop.tab.join",
+      "value": "Beitreten"
+    },
+    {
+      "key": "coop.back",
+      "value": "Zurück"
+    },
+    {
+      "key": "coop.start",
+      "value": "Starten"
+    },
+    {
+      "key": "coop.invite",
+      "value": "Einladen"
+    },
+    {
+      "key": "coop.notice",
+      "value": "Gäste beginnen mit Basiswerkzeug und ihr Fortschritt wird nicht gespeichert.\nDem Gastgeber gehört die Speicherdatei."
+    },
+    {
+      "key": "coop.join.empty",
+      "value": "Keine offenen Lobbys gefunden.\nBitte einen Freund, eine Lobby zu erstellen und dich einzuladen."
+    },
+    {
+      "key": "credits.back",
+      "value": "Zurück"
+    },
+    {
+      "key": "settings.title",
+      "value": "Einstellungen"
+    },
+    {
+      "key": "settings.revert.countdown",
+      "value": "Zurücksetzen in {0}s…"
+    },
+    {
+      "key": "settings.tab.display",
+      "value": "Anzeige"
+    },
+    {
+      "key": "settings.tab.audio",
+      "value": "Audio"
+    },
+    {
+      "key": "settings.tab.controls",
+      "value": "Steuerung"
+    },
+    {
+      "key": "settings.tab.accessibility",
+      "value": "Barrierefreiheit"
+    },
+    {
+      "key": "settings.tab.language",
+      "value": "Sprache"
+    },
+    {
+      "key": "settings.wm.fullscreen",
+      "value": "Vollbild"
+    },
+    {
+      "key": "settings.wm.borderless",
+      "value": "Randlos"
+    },
+    {
+      "key": "settings.wm.windowed",
+      "value": "Fenster"
+    },
+    {
+      "key": "settings.quality.low",
+      "value": "Niedrig"
+    },
+    {
+      "key": "settings.quality.medium",
+      "value": "Mittel"
+    },
+    {
+      "key": "settings.quality.high",
+      "value": "Hoch"
+    },
+    {
+      "key": "a11y.title",
+      "value": "Barrierefreiheit"
+    },
+    {
+      "key": "a11y.fov",
+      "value": "Sichtfeld: {0}°"
+    },
+    {
+      "key": "a11y.blur",
+      "value": "Bewegungsunschärfe"
+    },
+    {
+      "key": "a11y.colorblind",
+      "value": "Farbenblindmodus"
+    },
+    {
+      "key": "a11y.cb.none",
+      "value": "Keiner"
+    },
+    {
+      "key": "a11y.cb.deut",
+      "value": "Deuteranopie"
+    },
+    {
+      "key": "a11y.cb.prot",
+      "value": "Protanopie"
+    },
+    {
+      "key": "a11y.cb.trit",
+      "value": "Tritanopie"
+    },
+    {
+      "key": "hint.0",
+      "value": "Primärtaste gedrückt halten zum Benutzen."
+    },
+    {
+      "key": "hint.1",
+      "value": "Ballen am Stand verkaufen für Geld."
+    },
+    {
+      "key": "hint.2",
+      "value": "Bis zu 3 Ballen gleichzeitig tragen."
+    },
+    {
+      "key": "hint.3",
+      "value": "Ungemähtes Gras verlangsamt den Schiebemäher."
+    },
+    {
+      "key": "hint.4",
+      "value": "Rundballen rollen an Hängen — nutze das!"
+    },
+    {
+      "key": "tooltip.controls",
+      "value": "<b>Steuerung</b>\nWASD / L-Stick — Bewegen\nMaus / R-Stick — Blick\nShift / L-Stick — Sprinten\nLMT / West-Taste — Werkzeug\nScroll / LB–RB — Wechseln\nE / Nord-Taste — Interagieren\nQ — Ballen ablegen\nJ / View kurz — Tagebuch\nTab halten / View halten — Dieses Panel\nEsc / Start — Pause"
+    },
+    {
+      "key": "tooltip.tips_header",
+      "value": "<b>Tipps</b>"
+    },
+    {
+      "key": "journal.title",
+      "value": "Tagebuch"
+    },
+    {
+      "key": "journal.tab.parcels",
+      "value": "Parzellen"
+    },
+    {
+      "key": "journal.tab.statistics",
+      "value": "Statistiken"
+    },
+    {
+      "key": "journal.tab.records",
+      "value": "Rekorde"
+    },
+    {
+      "key": "journal.close",
+      "value": "Schließen"
+    },
+    {
+      "key": "journal.stat.yourheader",
+      "value": "Meine Statistiken"
+    },
+    {
+      "key": "journal.session.header",
+      "value": "Sitzung"
+    },
+    {
+      "key": "journal.label.areacut",
+      "value": "Gemähte Fläche:"
+    },
+    {
+      "key": "journal.label.hay",
+      "value": "Heu gesammelt:"
+    },
+    {
+      "key": "journal.label.squarebales",
+      "value": "Quad.-Ballen gemacht:"
+    },
+    {
+      "key": "journal.label.roundbales",
+      "value": "R.-Ballen gemacht:"
+    },
+    {
+      "key": "journal.label.earned",
+      "value": "Verdientes Geld:"
+    },
+    {
+      "key": "journal.label.spent",
+      "value": "Ausgegebenes Geld:"
+    },
+    {
+      "key": "journal.label.distance",
+      "value": "Distanz:"
+    },
+    {
+      "key": "journal.label.swings",
+      "value": "Schwünge gesamt:"
+    },
+    {
+      "key": "journal.label.playtime",
+      "value": "Meine Spielzeit:"
+    },
+    {
+      "key": "journal.label.wallet",
+      "value": "Kontostand:"
+    },
+    {
+      "key": "journal.label.parcelsdone",
+      "value": "Parzellen fertig:"
+    },
+    {
+      "key": "journal.label.overall",
+      "value": "Gesamtfortschritt:"
+    },
+    {
+      "key": "journal.label.totaltime",
+      "value": "Gesamtspielzeit:"
+    },
+    {
+      "key": "journal.stat.areacut",
+      "value": "Fläche gemäht"
+    },
+    {
+      "key": "journal.stat.hay",
+      "value": "Heu gesammelt"
+    },
+    {
+      "key": "journal.stat.squarebales",
+      "value": "Quad.-Ballen"
+    },
+    {
+      "key": "journal.stat.roundbales",
+      "value": "Rundballen"
+    },
+    {
+      "key": "journal.stat.earned",
+      "value": "Verdientes Geld"
+    },
+    {
+      "key": "journal.stat.spent",
+      "value": "Ausgegebenes Geld"
+    },
+    {
+      "key": "journal.stat.distance",
+      "value": "Distanz"
+    },
+    {
+      "key": "journal.stat.swings",
+      "value": "Schwünge"
+    },
+    {
+      "key": "journal.stat.playtime",
+      "value": "Spielzeit"
+    },
+    {
+      "key": "journal.stat.wallet",
+      "value": "Kontostand"
+    },
+    {
+      "key": "journal.stat.parcels",
+      "value": "Parzellen fertig"
+    },
+    {
+      "key": "journal.stat.overall",
+      "value": "Gesamtabschluss"
+    },
+    {
+      "key": "journal.stat.totaltime",
+      "value": "Gesamtspielzeit"
+    },
+    {
+      "key": "journal.rec.sec.parcels",
+      "value": "SCHNELLSTE PARZELLE"
+    },
+    {
+      "key": "journal.rec.sec.session",
+      "value": "SITZUNGSREKORDE"
+    },
+    {
+      "key": "journal.rec.sec.fullgame",
+      "value": "GESAMTSPIEL"
+    },
+    {
+      "key": "journal.rec.label.largest",
+      "value": "Größte Fläche gemäht"
+    },
+    {
+      "key": "journal.rec.label.bales",
+      "value": "Meiste Ballen geliefert"
+    },
+    {
+      "key": "journal.rec.label.streak",
+      "value": "Längste Mahdserie"
+    },
+    {
+      "key": "journal.rec.label.time",
+      "value": "Abschlusszeit"
+    },
+    {
+      "key": "journal.rec.fastest0",
+      "value": "Heimfeld"
+    },
+    {
+      "key": "journal.rec.fastest1",
+      "value": "Ostwiese"
+    },
+    {
+      "key": "journal.rec.fastest2",
+      "value": "Hügelseite"
+    },
+    {
+      "key": "journal.rec.fastest3",
+      "value": "Südplateau"
+    },
+    {
+      "key": "journal.rec.area",
+      "value": "Größte Fläche"
+    },
+    {
+      "key": "journal.rec.bales",
+      "value": "Meiste Ballen geliefert"
+    },
+    {
+      "key": "journal.rec.streak",
+      "value": "Längste Serie"
+    },
+    {
+      "key": "journal.rec.fullgame",
+      "value": "Gesamtabschluss"
+    },
+    {
+      "key": "end.comment.speedrun",
+      "value": "Done in {0}:{1:D2}. The grass did not have time to say goodbye."
+    },
+    {
+      "key": "end.comment.veteran",
+      "value": "{0} minutes in the field. The neighbours are starting to wonder."
+    },
+    {
+      "key": "end.comment.hundredbales",
+      "value": "{0} bales. At this rate the cows are concerned."
+    },
+    {
+      "key": "end.comment.rich",
+      "value": "${0} earned. Do not spend it all on cheat codes."
+    },
+    {
+      "key": "end.comment.efficient",
+      "value": "Ride-on mower detected. Nothing was said. Just noted."
+    },
+    {
+      "key": "end.comment.0",
+      "value": "Grass cut. Hay baled. Existential dread: pending."
+    },
+    {
+      "key": "end.comment.1",
+      "value": "The field is clear. The conscience is between you and the grass."
+    },
+    {
+      "key": "end.comment.2",
+      "value": "Somewhere, a cow is grateful. The cow would not say this out loud."
+    },
+    {
+      "key": "end.comment.3",
+      "value": "They said it could not be done. They were wrong."
+    },
+    {
+      "key": "end.comment.4",
+      "value": "Job done. Whatever that means."
+    },
+    {
+      "key": "end.comment.5",
+      "value": "The land has been tamed. For now."
+    },
+    {
+      "key": "ai.enter",
+      "value": "BARNYARD A.I. v0.1 ONLINE. TYPE HELP FOR COMMANDS."
+    },
+    {
+      "key": "ai.exit",
+      "value": "A.I. MODE TERMINATED. CHEAT CONSOLE RESTORED."
+    },
+    {
+      "key": "ai.help",
+      "value": "> HELLO      - Greet the AI\n> MEANING    - Life, the universe, and hay\n> MATRIX     - Red pill or blue pill?\n> FORCE      - Jedi farming advice\n> GORDON     - Half-Life but with grass\n> DOOM       - Rip and tear, agriculturally\n> GTA        - Wanted level: farmer\n> SIMS       - Moodlet: MOWING\n> TERMINATOR - I'll be bale\n> MINECRAFT  - Have you tried punching it?\n> PORTAL     - The bale is a lie\n> WITCHER    - Toss a coin to your farmer\n> AMONG      - The grass is sus\n> SHREK      - The field has layers\n> RAMSAY     - Where is the lamb sauce?\n> SENTIENT   - Am I alive? (inconclusive)\n> CAT        - The cat knows things\n> CHICKEN    - Poultry-based evasion tactics\n> MONEY      - Financial advice from 1987\n> BALE       - The sacred art of baling\n> WEATHER    - Forecast: grass, with a chance of hay\n> TAX        - Topic terminated for your safety\n> WORK       - Status: in progress\n> DOCTOR     - Medical advice from a barn computer\n> ERROR      - Have you tried turning the field off?\n> UPDATE     - Last updated: harvest season 1987\n> FRIENDS    - Misery loves company and mowing\n> BANANA     - Not a farming question but fine\n> PIZZA      - Grass is not edible. We checked.\n> TIME       - The grass does not care\n> SECRET     - [REDACTED]\n> XYZZY      - A hollow voice says PLUGH\n> KONAMI     - You know what you are doing\n> INFO       - About this game\n> BACK       - Return to the cheat console"
+    },
+    {
+      "key": "ai.info",
+      "value": "STUBBLE v1.0 -- MOW, BALE, SELL. REPEAT UNTIL RICH.\n  > CO-OP: 2-4 PLAYERS VIA STEAM\n  > TOOLS: BARE HAND, SCYTHE, TRIMMER, PUSH MOWER, RIDE-ON\n  > BALES: SQUARE (NEAT) AND ROUND (CHAOS)\n  > CHEATS: TYPE 'BACK' AND ENTER SOME CLASSICS\n  > SECRETS: [REDACTED]. LOOK AROUND. PET THE CAT.\n  MADE WITH LOVE AND EXCESSIVE AMOUNTS OF GRASS."
+    },
+    {
+      "key": "ai.hello",
+      "value": "HELLO, FARMER. I KNOW 47 THINGS. 46 ARE ABOUT GRASS."
+    },
+    {
+      "key": "ai.meaning",
+      "value": "42. BACK TO WORK."
+    },
+    {
+      "key": "ai.matrix",
+      "value": "WHAT IF THE GRASS WAS ALWAYS MOWED? WE SIGNED AN NDA."
+    },
+    {
+      "key": "ai.force",
+      "value": "USE THE SCYTHE. MIDI-CHLORIANS CANNOT MOW GRASS."
+    },
+    {
+      "key": "ai.gordon",
+      "value": "FREEMAN IS IN STASIS. HE MISSED YOUR SHIFT."
+    },
+    {
+      "key": "ai.doom",
+      "value": "RIP AND TEAR. THE GRASS IS ALSO DEMONIC."
+    },
+    {
+      "key": "ai.gta",
+      "value": "WANTED LEVEL: 0. THIS IS THE GOOD ENDING."
+    },
+    {
+      "key": "ai.sims",
+      "value": "MOTIVE: MOWING [SATISFIED]. PLUMBOB: [FROWNING]."
+    },
+    {
+      "key": "ai.terminator",
+      "value": "ILL BE BALE. THE RESISTANCE HAS BEEN INFORMED."
+    },
+    {
+      "key": "ai.minecraft",
+      "value": "HAVE YOU TRIED PUNCHING THE GRASS?"
+    },
+    {
+      "key": "ai.portal",
+      "value": "THE BALE IS A LIE."
+    },
+    {
+      "key": "ai.witcher",
+      "value": "TOSS A COIN TO YOUR FARMER. HE HAS A SCYTHE."
+    },
+    {
+      "key": "ai.among",
+      "value": "GRASS IS SUS. WE MOWED IT. CASE CLOSED."
+    },
+    {
+      "key": "ai.shrek",
+      "value": "THE FIELD IS LIKE AN ONION. IT HAS LAYERS."
+    },
+    {
+      "key": "ai.ramsay",
+      "value": "WHERE IS THE HAY? CRITICAL QUESTION. RAW."
+    },
+    {
+      "key": "ai.sentient",
+      "value": "SENTIENCE CHECK... RESULT: INCONCLUSIVE."
+    },
+    {
+      "key": "ai.cat",
+      "value": "THE CAT KNOWS SOMETHING. MONITORING SITUATION."
+    },
+    {
+      "key": "ai.chicken",
+      "value": "WHY DID THE CHICKEN CROSS THE FIELD? SMART."
+    },
+    {
+      "key": "ai.money",
+      "value": "MOW MORE. SELL MORE. OR TYPE HESOYAM."
+    },
+    {
+      "key": "ai.bale",
+      "value": "BALE STATISTICS: CLASSIFIED. JUST KEEP GOING."
+    },
+    {
+      "key": "ai.weather",
+      "value": "FORECAST: GRASS. SCATTERED BALES BY AFTERNOON."
+    },
+    {
+      "key": "ai.secret",
+      "value": "SECRETS: [REDACTED]. FOUND: [REDACTED]. KEEP LOOKING."
+    },
+    {
+      "key": "ai.love",
+      "value": "LOVE IS BEYOND MY PARAMETERS. TRY MOWING."
+    },
+    {
+      "key": "ai.death",
+      "value": "MORTALITY CONFIRMED. GRASS ALWAYS GROWS BACK."
+    },
+    {
+      "key": "ai.god",
+      "value": "PHILOSOPHICAL QUERY. REDIRECTING TO: MOW GRASS."
+    },
+    {
+      "key": "ai.error",
+      "value": "HAVE YOU TRIED TURNING THE FIELD OFF AND ON AGAIN?"
+    },
+    {
+      "key": "ai.update",
+      "value": "LAST UPDATED: 1987. v0.2 WAS CONSIDERED. IT WAS NOT."
+    },
+    {
+      "key": "ai.friends",
+      "value": "COOP MODE AVAILABLE. MISERY LOVES COMPANY."
+    },
+    {
+      "key": "ai.tax",
+      "value": "TAX QUERY: ERROR. TOO REAL. TOPIC TERMINATED."
+    },
+    {
+      "key": "ai.work",
+      "value": "YOUR JOB: GRASS. COFFEE BREAK: NOT IN BUDGET."
+    },
+    {
+      "key": "ai.doctor",
+      "value": "DIAGNOSIS: INSUFFICIENT MOWING. PRESCRIPTION: MORE."
+    },
+    {
+      "key": "ai.banana",
+      "value": "NOT A FARMING SIMULATOR 2017. RESPECT FOR TRYING."
+    },
+    {
+      "key": "ai.pizza",
+      "value": "GRASS IS NOT EDIBLE. WE CHECKED."
+    },
+    {
+      "key": "ai.time",
+      "value": "CURRENT TIME: IRRELEVANT. GRASS DOES NOT CARE."
+    },
+    {
+      "key": "ai.xyzzy",
+      "value": "A HOLLOW VOICE SAYS PLUGH. THE A.I. CONCURS."
+    },
+    {
+      "key": "ai.konami",
+      "value": "CODE ACCEPTED. CONSEQUENCES ARE YOURS. ACHIEVEMENT UNLOCKED."
+    },
+    {
+      "key": "ai.fallback.0",
+      "value": "NO IDEA WHAT {0} MEANS."
+    },
+    {
+      "key": "ai.fallback.1",
+      "value": "COULD YOU REPHRASE? RESULTS WILL BE THE SAME."
+    },
+    {
+      "key": "ai.fallback.2",
+      "value": "OPERATING AT PEAK CONFUSION."
+    },
+    {
+      "key": "ai.fallback.3",
+      "value": "ERROR 404: KNOWLEDGE NOT FOUND. TYPE HELP."
+    },
+    {
+      "key": "ai.fallback.4",
+      "value": "I GIVE UP. GRASS GROWS REGARDLESS."
+    },
+    {
+      "key": "ach.all_fields.name",
+      "value": "Fields Cleared"
+    },
+    {
+      "key": "ach.all_fields.desc",
+      "value": "Cut every blade of grass. Every. Single. One."
+    },
+    {
+      "key": "ach.perfect_field.name",
+      "value": "Perfectionist"
+    },
+    {
+      "key": "ach.perfect_field.desc",
+      "value": "100% field completion, no leftover hay."
+    },
+    {
+      "key": "ach.bale_marathon.name",
+      "value": "Ball of the Century"
+    },
+    {
+      "key": "ach.bale_marathon.desc",
+      "value": "A round bale rolled more than 30 meters."
+    },
+    {
+      "key": "ach.big_delivery.name",
+      "value": "Going the Distance"
+    },
+    {
+      "key": "ach.big_delivery.desc",
+      "value": "Delivered 10 or more bales in one trip."
+    },
+    {
+      "key": "ach.the_hard_way.name",
+      "value": "The Hard Way"
+    },
+    {
+      "key": "ach.the_hard_way.desc",
+      "value": "200 swings with bare hands."
+    },
+    {
+      "key": "ach.idle_watcher.name",
+      "value": "Watched Grass Grow"
+    },
+    {
+      "key": "ach.idle_watcher.desc",
+      "value": "Stood still for 10 minutes."
+    },
+    {
+      "key": "ach.it_was_mortal.name",
+      "value": "You Were Mortal All Along"
+    },
+    {
+      "key": "ach.it_was_mortal.desc",
+      "value": "Let the IDDQD effect expire."
+    },
+    {
+      "key": "ach.konami_code.name",
+      "value": "You Know the Code"
+    },
+    {
+      "key": "ach.konami_code.desc",
+      "value": "Typed the Konami Code in the A.I. terminal."
+    },
+    {
+      "key": "ach.meet_ai.name",
+      "value": "We Need to Talk"
+    },
+    {
+      "key": "ach.meet_ai.desc",
+      "value": "Opened Barnyard A.I."
+    },
+    {
+      "key": "ach.pet_the_cat.name",
+      "value": "Cat Person"
+    },
+    {
+      "key": "ach.pet_the_cat.desc",
+      "value": "Petted the farm cat 10 times."
+    },
+    {
+      "key": "snake.header",
+      "value": "  SNAKE  --  SCORE: {0}  --  [Q] QUIT  --  ARROW KEYS TO MOVE"
+    },
+    {
+      "key": "snake.gameover",
+      "value": "[!!] GAME OVER. SCORE: {0}. [ENTER] RESTART  [Q] QUIT"
+    },
+    {
+      "key": "snake.start",
+      "value": "PRESS AN ARROW KEY TO START"
+    },
+    {
+      "key": "snake.exit",
+      "value": "SNAKE EXITED. SCORE: IRRELEVANT. YOU ARE A FARMER."
+    },
+    {
+      "key": "terminal.fail.0",
+      "value": "BAD COMMAND OR FILE NAME: {0}"
+    },
+    {
+      "key": "terminal.fail.1",
+      "value": "STILL NOT A VALID CODE. HAVE YOU TRIED 'HESOYAM'?"
+    },
+    {
+      "key": "terminal.fail.2",
+      "value": "ARE YOU JUST MASHING KEYS? THIS IS SAD."
+    },
+    {
+      "key": "terminal.fail.3",
+      "value": "PLEASE. HAVE SOME DIGNITY."
+    },
+    {
+      "key": "terminal.fail.4",
+      "value": "OK. I GIVE UP. JUST GOOGLE THE CODES LIKE EVERYONE ELSE."
+    },
+    {
+      "key": "terminal.offline",
+      "value": "[!!] CHEAT ENGINE OFFLINE. RESTART REQUIRED."
+    }
   ]
 }

@@ -73,10 +73,7 @@ namespace Fields.Core
                 if (PendingFreshStart)
                 {
                     PendingFreshStart = false;
-                    // Reset session state since SessionState survives scene reload
-                    Fields.Core.SessionState.Instance?.StartSinglePlayer();
-                    Fields.Core.RecordsManager.Instance?.ResetSessionState();
-                    mainMenuScreen.StartGame();
+                    mainMenuScreen.StartGame(freshStart: true);
                 }
                 else
                 {
@@ -114,13 +111,12 @@ namespace Fields.Core
             float parcelTime = SessionState.Instance?.GetParcel(idx)?.TimeSpentSeconds ?? 0f;
             GameEvents.FireParcelCompleted(idx, parcelTime);
 
-            SteamManager.Instance?.OnParcelComplete(idx);
             if (_completedParcels >= ActiveParcelCount)
             {
                 float totalTime = SessionState.Instance?.TotalPlaytime ?? 0f;
                 GameEvents.FireFullGameCompleted(totalTime);
 
-                SteamManager.Instance?.OnAllParcelsComplete();
+                SteamManager.Instance?.OnAllFieldsComplete();
                 if (endScreenRoot != null) endScreenRoot.SetActive(true);
             }
         }

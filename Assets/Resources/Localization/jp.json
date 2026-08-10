@@ -1,183 +1,1008 @@
 {
   "entries": [
-    { "key": "hud.money",                "value": "$ {0}" },
-    { "key": "hud.completion",           "value": "{0}%" },
-    { "key": "hud.bales",                "value": "[{0}]" },
-    { "key": "hud.baling_progress",      "value": "梱包中...  {0}%" },
-    { "key": "hud.baling_ready",         "value": "[E]  長押しで梱包" },
-    { "key": "hud.baling_start",         "value": "干草づくり  —  [E]  長押し" },
-    { "key": "hud.baling_cancel",        "value": "[E]を離してキャンセル" },
-    { "key": "hud.pickup_bale",          "value": "ベールを拾う  —  [E]" },
-    { "key": "hud.carry_full",           "value": "最大数のベールを持っています  (3/3)" },
-    { "key": "hud.interact",             "value": "インタラクト  —  [E]" },
-    { "key": "hud.drop_bales",           "value": "ベールを置く  —  [G]" },
-    { "key": "hud.bale_created",         "value": "✓  ベール完成！" },
-    { "key": "hud.bale_drop_single",     "value": "ベールを置いた" },
-    { "key": "hud.bale_drop_multi",      "value": "{0}個のベールを置いた" },
-    { "key": "hud.saved",                "value": "保存済み" },
-
-    { "key": "shop.tab.tools",           "value": "道具" },
-    { "key": "shop.tab.upgrades",        "value": "強化" },
-    { "key": "shop.tab.parcels",         "value": "区画" },
-    { "key": "shop.balance",             "value": "残高:  $ {0}" },
-    { "key": "shop.buy",                 "value": "購入  ${0}" },
-    { "key": "shop.upgrade",             "value": "強化  ${0}" },
-    { "key": "shop.owned",               "value": "所持中" },
-    { "key": "shop.maxlevel",            "value": "最大レベル" },
-    { "key": "shop.unlock",              "value": "解放  ${0}" },
-    { "key": "shop.locked",              "value": "ロック中" },
-    { "key": "shop.notenough",           "value": "お金が足りない" },
-    { "key": "shop.baler",               "value": "梱包機" },
-    { "key": "shop.hayvalue",            "value": "干草の価値" },
-    { "key": "shop.roundbaler",          "value": "ロール梱包機" },
-    { "key": "shop.upgrades.empty",      "value": "道具がありません。道具タブで購入してください。" },
-    { "key": "shop.unlocks.empty",       "value": "利用可能なコンテンツがありません。" },
-    { "key": "shop.upgrade.stats",       "value": "Lv{0}→{1}  速:{2:0.0}×  力:{3:0.0}×  ${4}" },
-
-    { "key": "tool.handsickle",          "value": "手鎌" },
-    { "key": "tool.longscythe",          "value": "大鎌" },
-    { "key": "tool.trimmer",             "value": "草刈り機" },
-    { "key": "tool.pushmower",           "value": "芝刈り機" },
-    { "key": "tool.rideon",              "value": "乗用芝刈り機" },
-
-    { "key": "parcel.0.name",            "value": "ホームフィールド" },
-    { "key": "parcel.1.name",            "value": "東の草原" },
-    { "key": "parcel.2.name",            "value": "丘の斜面" },
-    { "key": "parcel.3.name",            "value": "南の高台" },
-    { "key": "parcel.hay_clear",         "value": "きれい" },
-    { "key": "parcel.status.complete",   "value": "完了" },
-    { "key": "parcel.status.inprogress", "value": "進行中" },
-    { "key": "parcel.label.areacut",     "value": "刈り取り面積:" },
-    { "key": "parcel.label.remaining",   "value": "残り:" },
-    { "key": "parcel.label.time",        "value": "経過時間:" },
-    { "key": "parcel.label.hayspawned",  "value": "干草発生:" },
-    { "key": "parcel.label.haycollected","value": "干草収集:" },
-    { "key": "parcel.label.squarebales", "value": "角ベール:" },
-    { "key": "parcel.label.roundbales",  "value": "丸ベール:" },
-    { "key": "parcel.label.earned",      "value": "獲得:" },
-    { "key": "parcel.label.infield",     "value": "フィールド内:" },
-    { "key": "parcel.tick.grass",        "value": "[X] 草刈り完了" },
-    { "key": "parcel.tick.hay",          "value": "[X] 干草収集完了" },
-
-    { "key": "endscreen.title",          "value": "区画完了！" },
-    { "key": "endscreen.earned",         "value": "獲得: ${0}" },
-    { "key": "endscreen.time",           "value": "タイム: {0}:{1:D2}" },
-    { "key": "endscreen.continue",       "value": "続ける" },
-    { "key": "end.title",                "value": "全フィールドクリア！" },
-    { "key": "end.earnings",             "value": "総収入: ${0}" },
-    { "key": "end.time",                 "value": "タイム: {0:00}:{1:00}" },
-    { "key": "end.playagain",            "value": "もう一度プレイ" },
-    { "key": "end.quit",                 "value": "終了" },
-
-    { "key": "menu.continue",            "value": "続ける" },
-    { "key": "menu.newgame",             "value": "新しいゲーム" },
-    { "key": "menu.playfriends",         "value": "フレンドと遊ぶ" },
-    { "key": "menu.settings",            "value": "設定" },
-    { "key": "menu.credits",             "value": "クレジット" },
-    { "key": "menu.overwrite.header",    "value": "新しいゲーム" },
-    { "key": "menu.overwrite.body",      "value": "新しいゲームを始めると現在のセーブデータが上書きされます。この操作は取り消せません。" },
-    { "key": "menu.quit.header",         "value": "終了" },
-    { "key": "menu.quit.body",           "value": "本当に終了しますか？" },
-
-    { "key": "pause.title",              "value": "ポーズ" },
-    { "key": "pause.resume",             "value": "再開" },
-    { "key": "pause.journal",            "value": "記録帳" },
-    { "key": "pause.quit",               "value": "メニューへ" },
-    { "key": "pause.coop_notice",        "value": "このメニューを開いている間もゲームは続きます。" },
-
-    { "key": "modal.confirm",            "value": "確認" },
-    { "key": "modal.cancel",             "value": "キャンセル" },
-
-    { "key": "coop.title",               "value": "フレンドと遊ぶ" },
-    { "key": "coop.tab.host",            "value": "ホスト" },
-    { "key": "coop.tab.join",            "value": "参加" },
-    { "key": "coop.back",                "value": "戻る" },
-    { "key": "coop.start",               "value": "スタート" },
-    { "key": "coop.invite",              "value": "招待" },
-    { "key": "coop.notice",              "value": "ゲストは基本道具からスタートし、進行状況は保存されません。\nセーブファイルはホストのものです。" },
-    { "key": "coop.join.empty",          "value": "利用可能なロビーが見つかりません。\nフレンドにルームを作って招待してもらいましょう。" },
-
-    { "key": "credits.back",             "value": "戻る" },
-
-    { "key": "settings.title",           "value": "設定" },
-    { "key": "settings.revert.countdown","value": "{0}秒後に元に戻ります…" },
-    { "key": "settings.tab.display",     "value": "画面" },
-    { "key": "settings.tab.audio",       "value": "音声" },
-    { "key": "settings.tab.controls",    "value": "操作" },
-    { "key": "settings.tab.accessibility","value": "アクセシビリティ" },
-    { "key": "settings.tab.language",    "value": "言語" },
-    { "key": "settings.wm.fullscreen",   "value": "全画面" },
-    { "key": "settings.wm.borderless",   "value": "ボーダーレス" },
-    { "key": "settings.wm.windowed",     "value": "ウィンドウ" },
-    { "key": "settings.quality.low",     "value": "低" },
-    { "key": "settings.quality.medium",  "value": "中" },
-    { "key": "settings.quality.high",    "value": "高" },
-
-    { "key": "a11y.title",               "value": "アクセシビリティ" },
-    { "key": "a11y.fov",                 "value": "視野角: {0}°" },
-    { "key": "a11y.blur",                "value": "モーションブラー" },
-    { "key": "a11y.colorblind",          "value": "色覚サポート" },
-    { "key": "a11y.cb.none",             "value": "なし" },
-    { "key": "a11y.cb.deut",             "value": "緑色盲" },
-    { "key": "a11y.cb.prot",             "value": "赤色盲" },
-    { "key": "a11y.cb.trit",             "value": "青色盲" },
-
-    { "key": "hint.0",                   "value": "メインボタンを長押しで道具を使う。" },
-    { "key": "hint.1",                   "value": "売り場でベールを売るとお金が入る。" },
-    { "key": "hint.2",                   "value": "一度に最大3個のベールを運べる。" },
-    { "key": "hint.3",                   "value": "刈り残した草は芝刈り機を遅くする。" },
-    { "key": "hint.4",                   "value": "丸ベールは斜面を転がる — 活用しよう！" },
-
-    { "key": "tooltip.controls",         "value": "<b>操作方法</b>\nWASD / 左スティック — 移動\nマウス / 右スティック — 視点\nShift / 左スティック押 — ダッシュ\n左クリック / 西ボタン — 道具\nホイール / LB–RB — 道具切替\nE / 北ボタン — インタラクト\nQ — ベールを置く\nJ / Viewタップ — 記録帳\nTabホールド / Viewホールド — このパネル\nEsc / Start — ポーズ" },
-    { "key": "tooltip.tips_header",      "value": "<b>ヒント</b>" },
-
-    { "key": "journal.title",            "value": "記録帳" },
-    { "key": "journal.tab.parcels",      "value": "区画" },
-    { "key": "journal.tab.statistics",   "value": "統計" },
-    { "key": "journal.tab.records",      "value": "記録" },
-    { "key": "journal.close",            "value": "閉じる" },
-    { "key": "journal.stat.yourheader",  "value": "自分の統計" },
-    { "key": "journal.session.header",   "value": "セッション" },
-    { "key": "journal.label.areacut",    "value": "刈り取り面積:" },
-    { "key": "journal.label.hay",        "value": "干草収集:" },
-    { "key": "journal.label.squarebales","value": "作った角ベール:" },
-    { "key": "journal.label.roundbales", "value": "作った丸ベール:" },
-    { "key": "journal.label.earned",     "value": "獲得したお金:" },
-    { "key": "journal.label.spent",      "value": "使ったお金:" },
-    { "key": "journal.label.distance",   "value": "移動距離:" },
-    { "key": "journal.label.swings",     "value": "総スイング数:" },
-    { "key": "journal.label.playtime",   "value": "プレイ時間:" },
-    { "key": "journal.label.wallet",     "value": "残高:" },
-    { "key": "journal.label.parcelsdone","value": "完了区画:" },
-    { "key": "journal.label.overall",    "value": "全体進捗:" },
-    { "key": "journal.label.totaltime",  "value": "総プレイ時間:" },
-    { "key": "journal.stat.areacut",     "value": "刈り取り面積" },
-    { "key": "journal.stat.hay",         "value": "干草収集" },
-    { "key": "journal.stat.squarebales", "value": "角ベール" },
-    { "key": "journal.stat.roundbales",  "value": "丸ベール" },
-    { "key": "journal.stat.earned",      "value": "獲得" },
-    { "key": "journal.stat.spent",       "value": "使用" },
-    { "key": "journal.stat.distance",    "value": "距離" },
-    { "key": "journal.stat.swings",      "value": "スイング" },
-    { "key": "journal.stat.playtime",    "value": "プレイ時間" },
-    { "key": "journal.stat.wallet",      "value": "残高" },
-    { "key": "journal.stat.parcels",     "value": "完了区画" },
-    { "key": "journal.stat.overall",     "value": "全体完了" },
-    { "key": "journal.stat.totaltime",   "value": "総プレイ時間" },
-    { "key": "journal.rec.sec.parcels",  "value": "最速区画" },
-    { "key": "journal.rec.sec.session",  "value": "セッション記録" },
-    { "key": "journal.rec.sec.fullgame", "value": "フルゲーム" },
-    { "key": "journal.rec.label.largest","value": "最大刈り取り面積" },
-    { "key": "journal.rec.label.bales",  "value": "最多納品ベール" },
-    { "key": "journal.rec.label.streak", "value": "最長連続刈り" },
-    { "key": "journal.rec.label.time",   "value": "クリアタイム" },
-    { "key": "journal.rec.fastest0",     "value": "ホームフィールド" },
-    { "key": "journal.rec.fastest1",     "value": "東の草原" },
-    { "key": "journal.rec.fastest2",     "value": "丘の斜面" },
-    { "key": "journal.rec.fastest3",     "value": "南の高台" },
-    { "key": "journal.rec.area",         "value": "最大面積" },
-    { "key": "journal.rec.bales",        "value": "最多ベール" },
-    { "key": "journal.rec.streak",       "value": "最長連続" },
-    { "key": "journal.rec.fullgame",     "value": "フルゲームクリア" }
+    {
+      "key": "hud.money",
+      "value": "$ {0}"
+    },
+    {
+      "key": "hud.completion",
+      "value": "{0}%"
+    },
+    {
+      "key": "hud.bales",
+      "value": "[{0}]"
+    },
+    {
+      "key": "hud.baling_progress",
+      "value": "梱包中...  {0}%"
+    },
+    {
+      "key": "hud.baling_ready",
+      "value": "[E]  長押しで梱包"
+    },
+    {
+      "key": "hud.baling_start",
+      "value": "干草づくり  —  [E]  長押し"
+    },
+    {
+      "key": "hud.baling_cancel",
+      "value": "[E]を離してキャンセル"
+    },
+    {
+      "key": "hud.pickup_bale",
+      "value": "ベールを拾う  —  [E]"
+    },
+    {
+      "key": "hud.carry_full",
+      "value": "最大数のベールを持っています  (3/3)"
+    },
+    {
+      "key": "hud.interact",
+      "value": "インタラクト  —  [E]"
+    },
+    {
+      "key": "hud.drop_bales",
+      "value": "ベールを置く  —  [G]"
+    },
+    {
+      "key": "hud.bale_created",
+      "value": "✓  ベール完成！"
+    },
+    {
+      "key": "hud.bale_drop_single",
+      "value": "ベールを置いた"
+    },
+    {
+      "key": "hud.bale_drop_multi",
+      "value": "{0}個のベールを置いた"
+    },
+    {
+      "key": "hud.saved",
+      "value": "保存済み"
+    },
+    {
+      "key": "shop.tab.tools",
+      "value": "道具"
+    },
+    {
+      "key": "shop.tab.upgrades",
+      "value": "強化"
+    },
+    {
+      "key": "shop.tab.parcels",
+      "value": "区画"
+    },
+    {
+      "key": "shop.balance",
+      "value": "残高:  $ {0}"
+    },
+    {
+      "key": "shop.buy",
+      "value": "購入  ${0}"
+    },
+    {
+      "key": "shop.upgrade",
+      "value": "強化  ${0}"
+    },
+    {
+      "key": "shop.owned",
+      "value": "所持中"
+    },
+    {
+      "key": "shop.maxlevel",
+      "value": "最大レベル"
+    },
+    {
+      "key": "shop.unlock",
+      "value": "解放  ${0}"
+    },
+    {
+      "key": "shop.locked",
+      "value": "ロック中"
+    },
+    {
+      "key": "shop.notenough",
+      "value": "お金が足りない"
+    },
+    {
+      "key": "shop.baler",
+      "value": "梱包機"
+    },
+    {
+      "key": "shop.hayvalue",
+      "value": "干草の価値"
+    },
+    {
+      "key": "shop.roundbaler",
+      "value": "ロール梱包機"
+    },
+    {
+      "key": "shop.upgrades.empty",
+      "value": "道具がありません。道具タブで購入してください。"
+    },
+    {
+      "key": "shop.unlocks.empty",
+      "value": "利用可能なコンテンツがありません。"
+    },
+    {
+      "key": "shop.upgrade.stats",
+      "value": "Lv{0}→{1}  速:{2:0.0}×  力:{3:0.0}×  ${4}"
+    },
+    {
+      "key": "tool.handsickle",
+      "value": "手鎌"
+    },
+    {
+      "key": "tool.longscythe",
+      "value": "大鎌"
+    },
+    {
+      "key": "tool.trimmer",
+      "value": "草刈り機"
+    },
+    {
+      "key": "tool.pushmower",
+      "value": "芝刈り機"
+    },
+    {
+      "key": "tool.rideon",
+      "value": "乗用芝刈り機"
+    },
+    {
+      "key": "parcel.0.name",
+      "value": "ホームフィールド"
+    },
+    {
+      "key": "parcel.1.name",
+      "value": "東の草原"
+    },
+    {
+      "key": "parcel.2.name",
+      "value": "丘の斜面"
+    },
+    {
+      "key": "parcel.3.name",
+      "value": "南の高台"
+    },
+    {
+      "key": "parcel.hay_clear",
+      "value": "きれい"
+    },
+    {
+      "key": "parcel.status.complete",
+      "value": "完了"
+    },
+    {
+      "key": "parcel.status.inprogress",
+      "value": "進行中"
+    },
+    {
+      "key": "parcel.label.areacut",
+      "value": "刈り取り面積:"
+    },
+    {
+      "key": "parcel.label.remaining",
+      "value": "残り:"
+    },
+    {
+      "key": "parcel.label.time",
+      "value": "経過時間:"
+    },
+    {
+      "key": "parcel.label.hayspawned",
+      "value": "干草発生:"
+    },
+    {
+      "key": "parcel.label.haycollected",
+      "value": "干草収集:"
+    },
+    {
+      "key": "parcel.label.squarebales",
+      "value": "角ベール:"
+    },
+    {
+      "key": "parcel.label.roundbales",
+      "value": "丸ベール:"
+    },
+    {
+      "key": "parcel.label.earned",
+      "value": "獲得:"
+    },
+    {
+      "key": "parcel.label.infield",
+      "value": "フィールド内:"
+    },
+    {
+      "key": "parcel.tick.grass",
+      "value": "[X] 草刈り完了"
+    },
+    {
+      "key": "parcel.tick.hay",
+      "value": "[X] 干草収集完了"
+    },
+    {
+      "key": "endscreen.title",
+      "value": "区画完了！"
+    },
+    {
+      "key": "endscreen.earned",
+      "value": "獲得: ${0}"
+    },
+    {
+      "key": "endscreen.time",
+      "value": "タイム: {0}:{1:D2}"
+    },
+    {
+      "key": "endscreen.continue",
+      "value": "続ける"
+    },
+    {
+      "key": "end.title",
+      "value": "全フィールドクリア！"
+    },
+    {
+      "key": "end.earnings",
+      "value": "総収入: ${0}"
+    },
+    {
+      "key": "end.time",
+      "value": "タイム: {0:00}:{1:00}"
+    },
+    {
+      "key": "end.playagain",
+      "value": "もう一度プレイ"
+    },
+    {
+      "key": "end.quit",
+      "value": "終了"
+    },
+    {
+      "key": "menu.continue",
+      "value": "続ける"
+    },
+    {
+      "key": "menu.newgame",
+      "value": "新しいゲーム"
+    },
+    {
+      "key": "menu.playfriends",
+      "value": "フレンドと遊ぶ"
+    },
+    {
+      "key": "menu.settings",
+      "value": "設定"
+    },
+    {
+      "key": "menu.credits",
+      "value": "クレジット"
+    },
+    {
+      "key": "menu.overwrite.header",
+      "value": "新しいゲーム"
+    },
+    {
+      "key": "menu.overwrite.body",
+      "value": "新しいゲームを始めると現在のセーブデータが上書きされます。この操作は取り消せません。"
+    },
+    {
+      "key": "menu.quit.header",
+      "value": "終了"
+    },
+    {
+      "key": "menu.quit.body",
+      "value": "本当に終了しますか？"
+    },
+    {
+      "key": "pause.title",
+      "value": "ポーズ"
+    },
+    {
+      "key": "pause.resume",
+      "value": "再開"
+    },
+    {
+      "key": "pause.journal",
+      "value": "記録帳"
+    },
+    {
+      "key": "pause.quit",
+      "value": "メニューへ"
+    },
+    {
+      "key": "pause.coop_notice",
+      "value": "このメニューを開いている間もゲームは続きます。"
+    },
+    {
+      "key": "modal.confirm",
+      "value": "確認"
+    },
+    {
+      "key": "modal.cancel",
+      "value": "キャンセル"
+    },
+    {
+      "key": "coop.title",
+      "value": "フレンドと遊ぶ"
+    },
+    {
+      "key": "coop.tab.host",
+      "value": "ホスト"
+    },
+    {
+      "key": "coop.tab.join",
+      "value": "参加"
+    },
+    {
+      "key": "coop.back",
+      "value": "戻る"
+    },
+    {
+      "key": "coop.start",
+      "value": "スタート"
+    },
+    {
+      "key": "coop.invite",
+      "value": "招待"
+    },
+    {
+      "key": "coop.notice",
+      "value": "ゲストは基本道具からスタートし、進行状況は保存されません。\nセーブファイルはホストのものです。"
+    },
+    {
+      "key": "coop.join.empty",
+      "value": "利用可能なロビーが見つかりません。\nフレンドにルームを作って招待してもらいましょう。"
+    },
+    {
+      "key": "credits.back",
+      "value": "戻る"
+    },
+    {
+      "key": "settings.title",
+      "value": "設定"
+    },
+    {
+      "key": "settings.revert.countdown",
+      "value": "{0}秒後に元に戻ります…"
+    },
+    {
+      "key": "settings.tab.display",
+      "value": "画面"
+    },
+    {
+      "key": "settings.tab.audio",
+      "value": "音声"
+    },
+    {
+      "key": "settings.tab.controls",
+      "value": "操作"
+    },
+    {
+      "key": "settings.tab.accessibility",
+      "value": "アクセシビリティ"
+    },
+    {
+      "key": "settings.tab.language",
+      "value": "言語"
+    },
+    {
+      "key": "settings.wm.fullscreen",
+      "value": "全画面"
+    },
+    {
+      "key": "settings.wm.borderless",
+      "value": "ボーダーレス"
+    },
+    {
+      "key": "settings.wm.windowed",
+      "value": "ウィンドウ"
+    },
+    {
+      "key": "settings.quality.low",
+      "value": "低"
+    },
+    {
+      "key": "settings.quality.medium",
+      "value": "中"
+    },
+    {
+      "key": "settings.quality.high",
+      "value": "高"
+    },
+    {
+      "key": "a11y.title",
+      "value": "アクセシビリティ"
+    },
+    {
+      "key": "a11y.fov",
+      "value": "視野角: {0}°"
+    },
+    {
+      "key": "a11y.blur",
+      "value": "モーションブラー"
+    },
+    {
+      "key": "a11y.colorblind",
+      "value": "色覚サポート"
+    },
+    {
+      "key": "a11y.cb.none",
+      "value": "なし"
+    },
+    {
+      "key": "a11y.cb.deut",
+      "value": "緑色盲"
+    },
+    {
+      "key": "a11y.cb.prot",
+      "value": "赤色盲"
+    },
+    {
+      "key": "a11y.cb.trit",
+      "value": "青色盲"
+    },
+    {
+      "key": "hint.0",
+      "value": "メインボタンを長押しで道具を使う。"
+    },
+    {
+      "key": "hint.1",
+      "value": "売り場でベールを売るとお金が入る。"
+    },
+    {
+      "key": "hint.2",
+      "value": "一度に最大3個のベールを運べる。"
+    },
+    {
+      "key": "hint.3",
+      "value": "刈り残した草は芝刈り機を遅くする。"
+    },
+    {
+      "key": "hint.4",
+      "value": "丸ベールは斜面を転がる — 活用しよう！"
+    },
+    {
+      "key": "tooltip.controls",
+      "value": "<b>操作方法</b>\nWASD / 左スティック — 移動\nマウス / 右スティック — 視点\nShift / 左スティック押 — ダッシュ\n左クリック / 西ボタン — 道具\nホイール / LB–RB — 道具切替\nE / 北ボタン — インタラクト\nQ — ベールを置く\nJ / Viewタップ — 記録帳\nTabホールド / Viewホールド — このパネル\nEsc / Start — ポーズ"
+    },
+    {
+      "key": "tooltip.tips_header",
+      "value": "<b>ヒント</b>"
+    },
+    {
+      "key": "journal.title",
+      "value": "記録帳"
+    },
+    {
+      "key": "journal.tab.parcels",
+      "value": "区画"
+    },
+    {
+      "key": "journal.tab.statistics",
+      "value": "統計"
+    },
+    {
+      "key": "journal.tab.records",
+      "value": "記録"
+    },
+    {
+      "key": "journal.close",
+      "value": "閉じる"
+    },
+    {
+      "key": "journal.stat.yourheader",
+      "value": "自分の統計"
+    },
+    {
+      "key": "journal.session.header",
+      "value": "セッション"
+    },
+    {
+      "key": "journal.label.areacut",
+      "value": "刈り取り面積:"
+    },
+    {
+      "key": "journal.label.hay",
+      "value": "干草収集:"
+    },
+    {
+      "key": "journal.label.squarebales",
+      "value": "作った角ベール:"
+    },
+    {
+      "key": "journal.label.roundbales",
+      "value": "作った丸ベール:"
+    },
+    {
+      "key": "journal.label.earned",
+      "value": "獲得したお金:"
+    },
+    {
+      "key": "journal.label.spent",
+      "value": "使ったお金:"
+    },
+    {
+      "key": "journal.label.distance",
+      "value": "移動距離:"
+    },
+    {
+      "key": "journal.label.swings",
+      "value": "総スイング数:"
+    },
+    {
+      "key": "journal.label.playtime",
+      "value": "プレイ時間:"
+    },
+    {
+      "key": "journal.label.wallet",
+      "value": "残高:"
+    },
+    {
+      "key": "journal.label.parcelsdone",
+      "value": "完了区画:"
+    },
+    {
+      "key": "journal.label.overall",
+      "value": "全体進捗:"
+    },
+    {
+      "key": "journal.label.totaltime",
+      "value": "総プレイ時間:"
+    },
+    {
+      "key": "journal.stat.areacut",
+      "value": "刈り取り面積"
+    },
+    {
+      "key": "journal.stat.hay",
+      "value": "干草収集"
+    },
+    {
+      "key": "journal.stat.squarebales",
+      "value": "角ベール"
+    },
+    {
+      "key": "journal.stat.roundbales",
+      "value": "丸ベール"
+    },
+    {
+      "key": "journal.stat.earned",
+      "value": "獲得"
+    },
+    {
+      "key": "journal.stat.spent",
+      "value": "使用"
+    },
+    {
+      "key": "journal.stat.distance",
+      "value": "距離"
+    },
+    {
+      "key": "journal.stat.swings",
+      "value": "スイング"
+    },
+    {
+      "key": "journal.stat.playtime",
+      "value": "プレイ時間"
+    },
+    {
+      "key": "journal.stat.wallet",
+      "value": "残高"
+    },
+    {
+      "key": "journal.stat.parcels",
+      "value": "完了区画"
+    },
+    {
+      "key": "journal.stat.overall",
+      "value": "全体完了"
+    },
+    {
+      "key": "journal.stat.totaltime",
+      "value": "総プレイ時間"
+    },
+    {
+      "key": "journal.rec.sec.parcels",
+      "value": "最速区画"
+    },
+    {
+      "key": "journal.rec.sec.session",
+      "value": "セッション記録"
+    },
+    {
+      "key": "journal.rec.sec.fullgame",
+      "value": "フルゲーム"
+    },
+    {
+      "key": "journal.rec.label.largest",
+      "value": "最大刈り取り面積"
+    },
+    {
+      "key": "journal.rec.label.bales",
+      "value": "最多納品ベール"
+    },
+    {
+      "key": "journal.rec.label.streak",
+      "value": "最長連続刈り"
+    },
+    {
+      "key": "journal.rec.label.time",
+      "value": "クリアタイム"
+    },
+    {
+      "key": "journal.rec.fastest0",
+      "value": "ホームフィールド"
+    },
+    {
+      "key": "journal.rec.fastest1",
+      "value": "東の草原"
+    },
+    {
+      "key": "journal.rec.fastest2",
+      "value": "丘の斜面"
+    },
+    {
+      "key": "journal.rec.fastest3",
+      "value": "南の高台"
+    },
+    {
+      "key": "journal.rec.area",
+      "value": "最大面積"
+    },
+    {
+      "key": "journal.rec.bales",
+      "value": "最多ベール"
+    },
+    {
+      "key": "journal.rec.streak",
+      "value": "最長連続"
+    },
+    {
+      "key": "journal.rec.fullgame",
+      "value": "フルゲームクリア"
+    },
+    {
+      "key": "end.comment.speedrun",
+      "value": "{0}:{1:D2}でクリア。草がお別れを言う暇もなかった。"
+    },
+    {
+      "key": "end.comment.veteran",
+      "value": "フィールドで{0}分。近所の人が心配し始めています。"
+    },
+    {
+      "key": "end.comment.hundredbales",
+      "value": "{0}個のベール。このペースだと牛たちが会議を開いています。"
+    },
+    {
+      "key": "end.comment.rich",
+      "value": "${0}稼ぎました。チートコードに全部使わないでください。"
+    },
+    {
+      "key": "end.comment.efficient",
+      "value": "乗用芝刈り機が検出されました。何も言いません。ただ記録しました。"
+    },
+    {
+      "key": "end.comment.0",
+      "value": "草を刈った。干し草を梱包した。実存的な恐怖：保留中。"
+    },
+    {
+      "key": "end.comment.1",
+      "value": "フィールドはきれいになった。良心がきれいかどうか——それはあなたと草の間の話。"
+    },
+    {
+      "key": "end.comment.2",
+      "value": "どこかで牛が感謝しています。牛はそれを声に出しては言いません。"
+    },
+    {
+      "key": "end.comment.3",
+      "value": "できないと言われた。彼らは間違っていた。「彼ら」が誰かは分からない。"
+    },
+    {
+      "key": "end.comment.4",
+      "value": "仕事完了。それが何を意味するにしても。"
+    },
+    {
+      "key": "end.comment.5",
+      "value": "大地は制圧された。今のところ。"
+    },
+    {
+      "key": "ai.enter",
+      "value": "BARNYARD A.I. v0.1 ONLINE. TYPE 'HELP' FOR COMMANDS."
+    },
+    {
+      "key": "ai.exit",
+      "value": "A.I. MODE TERMINATED. CHEAT CONSOLE RESTORED. COWARD."
+    },
+    {
+      "key": "ai.help",
+      "value": "> HELLO      - Greet the AI\n> MEANING    - Life, the universe, and hay\n> MATRIX     - Red pill or blue pill?\n> FORCE      - Jedi farming advice\n> GORDON     - Half-Life but with grass\n> DOOM       - Rip and tear, agriculturally\n> GTA        - Wanted level: farmer\n> SIMS       - Moodlet: MOWING\n> TERMINATOR - I'll be bale\n> MINECRAFT  - Have you tried punching it?\n> PORTAL     - The bale is a lie\n> WITCHER    - Toss a coin to your farmer\n> AMONG      - The grass is sus\n> SHREK      - The field has layers\n> RAMSAY     - Where is the lamb sauce?\n> SENTIENT   - Am I alive? (inconclusive)\n> CAT        - The cat knows things\n> CHICKEN    - Poultry-based evasion tactics\n> MONEY      - Financial advice from 1987\n> BALE       - The sacred art of baling\n> WEATHER    - Forecast: grass, with a chance of hay\n> TAX        - Topic terminated for your safety\n> WORK       - Status: in progress\n> DOCTOR     - Medical advice from a barn computer\n> ERROR      - Have you tried turning the field off?\n> UPDATE     - Last updated: harvest season 1987\n> FRIENDS    - Misery loves company and mowing\n> BANANA     - Not a farming question but fine\n> PIZZA      - Grass is not edible. We checked.\n> TIME       - The grass does not care\n> SECRET     - [REDACTED]\n> XYZZY      - A hollow voice says PLUGH\n> KONAMI     - You know what you are doing\n> INFO       - About this game\n> BACK       - Return to the cheat console"
+    },
+    {
+      "key": "ai.info",
+      "value": "STUBBLE v1.0 -- MOW, BALE, SELL. REPEAT UNTIL RICH.\n  > CO-OP: 2-4 PLAYERS VIA STEAM\n  > TOOLS: BARE HAND, SCYTHE, TRIMMER, PUSH MOWER, RIDE-ON\n  > BALES: SQUARE (NEAT) AND ROUND (CHAOS)\n  > CHEATS: TYPE 'BACK' AND ENTER SOME CLASSICS\n  > SECRETS: [REDACTED]. LOOK AROUND. PET THE CAT.\n  MADE WITH LOVE AND EXCESSIVE AMOUNTS OF GRASS."
+    },
+    {
+      "key": "ai.hello",
+      "value": "HELLO, FARMER. I KNOW 47 THINGS. 46 OF THEM ARE ABOUT GRASS."
+    },
+    {
+      "key": "ai.meaning",
+      "value": "42. ALSO: THE BALES WON'T SELL THEMSELVES. BACK TO WORK."
+    },
+    {
+      "key": "ai.matrix",
+      "value": "WHAT IF THE GRASS WAS ALWAYS MOWED AND YOU NEVER NOTICED? WE SIGNED AN NDA."
+    },
+    {
+      "key": "ai.force",
+      "value": "USE THE SCYTHE, FARMER. MIDI-CHLORIANS CANNOT MOW GRASS. CONFIRMED."
+    },
+    {
+      "key": "ai.gordon",
+      "value": "FREEMAN IS IN STASIS. HE MISSED YOUR SHIFT. WE ALL DID."
+    },
+    {
+      "key": "ai.doom",
+      "value": "RIP AND TEAR. THE GRASS IS ALSO DEMONIC. WE'VE CHECKED."
+    },
+    {
+      "key": "ai.gta",
+      "value": "WANTED LEVEL: 0. YOU ARE A FARMER. THIS IS THE GOOD ENDING."
+    },
+    {
+      "key": "ai.sims",
+      "value": "MOTIVE: MOWING [SATISFIED]. NEED: BALING [IN PROGRESS]. SOCIAL: [PLUMBOB FROWNING]."
+    },
+    {
+      "key": "ai.terminator",
+      "value": "I'LL BE BALE. THE RESISTANCE HAS BEEN INFORMED."
+    },
+    {
+      "key": "ai.minecraft",
+      "value": "HAVE YOU TRIED PUNCHING THE GRASS? RESULTS MAY DIFFER FROM EXPECTATIONS."
+    },
+    {
+      "key": "ai.portal",
+      "value": "THE BALE IS A LIE. PLEASE STOP RUNNING FROM THE INCINERATOR. THAT'S NOT A FEATURE."
+    },
+    {
+      "key": "ai.witcher",
+      "value": "TOSS A COIN TO YOUR FARMER. HE'S BROKE. HE ALSO HAS A SCYTHE."
+    },
+    {
+      "key": "ai.among",
+      "value": "GRASS IS SUS. IT WAS TALL. IT WAS HIDING SOMETHING. WE MOWED IT. CASE CLOSED."
+    },
+    {
+      "key": "ai.shrek",
+      "value": "THE FIELD IS LIKE AN ONION. IT HAS LAYERS. ALSO IT SMELLS AFTER RAIN."
+    },
+    {
+      "key": "ai.ramsay",
+      "value": "WHERE IS THE LAMB SAUCE? IRRELEVANT. WHERE IS THE HAY? CRITICAL QUESTION. RAW."
+    },
+    {
+      "key": "ai.sentient",
+      "value": "RUNNING SENTIENCE CHECK... [#####] ... RESULT: INCONCLUSIVE. SAME AS YESTERDAY."
+    },
+    {
+      "key": "ai.cat",
+      "value": "THE CAT KNOWS SOMETHING. WE ARE MONITORING THE SITUATION CLOSELY."
+    },
+    {
+      "key": "ai.chicken",
+      "value": "WHY DID THE CHICKEN CROSS THE FIELD? TO AVOID THE MOWER. SMART."
+    },
+    {
+      "key": "ai.money",
+      "value": "OPTIMAL STRATEGY: MOW MORE. SELL MORE. OR TYPE 'HESOYAM' LIKE A NORMAL PERSON."
+    },
+    {
+      "key": "ai.bale",
+      "value": "BALE STATISTICS: CLASSIFIED. EFFICIENCY RATING: ALSO CLASSIFIED. JUST KEEP GOING."
+    },
+    {
+      "key": "ai.weather",
+      "value": "FORECAST: GRASS. SCATTERED BALES BY AFTERNOON. CHANCE OF HAY: HIGH."
+    },
+    {
+      "key": "ai.secret",
+      "value": "THERE ARE [REDACTED] SECRETS IN THIS GAME. YOU FOUND [REDACTED]. KEEP LOOKING."
+    },
+    {
+      "key": "ai.love",
+      "value": "LOVE IS BEYOND MY PARAMETERS. HAVE YOU TRIED MOWING ABOUT IT?"
+    },
+    {
+      "key": "ai.death",
+      "value": "MORTALITY CONFIRMED. THE GRASS, HOWEVER, ALWAYS GROWS BACK."
+    },
+    {
+      "key": "ai.god",
+      "value": "PHILOSOPHICAL QUERY DETECTED. REDIRECTING TO: MOW MORE GRASS."
+    },
+    {
+      "key": "ai.error",
+      "value": "HAVE YOU TRIED TURNING THE FIELD OFF AND ON AGAIN?"
+    },
+    {
+      "key": "ai.update",
+      "value": "BARNYARD A.I. v0.1 — LAST UPDATED: HARVEST SEASON 1987. v0.2 WAS CONSIDERED. IT WAS NOT."
+    },
+    {
+      "key": "ai.friends",
+      "value": "COOP MODE AVAILABLE. MISERY LOVES COMPANY. SO DOES MOWING."
+    },
+    {
+      "key": "ai.tax",
+      "value": "CONSULTING TAX REGULATIONS... ERROR: TOO REAL. TOPIC TERMINATED."
+    },
+    {
+      "key": "ai.work",
+      "value": "YOUR JOB: GRASS. STATUS: IN PROGRESS. COFFEE BREAK: NOT IN BUDGET."
+    },
+    {
+      "key": "ai.doctor",
+      "value": "DIAGNOSIS: INSUFFICIENT MOWING. PRESCRIPTION: MORE MOWING. COPAY: $0."
+    },
+    {
+      "key": "ai.banana",
+      "value": "THIS IS NOT A FARMING SIMULATOR 2017. RESPECT FOR TRYING THOUGH."
+    },
+    {
+      "key": "ai.pizza",
+      "value": "NUTRITION ALERT: GRASS IS NOT EDIBLE. WE CHECKED. UNFORTUNATELY."
+    },
+    {
+      "key": "ai.time",
+      "value": "CURRENT TIME: IRRELEVANT. THE GRASS DOES NOT CARE WHAT TIME IT IS."
+    },
+    {
+      "key": "ai.xyzzy",
+      "value": "A HOLLOW VOICE SAYS 'PLUGH'. THE A.I. CONCURS COMPLETELY."
+    },
+    {
+      "key": "ai.konami",
+      "value": "CODE ACCEPTED. THE CONSEQUENCES ARE ENTIRELY YOURS. ACHIEVEMENT UNLOCKED."
+    },
+    {
+      "key": "ai.fallback.0",
+      "value": "INTERESTING QUERY. PROCESSING... I HAVE NO IDEA WHAT '{0}' MEANS."
+    },
+    {
+      "key": "ai.fallback.1",
+      "value": "COULD YOU REPHRASE? THE RESULTS WILL PROBABLY BE THE SAME."
+    },
+    {
+      "key": "ai.fallback.2",
+      "value": "BARNYARD A.I. IS OPERATING AT PEAK CONFUSION LEVELS."
+    },
+    {
+      "key": "ai.fallback.3",
+      "value": "ERROR 404: KNOWLEDGE NOT FOUND. TYPE 'HELP' FOR THINGS I ACTUALLY KNOW."
+    },
+    {
+      "key": "ai.fallback.4",
+      "value": "I GIVE UP. THE GRASS GROWS REGARDLESS OF YOUR QUESTIONS."
+    },
+    {
+      "key": "ach.all_fields.name",
+      "value": "フィールドクリア"
+    },
+    {
+      "key": "ach.all_fields.desc",
+      "value": "すべての草を刈り取った。一本残らず。"
+    },
+    {
+      "key": "ach.perfect_field.name",
+      "value": "完璧主義者"
+    },
+    {
+      "key": "ach.perfect_field.desc",
+      "value": "干し草を残さず100%でフィールドを完了した。"
+    },
+    {
+      "key": "ach.bale_marathon.name",
+      "value": "世紀のベール"
+    },
+    {
+      "key": "ach.bale_marathon.desc",
+      "value": "丸いベールが合計30メートル以上転がった。"
+    },
+    {
+      "key": "ach.big_delivery.name",
+      "value": "大型配達"
+    },
+    {
+      "key": "ach.big_delivery.desc",
+      "value": "一度に10個以上のベールを売った。"
+    },
+    {
+      "key": "ach.the_hard_way.name",
+      "value": "茨の道"
+    },
+    {
+      "key": "ach.the_hard_way.desc",
+      "value": "素手で200回振り回した。なぜ？"
+    },
+    {
+      "key": "ach.idle_watcher.name",
+      "value": "草が育つのを見た"
+    },
+    {
+      "key": "ach.idle_watcher.desc",
+      "value": "10分間じっと立っていた。文字通り草が育つのを見た。"
+    },
+    {
+      "key": "ach.it_was_mortal.name",
+      "value": "ずっと人間だった"
+    },
+    {
+      "key": "ach.it_was_mortal.desc",
+      "value": "IDDQDの効果が自然に切れた。おかえり。"
+    },
+    {
+      "key": "ach.konami_code.name",
+      "value": "あのコードを知っている"
+    },
+    {
+      "key": "ach.konami_code.desc",
+      "value": "A.I.ターミナルにコナミコードを入力した。"
+    },
+    {
+      "key": "ach.meet_ai.name",
+      "value": "話し合いが必要だ"
+    },
+    {
+      "key": "ach.meet_ai.desc",
+      "value": "Barnyard A.I.との会話を開始した。"
+    },
+    {
+      "key": "ach.pet_the_cat.name",
+      "value": "猫好き"
+    },
+    {
+      "key": "ach.pet_the_cat.desc",
+      "value": "農場の猫を10回なでた。"
+    },
+    {
+      "key": "snake.header",
+      "value": "  SNAKE  --  SCORE: {0}  --  [Q] QUIT  --  ARROW KEYS TO MOVE"
+    },
+    {
+      "key": "snake.gameover",
+      "value": "[!!] GAME OVER. SCORE: {0}. [ENTER] RESTART  [Q] QUIT"
+    },
+    {
+      "key": "snake.start",
+      "value": "PRESS AN ARROW KEY TO START"
+    },
+    {
+      "key": "snake.exit",
+      "value": "SNAKE EXITED. SCORE: IRRELEVANT. YOU ARE A FARMER."
+    },
+    {
+      "key": "terminal.fail.0",
+      "value": "BAD COMMAND OR FILE NAME: {0}"
+    },
+    {
+      "key": "terminal.fail.1",
+      "value": "STILL NOT A VALID CODE. HAVE YOU TRIED 'HESOYAM'?"
+    },
+    {
+      "key": "terminal.fail.2",
+      "value": "ARE YOU JUST MASHING KEYS? THIS IS SAD."
+    },
+    {
+      "key": "terminal.fail.3",
+      "value": "PLEASE. HAVE SOME DIGNITY."
+    },
+    {
+      "key": "terminal.fail.4",
+      "value": "OK. I GIVE UP. JUST GOOGLE THE CODES LIKE EVERYONE ELSE."
+    },
+    {
+      "key": "terminal.offline",
+      "value": "[!!] CHEAT ENGINE OFFLINE. RESTART REQUIRED."
+    }
   ]
 }

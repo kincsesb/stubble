@@ -43,6 +43,7 @@ namespace Fields.Core
                 {
                     IsIddqdActive = false;
                     _activated.Remove("iddqd");
+                    SteamManager.Instance?.UnlockAchievement(SteamManager.Achievements.IT_WAS_MORTAL);
                     Toast("IDDQD EXPIRED. YOU ARE MORTAL AGAIN.", 4f);
                 }
             }
@@ -77,12 +78,12 @@ namespace Fields.Core
             switch (code)
             {
                 case "hesoyam":
-                    Earn(50000, "ACH_HESOYAM");
+                    Earn(50000, SteamManager.Achievements.HESOYAM);
                     _activated.Add(code);
                     return (true, "CJ SAYS: SWEEEEET. +$50,000");
 
                 case "motherlode":
-                    Earn(50000, "ACH_MOTHERLODE");
+                    Earn(50000, SteamManager.Achievements.MOTHERLODE);
                     _activated.Add(code);
                     return (true, "SIMS ENERGY DETECTED. +$50,000. MOTIVE: MONEY [SATISFIED]");
 
@@ -90,7 +91,7 @@ namespace Fields.Core
                     IsIddqdActive = true;
                     _iddqdTimer = 300f;
                     _activated.Add(code);
-                    SteamManager.Instance?.UnlockAchievement("ACH_DOOM");
+                    SteamManager.Instance?.UnlockAchievement(SteamManager.Achievements.DOOM);
                     return (true, "RIP AND TEAR. INFINITE STAMINA + FUEL. (5:00 MIN)");
 
                 case "rosebud":

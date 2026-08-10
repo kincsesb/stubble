@@ -8,8 +8,8 @@ using UnityEngine.UI;
 namespace Fields.UI
 {
     /// <summary>
-    /// Activated by WorldBootstrap when all 4 parcels are complete.
-    /// Shows final stats, offers Play Again / Quit.
+    /// Shown when the whole field is cleared.
+    /// Displays final stats + a snarky localized comment.
     /// </summary>
     public class EndScreen : MonoBehaviour
     {
@@ -17,6 +17,8 @@ namespace Fields.UI
         public TextMeshProUGUI totalEarningsText;
         public TextMeshProUGUI timePlayedText;
         public TextMeshProUGUI titleText;
+        [Tooltip("Optional: assign a TMP text field to show the end-of-game comment.")]
+        public TextMeshProUGUI commentText;
 
         [Header("Buttons")]
         public Button playAgainButton;
@@ -31,41 +33,86 @@ namespace Fields.UI
         {
             Time.timeScale = 0f;
 
-            // Stats
-            int money = CurrencyManager.Instance != null ? CurrencyManager.Instance.Money : 0;
+            var loc   = LocalizationManager.Instance;
+            var cur   = CurrencyManager.Instance;
+            var ss    = SessionState.Instance;
+
+            int   money   = cur  != null ? cur.Money : 0;
             float elapsed = Time.realtimeSinceStartup - _gameStartTime;
-            int mins = Mathf.FloorToInt(elapsed / 60f);
-            int secs = Mathf.FloorToInt(elapsed % 60f);
+            int   mins    = Mathf.FloorToInt(elapsed / 60f);
+            int   secs    = Mathf.FloorToInt(elapsed % 60f);
+
+            // Collect stats for comment selection
+            int totalBales = 0;
+            int totalSwings = 0;
+            if (ss != null)
+            {
+                var player = ss.GetPlayer(ss.LocalPlayerId);
+                if (player != null)
+                {
+                    totalBales  = (int)(player.SquareBalesMade + player.RoundBalesMade);
+                    totalSwings = (int)player.TotalSwings;
+                }
+            }
 
             if (totalEarningsText != null)
-                totalEarningsText.text = Fields.Core.LocalizationManager.Instance != null
-                    ? Fields.Core.LocalizationManager.Instance.Get("end.earnings", money)
-                    : $"Total earnings: $ {money}";
+                totalEarningsText.text = loc != null
+                    ? loc.Get("end.earnings", money)
+                    : $"Total earnings: ${money}";
 
             if (timePlayedText != null)
-                timePlayedText.text = Fields.Core.LocalizationManager.Instance != null
-                    ? Fields.Core.LocalizationManager.Instance.Get("end.time", mins, secs)
+                timePlayedText.text = loc != null
+                    ? loc.Get("end.time", mins, secs)
                     : $"Time: {mins:00}:{secs:00}";
 
             if (titleText != null)
-                titleText.text = Fields.Core.LocalizationManager.Instance != null
-                    ? Fields.Core.LocalizationManager.Instance.Get("end.title")
-                    : "All fields cleared!";
+                titleText.text = loc != null
+                    ? loc.Get("end.title")
+                    : "All Fields Cleared!";
 
-            // Speed-run achievement (sub-30 minutes)
-            if (elapsed < 1800f)
-                Fields.Core.SteamManager.Instance?.UnlockAchievement(
-                    Fields.Core.SteamManager.Achievements.SPEED_RUN);
+            if (commentText != null)
+                commentText.text = BuildComment(loc, elapsed, money, totalBales, totalSwings, mins, secs);
 
-            // Button labels
+            // Speed-run achievement
+            if (elapsed < SteamManager.Thresholds.SPEEDRUN_SECONDS)
+                SteamManager.Instance?.UnlockAchievement(SteamManager.Achievements.SPEED_RUN);
+
             SetButtonLabel(playAgainButton, "end.playagain", "Play Again");
             SetButtonLabel(quitButton,      "end.quit",      "Quit");
 
-            // Wire buttons
             if (playAgainButton != null)
                 playAgainButton.onClick.AddListener(PlayAgain);
             if (quitButton != null)
                 quitButton.onClick.AddListener(Quit);
+        }
+
+        static string BuildComment(
+            LocalizationManager loc, float elapsed, int money,
+            int totalBales, int totalSwings, int mins, int secs)
+        {
+            if (loc == null) return string.Empty;
+
+            // Priority-ordered comment selection
+            if (elapsed < 20f * 60f)
+                return loc.Get("end.comment.speedrun", mins, secs);
+
+            if (elapsed > 65f * 60f)
+                return loc.Get("end.comment.veteran", mins);
+
+            if (totalBales >= 100)
+                return loc.Get("end.comment.hundredbales", totalBales);
+
+            if (money >= 10000)
+                return loc.Get("end.comment.rich", money);
+
+            // Lazy farmer: high money relative to swings means they used the ride-on
+            if (totalSwings > 0 && money > 2000 && (float)money / totalSwings > 20f)
+                return loc.Get("end.comment.efficient");
+
+            // General pool — deterministic pick based on session data
+            int pool    = 6;
+            int pick    = Mathf.Abs((totalBales * 7 + mins * 13 + money) % pool);
+            return loc.Get($"end.comment.{pick}");
         }
 
         void OnDisable()

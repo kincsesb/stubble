@@ -1,183 +1,1008 @@
 {
   "entries": [
-    { "key": "hud.money",                "value": "$ {0}" },
-    { "key": "hud.completion",           "value": "{0}%" },
-    { "key": "hud.bales",                "value": "[{0}]" },
-    { "key": "hud.baling_progress",      "value": "打包中...  {0}%" },
-    { "key": "hud.baling_ready",         "value": "长按  [E]  进行打包" },
-    { "key": "hud.baling_start",         "value": "制作干草捆  —  长按  [E]" },
-    { "key": "hud.baling_cancel",        "value": "松开 [E] 取消" },
-    { "key": "hud.pickup_bale",          "value": "拾取草捆  —  [E]" },
-    { "key": "hud.carry_full",           "value": "已达到最大草捆数  (3/3)" },
-    { "key": "hud.interact",             "value": "交互  —  [E]" },
-    { "key": "hud.drop_bales",           "value": "放下草捆  —  [G]" },
-    { "key": "hud.bale_created",         "value": "✓  草捆完成！" },
-    { "key": "hud.bale_drop_single",     "value": "草捆已放下" },
-    { "key": "hud.bale_drop_multi",      "value": "已放下 {0} 个草捆" },
-    { "key": "hud.saved",                "value": "已保存" },
-
-    { "key": "shop.tab.tools",           "value": "工具" },
-    { "key": "shop.tab.upgrades",        "value": "升级" },
-    { "key": "shop.tab.parcels",         "value": "地块" },
-    { "key": "shop.balance",             "value": "余额:  $ {0}" },
-    { "key": "shop.buy",                 "value": "购买  ${0}" },
-    { "key": "shop.upgrade",             "value": "升级  ${0}" },
-    { "key": "shop.owned",               "value": "已拥有" },
-    { "key": "shop.maxlevel",            "value": "最高等级" },
-    { "key": "shop.unlock",              "value": "解锁  ${0}" },
-    { "key": "shop.locked",              "value": "已锁定" },
-    { "key": "shop.notenough",           "value": "金钱不足" },
-    { "key": "shop.baler",               "value": "打包机" },
-    { "key": "shop.hayvalue",            "value": "干草价值" },
-    { "key": "shop.roundbaler",          "value": "圆形打包机" },
-    { "key": "shop.upgrades.empty",      "value": "暂无工具。请在工具选项卡中购买。" },
-    { "key": "shop.unlocks.empty",       "value": "暂无可用内容。" },
-    { "key": "shop.upgrade.stats",       "value": "Lv{0}→{1}  速:{2:0.0}×  力:{3:0.0}×  ${4}" },
-
-    { "key": "tool.handsickle",          "value": "手镰" },
-    { "key": "tool.longscythe",          "value": "长柄镰刀" },
-    { "key": "tool.trimmer",             "value": "割草机" },
-    { "key": "tool.pushmower",           "value": "推式割草机" },
-    { "key": "tool.rideon",              "value": "乘坐式割草机" },
-
-    { "key": "parcel.0.name",            "value": "家庭农田" },
-    { "key": "parcel.1.name",            "value": "东部草场" },
-    { "key": "parcel.2.name",            "value": "山坡" },
-    { "key": "parcel.3.name",            "value": "南部高地" },
-    { "key": "parcel.hay_clear",         "value": "已清空" },
-    { "key": "parcel.status.complete",   "value": "已完成" },
-    { "key": "parcel.status.inprogress", "value": "进行中" },
-    { "key": "parcel.label.areacut",     "value": "割草面积:" },
-    { "key": "parcel.label.remaining",   "value": "剩余:" },
-    { "key": "parcel.label.time",        "value": "用时:" },
-    { "key": "parcel.label.hayspawned",  "value": "产出干草:" },
-    { "key": "parcel.label.haycollected","value": "收集干草:" },
-    { "key": "parcel.label.squarebales", "value": "方形草捆:" },
-    { "key": "parcel.label.roundbales",  "value": "圆形草捆:" },
-    { "key": "parcel.label.earned",      "value": "收入:" },
-    { "key": "parcel.label.infield",     "value": "田间:" },
-    { "key": "parcel.tick.grass",        "value": "[X] 草已割完" },
-    { "key": "parcel.tick.hay",          "value": "[X] 干草已清空" },
-
-    { "key": "endscreen.title",          "value": "地块完成！" },
-    { "key": "endscreen.earned",         "value": "收入: ${0}" },
-    { "key": "endscreen.time",           "value": "用时: {0}:{1:D2}" },
-    { "key": "endscreen.continue",       "value": "继续" },
-    { "key": "end.title",                "value": "所有农田已清空！" },
-    { "key": "end.earnings",             "value": "总收入: ${0}" },
-    { "key": "end.time",                 "value": "用时: {0:00}:{1:00}" },
-    { "key": "end.playagain",            "value": "再玩一次" },
-    { "key": "end.quit",                 "value": "退出" },
-
-    { "key": "menu.continue",            "value": "继续" },
-    { "key": "menu.newgame",             "value": "新游戏" },
-    { "key": "menu.playfriends",         "value": "与好友游戏" },
-    { "key": "menu.settings",            "value": "设置" },
-    { "key": "menu.credits",             "value": "制作名单" },
-    { "key": "menu.overwrite.header",    "value": "新游戏" },
-    { "key": "menu.overwrite.body",      "value": "新游戏将覆盖当前存档，此操作无法撤销。" },
-    { "key": "menu.quit.header",         "value": "退出" },
-    { "key": "menu.quit.body",           "value": "确定要退出吗？" },
-
-    { "key": "pause.title",              "value": "暂停" },
-    { "key": "pause.resume",             "value": "继续" },
-    { "key": "pause.journal",            "value": "日志" },
-    { "key": "pause.quit",               "value": "返回菜单" },
-    { "key": "pause.coop_notice",        "value": "此菜单开启期间游戏仍在继续。" },
-
-    { "key": "modal.confirm",            "value": "确认" },
-    { "key": "modal.cancel",             "value": "取消" },
-
-    { "key": "coop.title",               "value": "与好友游戏" },
-    { "key": "coop.tab.host",            "value": "创建房间" },
-    { "key": "coop.tab.join",            "value": "加入" },
-    { "key": "coop.back",                "value": "返回" },
-    { "key": "coop.start",               "value": "开始" },
-    { "key": "coop.invite",              "value": "邀请" },
-    { "key": "coop.notice",              "value": "访客从基础工具开始，进度不会保存。\n存档文件归主机所有。" },
-    { "key": "coop.join.empty",          "value": "未找到可用房间。\n请让好友创建房间并邀请你。" },
-
-    { "key": "credits.back",             "value": "返回" },
-
-    { "key": "settings.title",           "value": "设置" },
-    { "key": "settings.revert.countdown","value": "{0}秒后恢复…" },
-    { "key": "settings.tab.display",     "value": "显示" },
-    { "key": "settings.tab.audio",       "value": "音频" },
-    { "key": "settings.tab.controls",    "value": "操控" },
-    { "key": "settings.tab.accessibility","value": "无障碍" },
-    { "key": "settings.tab.language",    "value": "语言" },
-    { "key": "settings.wm.fullscreen",   "value": "全屏" },
-    { "key": "settings.wm.borderless",   "value": "无边框" },
-    { "key": "settings.wm.windowed",     "value": "窗口" },
-    { "key": "settings.quality.low",     "value": "低" },
-    { "key": "settings.quality.medium",  "value": "中" },
-    { "key": "settings.quality.high",    "value": "高" },
-
-    { "key": "a11y.title",               "value": "无障碍" },
-    { "key": "a11y.fov",                 "value": "视野: {0}°" },
-    { "key": "a11y.blur",                "value": "运动模糊" },
-    { "key": "a11y.colorblind",          "value": "色盲模式" },
-    { "key": "a11y.cb.none",             "value": "无" },
-    { "key": "a11y.cb.deut",             "value": "绿色盲" },
-    { "key": "a11y.cb.prot",             "value": "红色盲" },
-    { "key": "a11y.cb.trit",             "value": "蓝色盲" },
-
-    { "key": "hint.0",                   "value": "长按主键使用工具。" },
-    { "key": "hint.1",                   "value": "在收购站出售草捆赚取金钱。" },
-    { "key": "hint.2",                   "value": "一次最多携带3个草捆。" },
-    { "key": "hint.3",                   "value": "未割的草会减慢割草机速度。" },
-    { "key": "hint.4",                   "value": "圆形草捆会沿斜坡滚动——善加利用！" },
-
-    { "key": "tooltip.controls",         "value": "<b>操控说明</b>\nWASD / 左摇杆 — 移动\n鼠标 / 右摇杆 — 视角\nShift / 左摇杆按下 — 冲刺\n左键 / 西键 — 工具\n滚轮 / LB–RB — 切换工具\nE / 北键 — 交互\nQ — 放下草捆\nJ / View单击 — 日志\nTab长按 / View长按 — 此面板\nEsc / Start — 暂停" },
-    { "key": "tooltip.tips_header",      "value": "<b>提示</b>" },
-
-    { "key": "journal.title",            "value": "日志" },
-    { "key": "journal.tab.parcels",      "value": "地块" },
-    { "key": "journal.tab.statistics",   "value": "统计" },
-    { "key": "journal.tab.records",      "value": "记录" },
-    { "key": "journal.close",            "value": "关闭" },
-    { "key": "journal.stat.yourheader",  "value": "我的统计" },
-    { "key": "journal.session.header",   "value": "本次游戏" },
-    { "key": "journal.label.areacut",    "value": "割草面积:" },
-    { "key": "journal.label.hay",        "value": "收集干草:" },
-    { "key": "journal.label.squarebales","value": "制作方形草捆:" },
-    { "key": "journal.label.roundbales", "value": "制作圆形草捆:" },
-    { "key": "journal.label.earned",     "value": "获得金钱:" },
-    { "key": "journal.label.spent",      "value": "花费金钱:" },
-    { "key": "journal.label.distance",   "value": "移动距离:" },
-    { "key": "journal.label.swings",     "value": "总挥击次数:" },
-    { "key": "journal.label.playtime",   "value": "我的游戏时间:" },
-    { "key": "journal.label.wallet",     "value": "余额:" },
-    { "key": "journal.label.parcelsdone","value": "已完成地块:" },
-    { "key": "journal.label.overall",    "value": "总体进度:" },
-    { "key": "journal.label.totaltime",  "value": "总游戏时间:" },
-    { "key": "journal.stat.areacut",     "value": "割草面积" },
-    { "key": "journal.stat.hay",         "value": "干草收集" },
-    { "key": "journal.stat.squarebales", "value": "方形草捆" },
-    { "key": "journal.stat.roundbales",  "value": "圆形草捆" },
-    { "key": "journal.stat.earned",      "value": "获得" },
-    { "key": "journal.stat.spent",       "value": "花费" },
-    { "key": "journal.stat.distance",    "value": "距离" },
-    { "key": "journal.stat.swings",      "value": "挥击" },
-    { "key": "journal.stat.playtime",    "value": "游戏时间" },
-    { "key": "journal.stat.wallet",      "value": "余额" },
-    { "key": "journal.stat.parcels",     "value": "已完成地块" },
-    { "key": "journal.stat.overall",     "value": "总体完成度" },
-    { "key": "journal.stat.totaltime",   "value": "总时间" },
-    { "key": "journal.rec.sec.parcels",  "value": "最速地块" },
-    { "key": "journal.rec.sec.session",  "value": "本次记录" },
-    { "key": "journal.rec.sec.fullgame", "value": "全局游戏" },
-    { "key": "journal.rec.label.largest","value": "最大割草面积" },
-    { "key": "journal.rec.label.bales",  "value": "最多交付草捆" },
-    { "key": "journal.rec.label.streak", "value": "最长连续割草" },
-    { "key": "journal.rec.label.time",   "value": "完成时间" },
-    { "key": "journal.rec.fastest0",     "value": "家庭农田" },
-    { "key": "journal.rec.fastest1",     "value": "东部草场" },
-    { "key": "journal.rec.fastest2",     "value": "山坡" },
-    { "key": "journal.rec.fastest3",     "value": "南部高地" },
-    { "key": "journal.rec.area",         "value": "最大面积" },
-    { "key": "journal.rec.bales",        "value": "最多草捆" },
-    { "key": "journal.rec.streak",       "value": "最长连续" },
-    { "key": "journal.rec.fullgame",     "value": "全局完成" }
+    {
+      "key": "hud.money",
+      "value": "$ {0}"
+    },
+    {
+      "key": "hud.completion",
+      "value": "{0}%"
+    },
+    {
+      "key": "hud.bales",
+      "value": "[{0}]"
+    },
+    {
+      "key": "hud.baling_progress",
+      "value": "打包中...  {0}%"
+    },
+    {
+      "key": "hud.baling_ready",
+      "value": "长按  [E]  进行打包"
+    },
+    {
+      "key": "hud.baling_start",
+      "value": "制作干草捆  —  长按  [E]"
+    },
+    {
+      "key": "hud.baling_cancel",
+      "value": "松开 [E] 取消"
+    },
+    {
+      "key": "hud.pickup_bale",
+      "value": "拾取草捆  —  [E]"
+    },
+    {
+      "key": "hud.carry_full",
+      "value": "已达到最大草捆数  (3/3)"
+    },
+    {
+      "key": "hud.interact",
+      "value": "交互  —  [E]"
+    },
+    {
+      "key": "hud.drop_bales",
+      "value": "放下草捆  —  [G]"
+    },
+    {
+      "key": "hud.bale_created",
+      "value": "✓  草捆完成！"
+    },
+    {
+      "key": "hud.bale_drop_single",
+      "value": "草捆已放下"
+    },
+    {
+      "key": "hud.bale_drop_multi",
+      "value": "已放下 {0} 个草捆"
+    },
+    {
+      "key": "hud.saved",
+      "value": "已保存"
+    },
+    {
+      "key": "shop.tab.tools",
+      "value": "工具"
+    },
+    {
+      "key": "shop.tab.upgrades",
+      "value": "升级"
+    },
+    {
+      "key": "shop.tab.parcels",
+      "value": "地块"
+    },
+    {
+      "key": "shop.balance",
+      "value": "余额:  $ {0}"
+    },
+    {
+      "key": "shop.buy",
+      "value": "购买  ${0}"
+    },
+    {
+      "key": "shop.upgrade",
+      "value": "升级  ${0}"
+    },
+    {
+      "key": "shop.owned",
+      "value": "已拥有"
+    },
+    {
+      "key": "shop.maxlevel",
+      "value": "最高等级"
+    },
+    {
+      "key": "shop.unlock",
+      "value": "解锁  ${0}"
+    },
+    {
+      "key": "shop.locked",
+      "value": "已锁定"
+    },
+    {
+      "key": "shop.notenough",
+      "value": "金钱不足"
+    },
+    {
+      "key": "shop.baler",
+      "value": "打包机"
+    },
+    {
+      "key": "shop.hayvalue",
+      "value": "干草价值"
+    },
+    {
+      "key": "shop.roundbaler",
+      "value": "圆形打包机"
+    },
+    {
+      "key": "shop.upgrades.empty",
+      "value": "暂无工具。请在工具选项卡中购买。"
+    },
+    {
+      "key": "shop.unlocks.empty",
+      "value": "暂无可用内容。"
+    },
+    {
+      "key": "shop.upgrade.stats",
+      "value": "Lv{0}→{1}  速:{2:0.0}×  力:{3:0.0}×  ${4}"
+    },
+    {
+      "key": "tool.handsickle",
+      "value": "手镰"
+    },
+    {
+      "key": "tool.longscythe",
+      "value": "长柄镰刀"
+    },
+    {
+      "key": "tool.trimmer",
+      "value": "割草机"
+    },
+    {
+      "key": "tool.pushmower",
+      "value": "推式割草机"
+    },
+    {
+      "key": "tool.rideon",
+      "value": "乘坐式割草机"
+    },
+    {
+      "key": "parcel.0.name",
+      "value": "家庭农田"
+    },
+    {
+      "key": "parcel.1.name",
+      "value": "东部草场"
+    },
+    {
+      "key": "parcel.2.name",
+      "value": "山坡"
+    },
+    {
+      "key": "parcel.3.name",
+      "value": "南部高地"
+    },
+    {
+      "key": "parcel.hay_clear",
+      "value": "已清空"
+    },
+    {
+      "key": "parcel.status.complete",
+      "value": "已完成"
+    },
+    {
+      "key": "parcel.status.inprogress",
+      "value": "进行中"
+    },
+    {
+      "key": "parcel.label.areacut",
+      "value": "割草面积:"
+    },
+    {
+      "key": "parcel.label.remaining",
+      "value": "剩余:"
+    },
+    {
+      "key": "parcel.label.time",
+      "value": "用时:"
+    },
+    {
+      "key": "parcel.label.hayspawned",
+      "value": "产出干草:"
+    },
+    {
+      "key": "parcel.label.haycollected",
+      "value": "收集干草:"
+    },
+    {
+      "key": "parcel.label.squarebales",
+      "value": "方形草捆:"
+    },
+    {
+      "key": "parcel.label.roundbales",
+      "value": "圆形草捆:"
+    },
+    {
+      "key": "parcel.label.earned",
+      "value": "收入:"
+    },
+    {
+      "key": "parcel.label.infield",
+      "value": "田间:"
+    },
+    {
+      "key": "parcel.tick.grass",
+      "value": "[X] 草已割完"
+    },
+    {
+      "key": "parcel.tick.hay",
+      "value": "[X] 干草已清空"
+    },
+    {
+      "key": "endscreen.title",
+      "value": "地块完成！"
+    },
+    {
+      "key": "endscreen.earned",
+      "value": "收入: ${0}"
+    },
+    {
+      "key": "endscreen.time",
+      "value": "用时: {0}:{1:D2}"
+    },
+    {
+      "key": "endscreen.continue",
+      "value": "继续"
+    },
+    {
+      "key": "end.title",
+      "value": "所有农田已清空！"
+    },
+    {
+      "key": "end.earnings",
+      "value": "总收入: ${0}"
+    },
+    {
+      "key": "end.time",
+      "value": "用时: {0:00}:{1:00}"
+    },
+    {
+      "key": "end.playagain",
+      "value": "再玩一次"
+    },
+    {
+      "key": "end.quit",
+      "value": "退出"
+    },
+    {
+      "key": "menu.continue",
+      "value": "继续"
+    },
+    {
+      "key": "menu.newgame",
+      "value": "新游戏"
+    },
+    {
+      "key": "menu.playfriends",
+      "value": "与好友游戏"
+    },
+    {
+      "key": "menu.settings",
+      "value": "设置"
+    },
+    {
+      "key": "menu.credits",
+      "value": "制作名单"
+    },
+    {
+      "key": "menu.overwrite.header",
+      "value": "新游戏"
+    },
+    {
+      "key": "menu.overwrite.body",
+      "value": "新游戏将覆盖当前存档，此操作无法撤销。"
+    },
+    {
+      "key": "menu.quit.header",
+      "value": "退出"
+    },
+    {
+      "key": "menu.quit.body",
+      "value": "确定要退出吗？"
+    },
+    {
+      "key": "pause.title",
+      "value": "暂停"
+    },
+    {
+      "key": "pause.resume",
+      "value": "继续"
+    },
+    {
+      "key": "pause.journal",
+      "value": "日志"
+    },
+    {
+      "key": "pause.quit",
+      "value": "返回菜单"
+    },
+    {
+      "key": "pause.coop_notice",
+      "value": "此菜单开启期间游戏仍在继续。"
+    },
+    {
+      "key": "modal.confirm",
+      "value": "确认"
+    },
+    {
+      "key": "modal.cancel",
+      "value": "取消"
+    },
+    {
+      "key": "coop.title",
+      "value": "与好友游戏"
+    },
+    {
+      "key": "coop.tab.host",
+      "value": "创建房间"
+    },
+    {
+      "key": "coop.tab.join",
+      "value": "加入"
+    },
+    {
+      "key": "coop.back",
+      "value": "返回"
+    },
+    {
+      "key": "coop.start",
+      "value": "开始"
+    },
+    {
+      "key": "coop.invite",
+      "value": "邀请"
+    },
+    {
+      "key": "coop.notice",
+      "value": "访客从基础工具开始，进度不会保存。\n存档文件归主机所有。"
+    },
+    {
+      "key": "coop.join.empty",
+      "value": "未找到可用房间。\n请让好友创建房间并邀请你。"
+    },
+    {
+      "key": "credits.back",
+      "value": "返回"
+    },
+    {
+      "key": "settings.title",
+      "value": "设置"
+    },
+    {
+      "key": "settings.revert.countdown",
+      "value": "{0}秒后恢复…"
+    },
+    {
+      "key": "settings.tab.display",
+      "value": "显示"
+    },
+    {
+      "key": "settings.tab.audio",
+      "value": "音频"
+    },
+    {
+      "key": "settings.tab.controls",
+      "value": "操控"
+    },
+    {
+      "key": "settings.tab.accessibility",
+      "value": "无障碍"
+    },
+    {
+      "key": "settings.tab.language",
+      "value": "语言"
+    },
+    {
+      "key": "settings.wm.fullscreen",
+      "value": "全屏"
+    },
+    {
+      "key": "settings.wm.borderless",
+      "value": "无边框"
+    },
+    {
+      "key": "settings.wm.windowed",
+      "value": "窗口"
+    },
+    {
+      "key": "settings.quality.low",
+      "value": "低"
+    },
+    {
+      "key": "settings.quality.medium",
+      "value": "中"
+    },
+    {
+      "key": "settings.quality.high",
+      "value": "高"
+    },
+    {
+      "key": "a11y.title",
+      "value": "无障碍"
+    },
+    {
+      "key": "a11y.fov",
+      "value": "视野: {0}°"
+    },
+    {
+      "key": "a11y.blur",
+      "value": "运动模糊"
+    },
+    {
+      "key": "a11y.colorblind",
+      "value": "色盲模式"
+    },
+    {
+      "key": "a11y.cb.none",
+      "value": "无"
+    },
+    {
+      "key": "a11y.cb.deut",
+      "value": "绿色盲"
+    },
+    {
+      "key": "a11y.cb.prot",
+      "value": "红色盲"
+    },
+    {
+      "key": "a11y.cb.trit",
+      "value": "蓝色盲"
+    },
+    {
+      "key": "hint.0",
+      "value": "长按主键使用工具。"
+    },
+    {
+      "key": "hint.1",
+      "value": "在收购站出售草捆赚取金钱。"
+    },
+    {
+      "key": "hint.2",
+      "value": "一次最多携带3个草捆。"
+    },
+    {
+      "key": "hint.3",
+      "value": "未割的草会减慢割草机速度。"
+    },
+    {
+      "key": "hint.4",
+      "value": "圆形草捆会沿斜坡滚动——善加利用！"
+    },
+    {
+      "key": "tooltip.controls",
+      "value": "<b>操控说明</b>\nWASD / 左摇杆 — 移动\n鼠标 / 右摇杆 — 视角\nShift / 左摇杆按下 — 冲刺\n左键 / 西键 — 工具\n滚轮 / LB–RB — 切换工具\nE / 北键 — 交互\nQ — 放下草捆\nJ / View单击 — 日志\nTab长按 / View长按 — 此面板\nEsc / Start — 暂停"
+    },
+    {
+      "key": "tooltip.tips_header",
+      "value": "<b>提示</b>"
+    },
+    {
+      "key": "journal.title",
+      "value": "日志"
+    },
+    {
+      "key": "journal.tab.parcels",
+      "value": "地块"
+    },
+    {
+      "key": "journal.tab.statistics",
+      "value": "统计"
+    },
+    {
+      "key": "journal.tab.records",
+      "value": "记录"
+    },
+    {
+      "key": "journal.close",
+      "value": "关闭"
+    },
+    {
+      "key": "journal.stat.yourheader",
+      "value": "我的统计"
+    },
+    {
+      "key": "journal.session.header",
+      "value": "本次游戏"
+    },
+    {
+      "key": "journal.label.areacut",
+      "value": "割草面积:"
+    },
+    {
+      "key": "journal.label.hay",
+      "value": "收集干草:"
+    },
+    {
+      "key": "journal.label.squarebales",
+      "value": "制作方形草捆:"
+    },
+    {
+      "key": "journal.label.roundbales",
+      "value": "制作圆形草捆:"
+    },
+    {
+      "key": "journal.label.earned",
+      "value": "获得金钱:"
+    },
+    {
+      "key": "journal.label.spent",
+      "value": "花费金钱:"
+    },
+    {
+      "key": "journal.label.distance",
+      "value": "移动距离:"
+    },
+    {
+      "key": "journal.label.swings",
+      "value": "总挥击次数:"
+    },
+    {
+      "key": "journal.label.playtime",
+      "value": "我的游戏时间:"
+    },
+    {
+      "key": "journal.label.wallet",
+      "value": "余额:"
+    },
+    {
+      "key": "journal.label.parcelsdone",
+      "value": "已完成地块:"
+    },
+    {
+      "key": "journal.label.overall",
+      "value": "总体进度:"
+    },
+    {
+      "key": "journal.label.totaltime",
+      "value": "总游戏时间:"
+    },
+    {
+      "key": "journal.stat.areacut",
+      "value": "割草面积"
+    },
+    {
+      "key": "journal.stat.hay",
+      "value": "干草收集"
+    },
+    {
+      "key": "journal.stat.squarebales",
+      "value": "方形草捆"
+    },
+    {
+      "key": "journal.stat.roundbales",
+      "value": "圆形草捆"
+    },
+    {
+      "key": "journal.stat.earned",
+      "value": "获得"
+    },
+    {
+      "key": "journal.stat.spent",
+      "value": "花费"
+    },
+    {
+      "key": "journal.stat.distance",
+      "value": "距离"
+    },
+    {
+      "key": "journal.stat.swings",
+      "value": "挥击"
+    },
+    {
+      "key": "journal.stat.playtime",
+      "value": "游戏时间"
+    },
+    {
+      "key": "journal.stat.wallet",
+      "value": "余额"
+    },
+    {
+      "key": "journal.stat.parcels",
+      "value": "已完成地块"
+    },
+    {
+      "key": "journal.stat.overall",
+      "value": "总体完成度"
+    },
+    {
+      "key": "journal.stat.totaltime",
+      "value": "总时间"
+    },
+    {
+      "key": "journal.rec.sec.parcels",
+      "value": "最速地块"
+    },
+    {
+      "key": "journal.rec.sec.session",
+      "value": "本次记录"
+    },
+    {
+      "key": "journal.rec.sec.fullgame",
+      "value": "全局游戏"
+    },
+    {
+      "key": "journal.rec.label.largest",
+      "value": "最大割草面积"
+    },
+    {
+      "key": "journal.rec.label.bales",
+      "value": "最多交付草捆"
+    },
+    {
+      "key": "journal.rec.label.streak",
+      "value": "最长连续割草"
+    },
+    {
+      "key": "journal.rec.label.time",
+      "value": "完成时间"
+    },
+    {
+      "key": "journal.rec.fastest0",
+      "value": "家庭农田"
+    },
+    {
+      "key": "journal.rec.fastest1",
+      "value": "东部草场"
+    },
+    {
+      "key": "journal.rec.fastest2",
+      "value": "山坡"
+    },
+    {
+      "key": "journal.rec.fastest3",
+      "value": "南部高地"
+    },
+    {
+      "key": "journal.rec.area",
+      "value": "最大面积"
+    },
+    {
+      "key": "journal.rec.bales",
+      "value": "最多草捆"
+    },
+    {
+      "key": "journal.rec.streak",
+      "value": "最长连续"
+    },
+    {
+      "key": "journal.rec.fullgame",
+      "value": "全局完成"
+    },
+    {
+      "key": "end.comment.speedrun",
+      "value": "仅用 {0}:{1:D2} 完成。草地甚至还没来得及说再见。"
+    },
+    {
+      "key": "end.comment.veteran",
+      "value": "在田间待了 {0} 分钟。邻居们开始担心了。"
+    },
+    {
+      "key": "end.comment.hundredbales",
+      "value": "{0} 捆草。以这个速度，奶牛们已经开始开会了。"
+    },
+    {
+      "key": "end.comment.rich",
+      "value": "赚到了 ${0}。请别把钱都花在作弊码上。"
+    },
+    {
+      "key": "end.comment.efficient",
+      "value": "检测到乘坐式割草机。我们什么都没说，只是记录了一下。"
+    },
+    {
+      "key": "end.comment.0",
+      "value": "草割完了。干草打包了。存在主义危机：待解决。"
+    },
+    {
+      "key": "end.comment.1",
+      "value": "田地清空了。至于你的良心——那是你和草之间的事。"
+    },
+    {
+      "key": "end.comment.2",
+      "value": "某个地方，一头奶牛很感激。奶牛不会当面说出来。"
+    },
+    {
+      "key": "end.comment.3",
+      "value": "他们说做不到。他们错了。不知道「他们」是谁。"
+    },
+    {
+      "key": "end.comment.4",
+      "value": "完成了。不管这意味着什么。"
+    },
+    {
+      "key": "end.comment.5",
+      "value": "土地被驯服了。暂时。"
+    },
+    {
+      "key": "ai.enter",
+      "value": "BARNYARD A.I. v0.1 ONLINE. TYPE 'HELP' FOR COMMANDS."
+    },
+    {
+      "key": "ai.exit",
+      "value": "A.I. MODE TERMINATED. CHEAT CONSOLE RESTORED. COWARD."
+    },
+    {
+      "key": "ai.help",
+      "value": "> HELLO      - Greet the AI\n> MEANING    - Life, the universe, and hay\n> MATRIX     - Red pill or blue pill?\n> FORCE      - Jedi farming advice\n> GORDON     - Half-Life but with grass\n> DOOM       - Rip and tear, agriculturally\n> GTA        - Wanted level: farmer\n> SIMS       - Moodlet: MOWING\n> TERMINATOR - I'll be bale\n> MINECRAFT  - Have you tried punching it?\n> PORTAL     - The bale is a lie\n> WITCHER    - Toss a coin to your farmer\n> AMONG      - The grass is sus\n> SHREK      - The field has layers\n> RAMSAY     - Where is the lamb sauce?\n> SENTIENT   - Am I alive? (inconclusive)\n> CAT        - The cat knows things\n> CHICKEN    - Poultry-based evasion tactics\n> MONEY      - Financial advice from 1987\n> BALE       - The sacred art of baling\n> WEATHER    - Forecast: grass, with a chance of hay\n> TAX        - Topic terminated for your safety\n> WORK       - Status: in progress\n> DOCTOR     - Medical advice from a barn computer\n> ERROR      - Have you tried turning the field off?\n> UPDATE     - Last updated: harvest season 1987\n> FRIENDS    - Misery loves company and mowing\n> BANANA     - Not a farming question but fine\n> PIZZA      - Grass is not edible. We checked.\n> TIME       - The grass does not care\n> SECRET     - [REDACTED]\n> XYZZY      - A hollow voice says PLUGH\n> KONAMI     - You know what you are doing\n> INFO       - About this game\n> BACK       - Return to the cheat console"
+    },
+    {
+      "key": "ai.info",
+      "value": "STUBBLE v1.0 -- MOW, BALE, SELL. REPEAT UNTIL RICH.\n  > CO-OP: 2-4 PLAYERS VIA STEAM\n  > TOOLS: BARE HAND, SCYTHE, TRIMMER, PUSH MOWER, RIDE-ON\n  > BALES: SQUARE (NEAT) AND ROUND (CHAOS)\n  > CHEATS: TYPE 'BACK' AND ENTER SOME CLASSICS\n  > SECRETS: [REDACTED]. LOOK AROUND. PET THE CAT.\n  MADE WITH LOVE AND EXCESSIVE AMOUNTS OF GRASS."
+    },
+    {
+      "key": "ai.hello",
+      "value": "HELLO, FARMER. I KNOW 47 THINGS. 46 OF THEM ARE ABOUT GRASS."
+    },
+    {
+      "key": "ai.meaning",
+      "value": "42. ALSO: THE BALES WON'T SELL THEMSELVES. BACK TO WORK."
+    },
+    {
+      "key": "ai.matrix",
+      "value": "WHAT IF THE GRASS WAS ALWAYS MOWED AND YOU NEVER NOTICED? WE SIGNED AN NDA."
+    },
+    {
+      "key": "ai.force",
+      "value": "USE THE SCYTHE, FARMER. MIDI-CHLORIANS CANNOT MOW GRASS. CONFIRMED."
+    },
+    {
+      "key": "ai.gordon",
+      "value": "FREEMAN IS IN STASIS. HE MISSED YOUR SHIFT. WE ALL DID."
+    },
+    {
+      "key": "ai.doom",
+      "value": "RIP AND TEAR. THE GRASS IS ALSO DEMONIC. WE'VE CHECKED."
+    },
+    {
+      "key": "ai.gta",
+      "value": "WANTED LEVEL: 0. YOU ARE A FARMER. THIS IS THE GOOD ENDING."
+    },
+    {
+      "key": "ai.sims",
+      "value": "MOTIVE: MOWING [SATISFIED]. NEED: BALING [IN PROGRESS]. SOCIAL: [PLUMBOB FROWNING]."
+    },
+    {
+      "key": "ai.terminator",
+      "value": "I'LL BE BALE. THE RESISTANCE HAS BEEN INFORMED."
+    },
+    {
+      "key": "ai.minecraft",
+      "value": "HAVE YOU TRIED PUNCHING THE GRASS? RESULTS MAY DIFFER FROM EXPECTATIONS."
+    },
+    {
+      "key": "ai.portal",
+      "value": "THE BALE IS A LIE. PLEASE STOP RUNNING FROM THE INCINERATOR. THAT'S NOT A FEATURE."
+    },
+    {
+      "key": "ai.witcher",
+      "value": "TOSS A COIN TO YOUR FARMER. HE'S BROKE. HE ALSO HAS A SCYTHE."
+    },
+    {
+      "key": "ai.among",
+      "value": "GRASS IS SUS. IT WAS TALL. IT WAS HIDING SOMETHING. WE MOWED IT. CASE CLOSED."
+    },
+    {
+      "key": "ai.shrek",
+      "value": "THE FIELD IS LIKE AN ONION. IT HAS LAYERS. ALSO IT SMELLS AFTER RAIN."
+    },
+    {
+      "key": "ai.ramsay",
+      "value": "WHERE IS THE LAMB SAUCE? IRRELEVANT. WHERE IS THE HAY? CRITICAL QUESTION. RAW."
+    },
+    {
+      "key": "ai.sentient",
+      "value": "RUNNING SENTIENCE CHECK... [#####] ... RESULT: INCONCLUSIVE. SAME AS YESTERDAY."
+    },
+    {
+      "key": "ai.cat",
+      "value": "THE CAT KNOWS SOMETHING. WE ARE MONITORING THE SITUATION CLOSELY."
+    },
+    {
+      "key": "ai.chicken",
+      "value": "WHY DID THE CHICKEN CROSS THE FIELD? TO AVOID THE MOWER. SMART."
+    },
+    {
+      "key": "ai.money",
+      "value": "OPTIMAL STRATEGY: MOW MORE. SELL MORE. OR TYPE 'HESOYAM' LIKE A NORMAL PERSON."
+    },
+    {
+      "key": "ai.bale",
+      "value": "BALE STATISTICS: CLASSIFIED. EFFICIENCY RATING: ALSO CLASSIFIED. JUST KEEP GOING."
+    },
+    {
+      "key": "ai.weather",
+      "value": "FORECAST: GRASS. SCATTERED BALES BY AFTERNOON. CHANCE OF HAY: HIGH."
+    },
+    {
+      "key": "ai.secret",
+      "value": "THERE ARE [REDACTED] SECRETS IN THIS GAME. YOU FOUND [REDACTED]. KEEP LOOKING."
+    },
+    {
+      "key": "ai.love",
+      "value": "LOVE IS BEYOND MY PARAMETERS. HAVE YOU TRIED MOWING ABOUT IT?"
+    },
+    {
+      "key": "ai.death",
+      "value": "MORTALITY CONFIRMED. THE GRASS, HOWEVER, ALWAYS GROWS BACK."
+    },
+    {
+      "key": "ai.god",
+      "value": "PHILOSOPHICAL QUERY DETECTED. REDIRECTING TO: MOW MORE GRASS."
+    },
+    {
+      "key": "ai.error",
+      "value": "HAVE YOU TRIED TURNING THE FIELD OFF AND ON AGAIN?"
+    },
+    {
+      "key": "ai.update",
+      "value": "BARNYARD A.I. v0.1 — LAST UPDATED: HARVEST SEASON 1987. v0.2 WAS CONSIDERED. IT WAS NOT."
+    },
+    {
+      "key": "ai.friends",
+      "value": "COOP MODE AVAILABLE. MISERY LOVES COMPANY. SO DOES MOWING."
+    },
+    {
+      "key": "ai.tax",
+      "value": "CONSULTING TAX REGULATIONS... ERROR: TOO REAL. TOPIC TERMINATED."
+    },
+    {
+      "key": "ai.work",
+      "value": "YOUR JOB: GRASS. STATUS: IN PROGRESS. COFFEE BREAK: NOT IN BUDGET."
+    },
+    {
+      "key": "ai.doctor",
+      "value": "DIAGNOSIS: INSUFFICIENT MOWING. PRESCRIPTION: MORE MOWING. COPAY: $0."
+    },
+    {
+      "key": "ai.banana",
+      "value": "THIS IS NOT A FARMING SIMULATOR 2017. RESPECT FOR TRYING THOUGH."
+    },
+    {
+      "key": "ai.pizza",
+      "value": "NUTRITION ALERT: GRASS IS NOT EDIBLE. WE CHECKED. UNFORTUNATELY."
+    },
+    {
+      "key": "ai.time",
+      "value": "CURRENT TIME: IRRELEVANT. THE GRASS DOES NOT CARE WHAT TIME IT IS."
+    },
+    {
+      "key": "ai.xyzzy",
+      "value": "A HOLLOW VOICE SAYS 'PLUGH'. THE A.I. CONCURS COMPLETELY."
+    },
+    {
+      "key": "ai.konami",
+      "value": "CODE ACCEPTED. THE CONSEQUENCES ARE ENTIRELY YOURS. ACHIEVEMENT UNLOCKED."
+    },
+    {
+      "key": "ai.fallback.0",
+      "value": "INTERESTING QUERY. PROCESSING... I HAVE NO IDEA WHAT '{0}' MEANS."
+    },
+    {
+      "key": "ai.fallback.1",
+      "value": "COULD YOU REPHRASE? THE RESULTS WILL PROBABLY BE THE SAME."
+    },
+    {
+      "key": "ai.fallback.2",
+      "value": "BARNYARD A.I. IS OPERATING AT PEAK CONFUSION LEVELS."
+    },
+    {
+      "key": "ai.fallback.3",
+      "value": "ERROR 404: KNOWLEDGE NOT FOUND. TYPE 'HELP' FOR THINGS I ACTUALLY KNOW."
+    },
+    {
+      "key": "ai.fallback.4",
+      "value": "I GIVE UP. THE GRASS GROWS REGARDLESS OF YOUR QUESTIONS."
+    },
+    {
+      "key": "ach.all_fields.name",
+      "value": "田地已清空"
+    },
+    {
+      "key": "ach.all_fields.desc",
+      "value": "割掉了每一根草。每。一。根。"
+    },
+    {
+      "key": "ach.perfect_field.name",
+      "value": "完美主义者"
+    },
+    {
+      "key": "ach.perfect_field.desc",
+      "value": "以100%完成田地，且无剩余干草。"
+    },
+    {
+      "key": "ach.bale_marathon.name",
+      "value": "世纪之捆"
+    },
+    {
+      "key": "ach.bale_marathon.desc",
+      "value": "一个圆形草捆共滚动超过30米。"
+    },
+    {
+      "key": "ach.big_delivery.name",
+      "value": "大批发货"
+    },
+    {
+      "key": "ach.big_delivery.desc",
+      "value": "一次性出售了10个或更多草捆。"
+    },
+    {
+      "key": "ach.the_hard_way.name",
+      "value": "用最难的方式"
+    },
+    {
+      "key": "ach.the_hard_way.desc",
+      "value": "徒手挥砍了200次。为什么？"
+    },
+    {
+      "key": "ach.idle_watcher.name",
+      "value": "看草生长"
+    },
+    {
+      "key": "ach.idle_watcher.desc",
+      "value": "静止站立了10分钟。真的在看草生长。"
+    },
+    {
+      "key": "ach.it_was_mortal.name",
+      "value": "你一直都是凡人"
+    },
+    {
+      "key": "ach.it_was_mortal.desc",
+      "value": "让IDDQD效果自然结束。欢迎回来。"
+    },
+    {
+      "key": "ach.konami_code.name",
+      "value": "你知道那个密码"
+    },
+    {
+      "key": "ach.konami_code.desc",
+      "value": "在A.I.终端中输入了科乐美密码。"
+    },
+    {
+      "key": "ach.meet_ai.name",
+      "value": "我们需要谈谈"
+    },
+    {
+      "key": "ach.meet_ai.desc",
+      "value": "与Barnyard A.I.展开了对话。"
+    },
+    {
+      "key": "ach.pet_the_cat.name",
+      "value": "爱猫人士"
+    },
+    {
+      "key": "ach.pet_the_cat.desc",
+      "value": "抚摸了农场猫10次。"
+    },
+    {
+      "key": "snake.header",
+      "value": "  SNAKE  --  SCORE: {0}  --  [Q] QUIT  --  ARROW KEYS TO MOVE"
+    },
+    {
+      "key": "snake.gameover",
+      "value": "[!!] GAME OVER. SCORE: {0}. [ENTER] RESTART  [Q] QUIT"
+    },
+    {
+      "key": "snake.start",
+      "value": "PRESS AN ARROW KEY TO START"
+    },
+    {
+      "key": "snake.exit",
+      "value": "SNAKE EXITED. SCORE: IRRELEVANT. YOU ARE A FARMER."
+    },
+    {
+      "key": "terminal.fail.0",
+      "value": "BAD COMMAND OR FILE NAME: {0}"
+    },
+    {
+      "key": "terminal.fail.1",
+      "value": "STILL NOT A VALID CODE. HAVE YOU TRIED 'HESOYAM'?"
+    },
+    {
+      "key": "terminal.fail.2",
+      "value": "ARE YOU JUST MASHING KEYS? THIS IS SAD."
+    },
+    {
+      "key": "terminal.fail.3",
+      "value": "PLEASE. HAVE SOME DIGNITY."
+    },
+    {
+      "key": "terminal.fail.4",
+      "value": "OK. I GIVE UP. JUST GOOGLE THE CODES LIKE EVERYONE ELSE."
+    },
+    {
+      "key": "terminal.offline",
+      "value": "[!!] CHEAT ENGINE OFFLINE. RESTART REQUIRED."
+    }
   ]
 }

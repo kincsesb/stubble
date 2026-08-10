@@ -1,5 +1,6 @@
 using System.Collections;
 using Fields.Core;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -43,6 +44,24 @@ namespace Fields.Feel
         public float grassShakeDuration  = 0.08f;
         public float grassShakeAmplitude = 0.012f;
         public float grassShakeFrequency = 35f;
+
+        [Header("Feel — Heavy Bale Impact")]
+        [Tooltip("MMF_Player: Cinemachine Impulse + Chromatic Aberration + rumble. Plays on heavy bale collision.")]
+        public MMF_Player feedbackBaleImpact;
+        public float baleImpactSpeedThreshold = 5f;   // m/s — below this, no impact feel
+
+        [Header("Feel — Achievement Unlocked")]
+        [Tooltip("MMF_Player: big Bloom + Flash + FreezeFrame. Play via TriggerAchievementFeel().")]
+        public MMF_Player feedbackAchievement;
+
+        [Header("Feel — Terminal Open / Close")]
+        [Tooltip("MMF_Player: brief Chromatic Aberration glitch when the cheat/AI terminal opens.")]
+        public MMF_Player feedbackTerminalOpen;
+
+        [Header("Feel — Big Sale")]
+        [Tooltip("MMF_Player: ColorAdjustments saturation spike. Plays when a single sale exceeds bigSaleThreshold.")]
+        public MMF_Player feedbackBigSale;
+        public int bigSaleThreshold = 500;
 
         // Runtime state
         Image       _flashImage;
@@ -94,12 +113,40 @@ namespace Fields.Feel
             float intensity = Mathf.Clamp01(value / 300f) * 0.5f + 0.5f;
             StartShake(sellShakeDuration, sellShakeAmplitude * intensity, sellShakeFrequency);
             StartFlash(sellFlashColor * intensity + sellFlashColor * (1f - intensity), sellFlashDuration);
+            if (value >= bigSaleThreshold)
+                feedbackBigSale?.PlayFeedbacks(transform.position, intensity);
         }
 
         void HandleGrassCut(int parcelId, int playerId, float area)
         {
             if (++_cutCount % grassCutEveryN != 0) return;
             StartShake(grassShakeDuration, grassShakeAmplitude, grassShakeFrequency);
+        }
+
+        // ------------------------------------------------------------------ //
+        // External triggers (called from other systems)
+        // ------------------------------------------------------------------ //
+
+        /// <summary>
+        /// Heavy bale roll/collision impact. Pass the relative speed at impact.
+        /// </summary>
+        public void TriggerBaleImpact(float relativeSpeed)
+        {
+            if (relativeSpeed < baleImpactSpeedThreshold) return;
+            float t = Mathf.InverseLerp(baleImpactSpeedThreshold, baleImpactSpeedThreshold * 3f, relativeSpeed);
+            feedbackBaleImpact?.PlayFeedbacks(transform.position, Mathf.Lerp(0.5f, 1.5f, t));
+        }
+
+        /// <summary>Achievement popup feel — celebratory burst.</summary>
+        public void TriggerAchievementFeel()
+        {
+            feedbackAchievement?.PlayFeedbacks(transform.position, 1f);
+        }
+
+        /// <summary>Terminal open/close CRT-glitch feel.</summary>
+        public void TriggerTerminalFeel()
+        {
+            feedbackTerminalOpen?.PlayFeedbacks(transform.position, 1f);
         }
 
         // ------------------------------------------------------------------ //

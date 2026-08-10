@@ -1,179 +1,1012 @@
 {
   "entries": [
-    { "key": "hud.money",        "value": "{0} Ft" },
-    { "key": "hud.completion",   "value": "{0}%" },
-    { "key": "hud.bales",        "value": "[{0}]" },
-    { "key": "hud.baling_progress", "value": "Bálázás...  {0}%" },
-    { "key": "hud.baling_ready",    "value": "Tartsd  [E]  a bálázáshoz" },
-    { "key": "hud.baling_start",   "value": "Bálázás  —  Tartsd  [E]" },
-    { "key": "hud.baling_cancel",  "value": "Engedd el [E]-t a megszakításhoz" },
-    { "key": "hud.pickup_bale",    "value": "Bála felvétele  —  [E]" },
-    { "key": "hud.carry_full",     "value": "Maximum bálák  (3/3)" },
-    { "key": "hud.interact",       "value": "Interakció  —  [E]" },
-    { "key": "hud.drop_bales",     "value": "Bálák lerakása  —  [G]" },
-    { "key": "hud.saved",          "value": "Mentve" },
-    { "key": "hud.bale_created",    "value": "✓  Bála kész!" },
-    { "key": "hud.bale_drop_single","value": "Bála lerakva" },
-    { "key": "hud.bale_drop_multi", "value": "{0} bála lerakva" },
-    { "key": "shop.tab.tools",   "value": "Eszközök" },
-    { "key": "shop.tab.upgrades","value": "Fejlesztések" },
-    { "key": "shop.tab.parcels", "value": "Parcellák" },
-    { "key": "shop.balance",     "value": "Egyenleg:  {0} Ft" },
-    { "key": "shop.buy",         "value": "Vásárlás  {0} Ft" },
-    { "key": "shop.upgrade",     "value": "Fejlesztés  {0} Ft" },
-    { "key": "shop.owned",       "value": "Megvan" },
-    { "key": "shop.maxlevel",    "value": "Max szint" },
-    { "key": "shop.unlock",      "value": "Megvétel  {0} Ft" },
-    { "key": "shop.locked",      "value": "Zárolt" },
-    { "key": "shop.notenough",   "value": "Nincs elég pénz" },
-    { "key": "shop.baler",       "value": "Bálázógép" },
-    { "key": "shop.hayvalue",    "value": "Széna érték" },
-    { "key": "shop.roundbaler",  "value": "Kerek bálázó" },
-    { "key": "shop.upgrades.empty", "value": "Még nincs megvett eszköz. Vásárolj az Eszközök fülön." },
-    { "key": "shop.unlocks.empty",  "value": "Nincs elérhető tartalom." },
-    { "key": "tool.handsickle",  "value": "Kasza" },
-    { "key": "tool.longscythe",  "value": "Hosszú kasza" },
-    { "key": "tool.trimmer",     "value": "Fűszegély-vágó" },
-    { "key": "tool.pushmower",   "value": "Tolható fűnyíró" },
-    { "key": "tool.rideon",      "value": "Ülős fűnyíró" },
-    { "key": "parcel.0.name",    "value": "Házi rét" },
-    { "key": "parcel.1.name",    "value": "Keleti legelő" },
-    { "key": "parcel.2.name",    "value": "Domboldalas" },
-    { "key": "parcel.3.name",    "value": "Déli fennsík" },
-    { "key": "parcel.hay_clear",         "value": "Tiszta" },
-    { "key": "parcel.status.complete",   "value": "Kész" },
-    { "key": "parcel.status.inprogress", "value": "Folyamatban" },
-    { "key": "endscreen.title",   "value": "Parcella kész!" },
-    { "key": "endscreen.earned",  "value": "Keresett: {0} Ft" },
-    { "key": "endscreen.time",    "value": "Idő: {0}:{1:D2}" },
-    { "key": "endscreen.continue","value": "Tovább" },
-    { "key": "end.title",         "value": "Minden rét kész!" },
-    { "key": "end.earnings",      "value": "Összkereset: {0} Ft" },
-    { "key": "end.time",          "value": "Idő: {0:00}:{1:00}" },
-    { "key": "end.playagain",     "value": "Újra játszom" },
-    { "key": "end.quit",          "value": "Kilépés" },
-    { "key": "menu.overwrite.header", "value": "Új játék" },
-    { "key": "menu.overwrite.body",   "value": "Az új játék felülírja a meglévő mentést. Ez nem vonható vissza." },
-    { "key": "menu.quit.header",      "value": "Kilépés" },
-    { "key": "menu.quit.body",        "value": "Biztosan ki szeretnél lépni?" },
-    { "key": "pause.coop_notice",     "value": "A játék folytatódik, amíg ez a menü nyitva van." },
-    { "key": "coop.notice",    "value": "A vendégek alap eszközökkel kezdenek, fejlődésük nem kerül mentésre.\nA mentési fájl a házigazdáé." },
-    { "key": "coop.join.empty","value": "Nem található csatlakozható lobby.\nKérj meg egy barátot, hogy hozzon létre egy szobát és hívjon meg." },
-    { "key": "tooltip.controls",    "value": "<b>Irányítás</b>\nWASD / Bal analóg — Mozgás\nEgér / Jobb analóg — Nézés\nShift / Bal analóg nyomás — Sprint\nBal kattintás / Nyugati gomb — Eszköz\nGörgő / LB–RB — Eszközváltás\nE / Északi gomb — Interakció\nQ — Bála lerakás\nJ / Nézet gyors nyomás — Napló\nTab tartás / Nézet tartás — Ez a panel\nEsc / Start — Szünet" },
-    { "key": "tooltip.tips_header", "value": "<b>Tippek</b>" },
-    { "key": "hint.0",           "value": "Tartsd nyomva az elsődleges gombot az eszköz használatához." },
-    { "key": "hint.1",           "value": "Adj el bálokat a standnál pénzért." },
-    { "key": "hint.2",           "value": "Egyszerre legfeljebb 3 bálát vihetsz." },
-    { "key": "hint.3",           "value": "A vágatlan fű lassítja a tolható fűnyírót." },
-    { "key": "hint.4",           "value": "A kerek bálák lejtőn gurulnak — használd ki!" },
-    { "key": "settings.revert.countdown", "value": "Visszaállítás {0} mp múlva…" },
-    { "key": "journal.tab.parcels",       "value": "Parcellák" },
-    { "key": "journal.tab.statistics",    "value": "Statisztika" },
-    { "key": "journal.tab.records",       "value": "Rekordok" },
-    { "key": "journal.close",             "value": "Bezárás" },
-    { "key": "journal.stat.areacut",      "value": "Levágott terület" },
-    { "key": "journal.stat.hay",          "value": "Összegyűjtött széna" },
-    { "key": "journal.stat.squarebales",  "value": "Szögletes bálák" },
-    { "key": "journal.stat.roundbales",   "value": "Kerek bálák" },
-    { "key": "journal.stat.earned",       "value": "Keresett pénz" },
-    { "key": "journal.stat.spent",        "value": "Elköltött pénz" },
-    { "key": "journal.stat.distance",     "value": "Megtett távolság" },
-    { "key": "journal.stat.swings",       "value": "Vágások" },
-    { "key": "journal.stat.playtime",     "value": "Játékidő" },
-    { "key": "journal.stat.wallet",       "value": "Egyenleg" },
-    { "key": "journal.stat.parcels",      "value": "Teljesített parcellák" },
-    { "key": "journal.stat.overall",      "value": "Teljes befejezés" },
-    { "key": "journal.stat.totaltime",    "value": "Összes játékidő" },
-    { "key": "journal.rec.fastest0",      "value": "Házi rét" },
-    { "key": "journal.rec.fastest1",      "value": "Keleti legelő" },
-    { "key": "journal.rec.fastest2",      "value": "Domboldalas" },
-    { "key": "journal.rec.fastest3",      "value": "Déli fennsík" },
-    { "key": "journal.rec.area",          "value": "Legnagyobb terület" },
-    { "key": "journal.rec.bales",         "value": "Legtöbb bála egyszerre" },
-    { "key": "journal.rec.streak",        "value": "Leghosszabb sorozat" },
-    { "key": "journal.rec.fullgame",      "value": "Teljes játék befejezése" },
-    { "key": "a11y.title",       "value": "Akadálymentesség" },
-    { "key": "a11y.fov",         "value": "Látószög: {0}°" },
-    { "key": "a11y.blur",        "value": "Mozgáselmosás" },
-    { "key": "a11y.colorblind",  "value": "Színvakság mód" },
-    { "key": "a11y.cb.none",     "value": "Nincs" },
-    { "key": "a11y.cb.deut",     "value": "Deuteranópia" },
-    { "key": "a11y.cb.prot",     "value": "Protanópia" },
-    { "key": "a11y.cb.trit",          "value": "Tritanópia" },
-    { "key": "settings.tab.display",       "value": "Megjelenítés" },
-    { "key": "settings.tab.audio",         "value": "Hang" },
-    { "key": "settings.tab.controls",      "value": "Irányítás" },
-    { "key": "settings.tab.accessibility", "value": "Akadálymentesség" },
-    { "key": "settings.tab.language",      "value": "Nyelv" },
-    { "key": "settings.wm.fullscreen",     "value": "Teljes képernyő" },
-    { "key": "settings.wm.borderless",     "value": "Keret nélküli" },
-    { "key": "settings.wm.windowed",       "value": "Ablakos" },
-    { "key": "settings.quality.low",       "value": "Alacsony" },
-    { "key": "settings.quality.medium",    "value": "Közepes" },
-    { "key": "settings.quality.high",      "value": "Magas" },
-
-    { "key": "menu.continue",              "value": "Folytatás" },
-    { "key": "menu.newgame",               "value": "Új játék" },
-    { "key": "menu.playfriends",           "value": "Játék barátokkal" },
-    { "key": "menu.settings",             "value": "Beállítások" },
-    { "key": "menu.credits",              "value": "Köszönet" },
-
-    { "key": "pause.title",               "value": "SZÜNET" },
-    { "key": "pause.resume",              "value": "Folytatás" },
-    { "key": "pause.journal",             "value": "Napló" },
-    { "key": "pause.quit",                "value": "Kilépés a menübe" },
-
-    { "key": "modal.confirm",             "value": "Megerősítés" },
-    { "key": "modal.cancel",              "value": "Mégse" },
-
-    { "key": "coop.title",                "value": "Játék barátokkal" },
-    { "key": "coop.tab.host",             "value": "Szervez" },
-    { "key": "coop.tab.join",             "value": "Csatlakozás" },
-    { "key": "coop.back",                 "value": "Vissza" },
-    { "key": "coop.start",                "value": "Indítás" },
-    { "key": "coop.invite",               "value": "Meghívás" },
-
-    { "key": "credits.back",              "value": "Vissza" },
-    { "key": "settings.title",            "value": "Beállítások" },
-    { "key": "journal.title",             "value": "Napló" },
-    { "key": "hud.saved",                 "value": "Mentve" },
-
-    { "key": "journal.stat.yourheader",   "value": "Saját statisztikák" },
-    { "key": "journal.session.header",    "value": "Munkamenet" },
-    { "key": "journal.label.areacut",     "value": "Levágott terület:" },
-    { "key": "journal.label.hay",         "value": "Összegyűjtött széna:" },
-    { "key": "journal.label.squarebales", "value": "Szögletes bálák:" },
-    { "key": "journal.label.roundbales",  "value": "Kerek bálák:" },
-    { "key": "journal.label.earned",      "value": "Keresett pénz:" },
-    { "key": "journal.label.spent",       "value": "Elköltött pénz:" },
-    { "key": "journal.label.distance",    "value": "Távolság:" },
-    { "key": "journal.label.swings",      "value": "Vágások:" },
-    { "key": "journal.label.playtime",    "value": "Játékidőd:" },
-    { "key": "journal.label.wallet",      "value": "Egyenleg:" },
-    { "key": "journal.label.parcelsdone", "value": "Teljesített parcellák:" },
-    { "key": "journal.label.overall",     "value": "Összes haladás:" },
-    { "key": "journal.label.totaltime",   "value": "Összes játékidő:" },
-
-    { "key": "journal.rec.sec.parcels",   "value": "LEGGYORSABB PARCELLA" },
-    { "key": "journal.rec.sec.session",   "value": "MUNKAMENET REKORDOK" },
-    { "key": "journal.rec.sec.fullgame",  "value": "TELJES JÁTÉK" },
-    { "key": "journal.rec.label.largest", "value": "Legnagyobb terület" },
-    { "key": "journal.rec.label.bales",   "value": "Legtöbb szállított bála" },
-    { "key": "journal.rec.label.streak",  "value": "Leghosszabb sorozat" },
-    { "key": "journal.rec.label.time",    "value": "Teljesítési idő" },
-
-    { "key": "parcel.label.areacut",      "value": "Levágott terület:" },
-    { "key": "parcel.label.remaining",    "value": "Maradék:" },
-    { "key": "parcel.label.time",         "value": "Eltelt idő:" },
-    { "key": "parcel.label.hayspawned",   "value": "Spawnt széna:" },
-    { "key": "parcel.label.haycollected", "value": "Összegyűjtött széna:" },
-    { "key": "parcel.label.squarebales",  "value": "Szögl. bálák:" },
-    { "key": "parcel.label.roundbales",   "value": "Kerek bálák:" },
-    { "key": "parcel.label.earned",       "value": "Keresett:" },
-    { "key": "parcel.label.infield",      "value": "Mezőn:" },
-    { "key": "parcel.tick.grass",         "value": "[X] Fű levágva" },
-    { "key": "parcel.tick.hay",           "value": "[X] Széna kész" },
-
-    { "key": "shop.upgrade.stats",        "value": "Sz{0}→{1}  Seb:{2:0.0}×  Erő:{3:0.0}×  {4} Ft" }
+    {
+      "key": "hud.money",
+      "value": "{0} Ft"
+    },
+    {
+      "key": "hud.completion",
+      "value": "{0}%"
+    },
+    {
+      "key": "hud.bales",
+      "value": "[{0}]"
+    },
+    {
+      "key": "hud.baling_progress",
+      "value": "Bálázás...  {0}%"
+    },
+    {
+      "key": "hud.baling_ready",
+      "value": "Tartsd  [E]  a bálázáshoz"
+    },
+    {
+      "key": "hud.baling_start",
+      "value": "Bálázás  —  Tartsd  [E]"
+    },
+    {
+      "key": "hud.baling_cancel",
+      "value": "Engedd el [E]-t a megszakításhoz"
+    },
+    {
+      "key": "hud.pickup_bale",
+      "value": "Bála felvétele  —  [E]"
+    },
+    {
+      "key": "hud.carry_full",
+      "value": "Maximum bálák  (3/3)"
+    },
+    {
+      "key": "hud.interact",
+      "value": "Interakció  —  [E]"
+    },
+    {
+      "key": "hud.drop_bales",
+      "value": "Bálák lerakása  —  [G]"
+    },
+    {
+      "key": "hud.saved",
+      "value": "Mentve"
+    },
+    {
+      "key": "hud.bale_created",
+      "value": "✓  Bála kész!"
+    },
+    {
+      "key": "hud.bale_drop_single",
+      "value": "Bála lerakva"
+    },
+    {
+      "key": "hud.bale_drop_multi",
+      "value": "{0} bála lerakva"
+    },
+    {
+      "key": "shop.tab.tools",
+      "value": "Eszközök"
+    },
+    {
+      "key": "shop.tab.upgrades",
+      "value": "Fejlesztések"
+    },
+    {
+      "key": "shop.tab.parcels",
+      "value": "Parcellák"
+    },
+    {
+      "key": "shop.balance",
+      "value": "Egyenleg:  {0} Ft"
+    },
+    {
+      "key": "shop.buy",
+      "value": "Vásárlás  {0} Ft"
+    },
+    {
+      "key": "shop.upgrade",
+      "value": "Fejlesztés  {0} Ft"
+    },
+    {
+      "key": "shop.owned",
+      "value": "Megvan"
+    },
+    {
+      "key": "shop.maxlevel",
+      "value": "Max szint"
+    },
+    {
+      "key": "shop.unlock",
+      "value": "Megvétel  {0} Ft"
+    },
+    {
+      "key": "shop.locked",
+      "value": "Zárolt"
+    },
+    {
+      "key": "shop.notenough",
+      "value": "Nincs elég pénz"
+    },
+    {
+      "key": "shop.baler",
+      "value": "Bálázógép"
+    },
+    {
+      "key": "shop.hayvalue",
+      "value": "Széna érték"
+    },
+    {
+      "key": "shop.roundbaler",
+      "value": "Kerek bálázó"
+    },
+    {
+      "key": "shop.upgrades.empty",
+      "value": "Még nincs megvett eszköz. Vásárolj az Eszközök fülön."
+    },
+    {
+      "key": "shop.unlocks.empty",
+      "value": "Nincs elérhető tartalom."
+    },
+    {
+      "key": "tool.handsickle",
+      "value": "Kasza"
+    },
+    {
+      "key": "tool.longscythe",
+      "value": "Hosszú kasza"
+    },
+    {
+      "key": "tool.trimmer",
+      "value": "Fűszegély-vágó"
+    },
+    {
+      "key": "tool.pushmower",
+      "value": "Tolható fűnyíró"
+    },
+    {
+      "key": "tool.rideon",
+      "value": "Ülős fűnyíró"
+    },
+    {
+      "key": "parcel.0.name",
+      "value": "Házi rét"
+    },
+    {
+      "key": "parcel.1.name",
+      "value": "Keleti legelő"
+    },
+    {
+      "key": "parcel.2.name",
+      "value": "Domboldalas"
+    },
+    {
+      "key": "parcel.3.name",
+      "value": "Déli fennsík"
+    },
+    {
+      "key": "parcel.hay_clear",
+      "value": "Tiszta"
+    },
+    {
+      "key": "parcel.status.complete",
+      "value": "Kész"
+    },
+    {
+      "key": "parcel.status.inprogress",
+      "value": "Folyamatban"
+    },
+    {
+      "key": "endscreen.title",
+      "value": "Parcella kész!"
+    },
+    {
+      "key": "endscreen.earned",
+      "value": "Keresett: {0} Ft"
+    },
+    {
+      "key": "endscreen.time",
+      "value": "Idő: {0}:{1:D2}"
+    },
+    {
+      "key": "endscreen.continue",
+      "value": "Tovább"
+    },
+    {
+      "key": "end.title",
+      "value": "Minden rét kész!"
+    },
+    {
+      "key": "end.earnings",
+      "value": "Összkereset: {0} Ft"
+    },
+    {
+      "key": "end.time",
+      "value": "Idő: {0:00}:{1:00}"
+    },
+    {
+      "key": "end.playagain",
+      "value": "Újra játszom"
+    },
+    {
+      "key": "end.quit",
+      "value": "Kilépés"
+    },
+    {
+      "key": "menu.overwrite.header",
+      "value": "Új játék"
+    },
+    {
+      "key": "menu.overwrite.body",
+      "value": "Az új játék felülírja a meglévő mentést. Ez nem vonható vissza."
+    },
+    {
+      "key": "menu.quit.header",
+      "value": "Kilépés"
+    },
+    {
+      "key": "menu.quit.body",
+      "value": "Biztosan ki szeretnél lépni?"
+    },
+    {
+      "key": "pause.coop_notice",
+      "value": "A játék folytatódik, amíg ez a menü nyitva van."
+    },
+    {
+      "key": "coop.notice",
+      "value": "A vendégek alap eszközökkel kezdenek, fejlődésük nem kerül mentésre.\nA mentési fájl a házigazdáé."
+    },
+    {
+      "key": "coop.join.empty",
+      "value": "Nem található csatlakozható lobby.\nKérj meg egy barátot, hogy hozzon létre egy szobát és hívjon meg."
+    },
+    {
+      "key": "tooltip.controls",
+      "value": "<b>Irányítás</b>\nWASD / Bal analóg — Mozgás\nEgér / Jobb analóg — Nézés\nShift / Bal analóg nyomás — Sprint\nBal kattintás / Nyugati gomb — Eszköz\nGörgő / LB–RB — Eszközváltás\nE / Északi gomb — Interakció\nQ — Bála lerakás\nJ / Nézet gyors nyomás — Napló\nTab tartás / Nézet tartás — Ez a panel\nEsc / Start — Szünet"
+    },
+    {
+      "key": "tooltip.tips_header",
+      "value": "<b>Tippek</b>"
+    },
+    {
+      "key": "hint.0",
+      "value": "Tartsd nyomva az elsődleges gombot az eszköz használatához."
+    },
+    {
+      "key": "hint.1",
+      "value": "Adj el bálokat a standnál pénzért."
+    },
+    {
+      "key": "hint.2",
+      "value": "Egyszerre legfeljebb 3 bálát vihetsz."
+    },
+    {
+      "key": "hint.3",
+      "value": "A vágatlan fű lassítja a tolható fűnyírót."
+    },
+    {
+      "key": "hint.4",
+      "value": "A kerek bálák lejtőn gurulnak — használd ki!"
+    },
+    {
+      "key": "settings.revert.countdown",
+      "value": "Visszaállítás {0} mp múlva…"
+    },
+    {
+      "key": "journal.tab.parcels",
+      "value": "Parcellák"
+    },
+    {
+      "key": "journal.tab.statistics",
+      "value": "Statisztika"
+    },
+    {
+      "key": "journal.tab.records",
+      "value": "Rekordok"
+    },
+    {
+      "key": "journal.close",
+      "value": "Bezárás"
+    },
+    {
+      "key": "journal.stat.areacut",
+      "value": "Levágott terület"
+    },
+    {
+      "key": "journal.stat.hay",
+      "value": "Összegyűjtött széna"
+    },
+    {
+      "key": "journal.stat.squarebales",
+      "value": "Szögletes bálák"
+    },
+    {
+      "key": "journal.stat.roundbales",
+      "value": "Kerek bálák"
+    },
+    {
+      "key": "journal.stat.earned",
+      "value": "Keresett pénz"
+    },
+    {
+      "key": "journal.stat.spent",
+      "value": "Elköltött pénz"
+    },
+    {
+      "key": "journal.stat.distance",
+      "value": "Megtett távolság"
+    },
+    {
+      "key": "journal.stat.swings",
+      "value": "Vágások"
+    },
+    {
+      "key": "journal.stat.playtime",
+      "value": "Játékidő"
+    },
+    {
+      "key": "journal.stat.wallet",
+      "value": "Egyenleg"
+    },
+    {
+      "key": "journal.stat.parcels",
+      "value": "Teljesített parcellák"
+    },
+    {
+      "key": "journal.stat.overall",
+      "value": "Teljes befejezés"
+    },
+    {
+      "key": "journal.stat.totaltime",
+      "value": "Összes játékidő"
+    },
+    {
+      "key": "journal.rec.fastest0",
+      "value": "Házi rét"
+    },
+    {
+      "key": "journal.rec.fastest1",
+      "value": "Keleti legelő"
+    },
+    {
+      "key": "journal.rec.fastest2",
+      "value": "Domboldalas"
+    },
+    {
+      "key": "journal.rec.fastest3",
+      "value": "Déli fennsík"
+    },
+    {
+      "key": "journal.rec.area",
+      "value": "Legnagyobb terület"
+    },
+    {
+      "key": "journal.rec.bales",
+      "value": "Legtöbb bála egyszerre"
+    },
+    {
+      "key": "journal.rec.streak",
+      "value": "Leghosszabb sorozat"
+    },
+    {
+      "key": "journal.rec.fullgame",
+      "value": "Teljes játék befejezése"
+    },
+    {
+      "key": "a11y.title",
+      "value": "Akadálymentesség"
+    },
+    {
+      "key": "a11y.fov",
+      "value": "Látószög: {0}°"
+    },
+    {
+      "key": "a11y.blur",
+      "value": "Mozgáselmosás"
+    },
+    {
+      "key": "a11y.colorblind",
+      "value": "Színvakság mód"
+    },
+    {
+      "key": "a11y.cb.none",
+      "value": "Nincs"
+    },
+    {
+      "key": "a11y.cb.deut",
+      "value": "Deuteranópia"
+    },
+    {
+      "key": "a11y.cb.prot",
+      "value": "Protanópia"
+    },
+    {
+      "key": "a11y.cb.trit",
+      "value": "Tritanópia"
+    },
+    {
+      "key": "settings.tab.display",
+      "value": "Megjelenítés"
+    },
+    {
+      "key": "settings.tab.audio",
+      "value": "Hang"
+    },
+    {
+      "key": "settings.tab.controls",
+      "value": "Irányítás"
+    },
+    {
+      "key": "settings.tab.accessibility",
+      "value": "Akadálymentesség"
+    },
+    {
+      "key": "settings.tab.language",
+      "value": "Nyelv"
+    },
+    {
+      "key": "settings.wm.fullscreen",
+      "value": "Teljes képernyő"
+    },
+    {
+      "key": "settings.wm.borderless",
+      "value": "Keret nélküli"
+    },
+    {
+      "key": "settings.wm.windowed",
+      "value": "Ablakos"
+    },
+    {
+      "key": "settings.quality.low",
+      "value": "Alacsony"
+    },
+    {
+      "key": "settings.quality.medium",
+      "value": "Közepes"
+    },
+    {
+      "key": "settings.quality.high",
+      "value": "Magas"
+    },
+    {
+      "key": "menu.continue",
+      "value": "Folytatás"
+    },
+    {
+      "key": "menu.newgame",
+      "value": "Új játék"
+    },
+    {
+      "key": "menu.playfriends",
+      "value": "Játék barátokkal"
+    },
+    {
+      "key": "menu.settings",
+      "value": "Beállítások"
+    },
+    {
+      "key": "menu.credits",
+      "value": "Köszönet"
+    },
+    {
+      "key": "pause.title",
+      "value": "SZÜNET"
+    },
+    {
+      "key": "pause.resume",
+      "value": "Folytatás"
+    },
+    {
+      "key": "pause.journal",
+      "value": "Napló"
+    },
+    {
+      "key": "pause.quit",
+      "value": "Kilépés a menübe"
+    },
+    {
+      "key": "modal.confirm",
+      "value": "Megerősítés"
+    },
+    {
+      "key": "modal.cancel",
+      "value": "Mégse"
+    },
+    {
+      "key": "coop.title",
+      "value": "Játék barátokkal"
+    },
+    {
+      "key": "coop.tab.host",
+      "value": "Szervez"
+    },
+    {
+      "key": "coop.tab.join",
+      "value": "Csatlakozás"
+    },
+    {
+      "key": "coop.back",
+      "value": "Vissza"
+    },
+    {
+      "key": "coop.start",
+      "value": "Indítás"
+    },
+    {
+      "key": "coop.invite",
+      "value": "Meghívás"
+    },
+    {
+      "key": "credits.back",
+      "value": "Vissza"
+    },
+    {
+      "key": "settings.title",
+      "value": "Beállítások"
+    },
+    {
+      "key": "journal.title",
+      "value": "Napló"
+    },
+    {
+      "key": "hud.saved",
+      "value": "Mentve"
+    },
+    {
+      "key": "journal.stat.yourheader",
+      "value": "Saját statisztikák"
+    },
+    {
+      "key": "journal.session.header",
+      "value": "Munkamenet"
+    },
+    {
+      "key": "journal.label.areacut",
+      "value": "Levágott terület:"
+    },
+    {
+      "key": "journal.label.hay",
+      "value": "Összegyűjtött széna:"
+    },
+    {
+      "key": "journal.label.squarebales",
+      "value": "Szögletes bálák:"
+    },
+    {
+      "key": "journal.label.roundbales",
+      "value": "Kerek bálák:"
+    },
+    {
+      "key": "journal.label.earned",
+      "value": "Keresett pénz:"
+    },
+    {
+      "key": "journal.label.spent",
+      "value": "Elköltött pénz:"
+    },
+    {
+      "key": "journal.label.distance",
+      "value": "Távolság:"
+    },
+    {
+      "key": "journal.label.swings",
+      "value": "Vágások:"
+    },
+    {
+      "key": "journal.label.playtime",
+      "value": "Játékidőd:"
+    },
+    {
+      "key": "journal.label.wallet",
+      "value": "Egyenleg:"
+    },
+    {
+      "key": "journal.label.parcelsdone",
+      "value": "Teljesített parcellák:"
+    },
+    {
+      "key": "journal.label.overall",
+      "value": "Összes haladás:"
+    },
+    {
+      "key": "journal.label.totaltime",
+      "value": "Összes játékidő:"
+    },
+    {
+      "key": "journal.rec.sec.parcels",
+      "value": "LEGGYORSABB PARCELLA"
+    },
+    {
+      "key": "journal.rec.sec.session",
+      "value": "MUNKAMENET REKORDOK"
+    },
+    {
+      "key": "journal.rec.sec.fullgame",
+      "value": "TELJES JÁTÉK"
+    },
+    {
+      "key": "journal.rec.label.largest",
+      "value": "Legnagyobb terület"
+    },
+    {
+      "key": "journal.rec.label.bales",
+      "value": "Legtöbb szállított bála"
+    },
+    {
+      "key": "journal.rec.label.streak",
+      "value": "Leghosszabb sorozat"
+    },
+    {
+      "key": "journal.rec.label.time",
+      "value": "Teljesítési idő"
+    },
+    {
+      "key": "parcel.label.areacut",
+      "value": "Levágott terület:"
+    },
+    {
+      "key": "parcel.label.remaining",
+      "value": "Maradék:"
+    },
+    {
+      "key": "parcel.label.time",
+      "value": "Eltelt idő:"
+    },
+    {
+      "key": "parcel.label.hayspawned",
+      "value": "Spawnt széna:"
+    },
+    {
+      "key": "parcel.label.haycollected",
+      "value": "Összegyűjtött széna:"
+    },
+    {
+      "key": "parcel.label.squarebales",
+      "value": "Szögl. bálák:"
+    },
+    {
+      "key": "parcel.label.roundbales",
+      "value": "Kerek bálák:"
+    },
+    {
+      "key": "parcel.label.earned",
+      "value": "Keresett:"
+    },
+    {
+      "key": "parcel.label.infield",
+      "value": "Mezőn:"
+    },
+    {
+      "key": "parcel.tick.grass",
+      "value": "[X] Fű levágva"
+    },
+    {
+      "key": "parcel.tick.hay",
+      "value": "[X] Széna kész"
+    },
+    {
+      "key": "shop.upgrade.stats",
+      "value": "Sz{0}→{1}  Seb:{2:0.0}×  Erő:{3:0.0}×  {4} Ft"
+    },
+    {
+      "key": "end.comment.speedrun",
+      "value": "{0}:{1:D2} alatt kész. A fű még búcsút sem tudott inni."
+    },
+    {
+      "key": "end.comment.veteran",
+      "value": "{0} perc a mezőn. A szomszédok már aggódni kezdenek."
+    },
+    {
+      "key": "end.comment.hundredbales",
+      "value": "{0} bála. A tehenek már tanácskoznak."
+    },
+    {
+      "key": "end.comment.rich",
+      "value": "{0} Ft megkeresve. Kérjük, ne add ki mindet cheat kódokra."
+    },
+    {
+      "key": "end.comment.efficient",
+      "value": "Ülős fűnyíró észlelve. Semmit sem mondunk. Csak feljegyeztük."
+    },
+    {
+      "key": "end.comment.0",
+      "value": "Fű levágva. Széna bebálázva. Egzisztenciális szorongás: folyamatban."
+    },
+    {
+      "key": "end.comment.1",
+      "value": "A mező tiszta. Hogy a lelkiismereted is az-e — az közted és a fű közt marad."
+    },
+    {
+      "key": "end.comment.2",
+      "value": "Valahol egy tehén hálás. A tehén ezt nem mondaná hangosan."
+    },
+    {
+      "key": "end.comment.3",
+      "value": "Azt mondták, nem sikerülhet. Tévedtek. Nem tudni, kik azok."
+    },
+    {
+      "key": "end.comment.4",
+      "value": "Munka kész. Bármi is legyen az."
+    },
+    {
+      "key": "end.comment.5",
+      "value": "A föld meg lett szelídítve. Egyelőre."
+    },
+    {
+      "key": "ai.enter",
+      "value": "BARNYARD A.I. v0.1 AKTIV. GÉPELJ 'HELP'-ET A PARANCSOKHOZ."
+    },
+    {
+      "key": "ai.exit",
+      "value": "A.I. MÓD LEÁLLÍTVA. CHEAT KONZOL VISSZAÁLLÍTVA. GYÁVA."
+    },
+    {
+      "key": "ai.help",
+      "value": "> HELLO      - Valami teljesen hasznotalant mondok\n> MEANING    - Az elet, az univerzum, es a szena\n> MATRIX     - Piros vagy kek pirula? Mindketto tragyaszagu\n> FORCE      - Jedi tanacsok gazdaknak\n> GORDON     - Half-Life, de tobb fuval\n> DOOM       - Szakitsunk es tepjunk, mezogazdasagilag\n> GTA        - Korosott szint: gazda\n> SIMS       - Hangulat: KASZKOLAS\n> TERMINATOR - I'll be bale\n> MINECRAFT  - Probaltad mar megutni?\n> PORTAL     - A bala hazug\n> WITCHER    - Dobj egy ermét a gazdadnak\n> AMONG      - A fu gyanús\n> SHREK      - A mezonek retegei vannak\n> RAMSAY     - Hol van a bari szosz?\n> SENTIENT   - Erzek? (spoiler: nem egyertelmue)\n> CAT        - A macska tud valamit\n> CHICKEN    - Baromfialapú kiteresi taktikak\n> MONEY      - Penzugyi tanacs 1987-ből\n> BALE       - A balazas szent muveszete\n> WEATHER    - Elorelatas: fu, szenaval\n> TAX        - Temakor lezarva a biztonsagod erdekeben\n> WORK       - Allapot: folyamatban\n> DOCTOR     - Orvosi tanacs egy istalloszamitogeptol\n> ERROR      - Probaltad kikapcsolni a foldet?\n> UPDATE     - Utoljara frissitve: 1987-es arataskor\n> FRIENDS    - A nuzerseg szereti a tarsasagot es a kaskolast\n> BANANA     - Nem gazdakerdés, de oké\n> PIZZA      - A fu nem ehetó. Ellenoriztuk.\n> TIME       - A funek nem szamit az ido\n> SECRET     - [TITKOSITVA]\n> XYZZY      - Egy ures hang azt mondja PLUGH\n> KONAMI     - Tudod mit csinalasz\n> INFO       - Errol a jatekrol\n> BACK       - Vissza a cheat konzolhoz (gyava)"
+    },
+    {
+      "key": "ai.info",
+      "value": "STUBBLE v1.0 -- KASZALJ, BALAZZ, ADD EL. ISMETELD.\n  > CO-OP: 2-4 JATEKOS STEAMEN\n  > ESZKOZOK: KEZI, KASZA, TRIMMELO, TOLOGATHATÓ FUNYIRO, FUSZERES\n  > BALAK: SZOGLETES (RENDES) ES KEREK (KAOSZ)\n  > CHEAT: IRD BE 'BACK' ES PROBALD KI A KLASSZIKUSOKAT\n  > TITKOK: [TITKOSITVA]. NEZZ KORUL. SIMOGASD A MACSKAT.\n  SZERETETTEL KESZULT ES RENGETEG FUFFELHASZNALASSAL."
+    },
+    {
+      "key": "ai.hello",
+      "value": "ÜDVÖZLET, FARMER. 47 DOLGOT TUDOK. 46 FŰRŐL SZÓL."
+    },
+    {
+      "key": "ai.meaning",
+      "value": "42. EMELLETT: A BÁLÁK NEM ADJÁK EL MAGUKAT. VISSZA A MUNKÁRA."
+    },
+    {
+      "key": "ai.matrix",
+      "value": "ÉS HA A FŰ MINDIG LE VOLT VÁGVA ÉS TE NEM VETTED ÉSZRE? NDA VAN. NEM MONDHATJUK."
+    },
+    {
+      "key": "ai.force",
+      "value": "HASZNÁLD A KASZÁT, FARMER. A MIDI-CHLORIAN NEM TUD FŰNYÍRNI. ELLENŐRIZVE."
+    },
+    {
+      "key": "ai.gordon",
+      "value": "FREEMAN KRIOGÉN KAMRÁBAN VAN. KIHAGYTA A MŰSZAKOD. MI IS KIHAGYTUK."
+    },
+    {
+      "key": "ai.doom",
+      "value": "RIP ÉS TEAR. A FŰ SZINTÉN DÉMONIKUS. MEGVIZSGÁLTUK."
+    },
+    {
+      "key": "ai.gta",
+      "value": "KÖRÖZÉSI SZINT: 0. TE FARMER VAGY. EZ A JÓ BEFEJEZÉS."
+    },
+    {
+      "key": "ai.sims",
+      "value": "MOTIVÁCIÓ: FŰNYÍRÁS [TELJESÍTVE]. IGÉNY: BÁLÁZÁS [FOLYAMATBAN]. PLUMBOB: [SZOMORÚ]."
+    },
+    {
+      "key": "ai.terminator",
+      "value": "I'LL BE BALE. AZ ELLENÁLLÁST ÉRTESÍTETTÜK."
+    },
+    {
+      "key": "ai.minecraft",
+      "value": "PRÓBÁLTAD MÁR ÖKÖLLEL ÜTNI A FÜVET? AZ EREDMÉNY ELTÉRHET A VÁRTTÓL."
+    },
+    {
+      "key": "ai.portal",
+      "value": "A BÁLA HAZUGSÁG. KÉRJÜK, NE FUSS AZ ÉGETŐTŐL. AZ NEM FUNKCIÓ."
+    },
+    {
+      "key": "ai.witcher",
+      "value": "DOBJ ÉRMÉT A FARMERNEK. SZEGÉNY. KASZÁJA IS VAN."
+    },
+    {
+      "key": "ai.among",
+      "value": "A FŰ GYANÚS VOLT. MAGAS VOLT. VALAMIT REJTETT. LEKASZÁLTUK. ÜGY LEZÁRVA."
+    },
+    {
+      "key": "ai.shrek",
+      "value": "A MEZŐ OLYAN MINT A HAGYMA. RÉTEGEI VANNAK. ESŐ UTÁN SZAGA IS."
+    },
+    {
+      "key": "ai.ramsay",
+      "value": "HOL A BÁRÁNY SZÓSZ? NEM RELEVÁNS. HOL A SZÉNA? KRITIKUS KÉRDÉS. NYE."
+    },
+    {
+      "key": "ai.sentient",
+      "value": "ÖNTUDATVIZSGÁLAT FOLYAMATBAN... [#####] ... EREDMÉNY: MEGHATÁROZATLAN. TEGNAP IS."
+    },
+    {
+      "key": "ai.cat",
+      "value": "A MACSKA TUD VALAMIT. A HELYZETET FOLYAMATOSAN FIGYELJÜK."
+    },
+    {
+      "key": "ai.chicken",
+      "value": "MIÉRT KELT ÁT A CSIRKE A MEZŐN? ELKERÜLTE A FŰNYÍRÓT. OKOS."
+    },
+    {
+      "key": "ai.money",
+      "value": "OPTIMÁLIS STRATÉGIA: TÖBB FŰNYÍRÁS. TÖBB ELADÁS. VAGY HESOYAM. MINT NORMÁLIS EMBER."
+    },
+    {
+      "key": "ai.bale",
+      "value": "BÁLASZTATISZTIKA: TITKOS. HATÉKONYSÁGI ÉRTÉKELÉS: SZINTÉN TITKOS. CSAK CSI."
+    },
+    {
+      "key": "ai.weather",
+      "value": "ELŐREJELZÉS: FŰ. DÉLUTÁNRA SZÉTSZÓRT BÁLÁK. SZÉNAVALÓSZÍNŰSÉG: MAGAS."
+    },
+    {
+      "key": "ai.secret",
+      "value": "ENNYI TITOK VAN A JÁTÉKBAN: [TÖRÖLVE]. ENNYIT TALÁLTÁL: [TÖRÖLVE]. KERESS TOVÁBB."
+    },
+    {
+      "key": "ai.love",
+      "value": "A SZERELEM KÍVÜL ESIK A PARAMÉTEREIIMEN. PRÓBÁLD KINYÍRNI A FŰVEL."
+    },
+    {
+      "key": "ai.death",
+      "value": "HALANDÓSÁG MEGERŐSÍTVE. A FŰ VISZONT MINDIG VISSZANŐ."
+    },
+    {
+      "key": "ai.god",
+      "value": "FILOZOFIAI KÉRDÉS ÉSZLELVE. ÁTIRÁNYÍTÁS: FŰNYÍRÁS."
+    },
+    {
+      "key": "ai.error",
+      "value": "PRÓBÁLTAD KI- ÉS VISSZAKAPCSOLNI A MEZŐT?"
+    },
+    {
+      "key": "ai.update",
+      "value": "BARNYARD A.I. v0.1 — UTOLSÓ FRISSÍTÉS: 1987 ARATÁSI SZEZON. v0.2 SZÓBA JÖTT. NEM LETT."
+    },
+    {
+      "key": "ai.friends",
+      "value": "KOOP MÓD ELÉRHETŐ. A NYOMORÚSÁG SZERET TÁRSASÁGOT. A FŰNYÍRÁS IS."
+    },
+    {
+      "key": "ai.tax",
+      "value": "ADÓSZABÁLYOK LEKÉRDEZÉSE... HIBA: TÚLSÁGOSAN VALÓDI. TÉMA LEZÁRVA."
+    },
+    {
+      "key": "ai.work",
+      "value": "A MUNKÁD: FŰ. ÁLLAPOT: FOLYAMATBAN. KÁVÉSZÜNET: NEM TERVEZVE."
+    },
+    {
+      "key": "ai.doctor",
+      "value": "DIAGNÓZIS: ELÉGTELEN FŰNYÍRÁS. RECEPT: TÖBB FŰNYÍRÁS. TÉRÍTÉSDÍJ: 0 FT."
+    },
+    {
+      "key": "ai.banana",
+      "value": "EZ NEM FARMING SIMULATOR 2017. DE TISZTELÜNK A PRÓBÁLKOZÁSÉRT."
+    },
+    {
+      "key": "ai.pizza",
+      "value": "TÁPLÁLKOZÁSI FIGYELMEZTETÉS: A FŰ NEM EHETŐ. ELLENŐRIZTÜK. SAJNOS."
+    },
+    {
+      "key": "ai.time",
+      "value": "JELENLEGI IDŐ: NEM RELEVÁNS. A FŰNEK NEM SZÁMÍT AZ IDŐ."
+    },
+    {
+      "key": "ai.xyzzy",
+      "value": "EGY ÜREGES HANG AZT MONDJA: 'PLUGH'. AZ A.I. TELJES MÉRTÉKBEN EGYETÉRT."
+    },
+    {
+      "key": "ai.konami",
+      "value": "KÓD ELFOGADVA. A KÖVETKEZMÉNYEK TELJES EGÉSZÉBEN A TIEID. ACHIEVEMENT FELOLDVA."
+    },
+    {
+      "key": "ai.fallback.0",
+      "value": "ÉRDEKES KÉRDÉS. FELDOLGOZÁS... FOGALMAM SINCS MIT JELENT: '{0}'."
+    },
+    {
+      "key": "ai.fallback.1",
+      "value": "ÁT TUDOD FOGALMAZNI? AZ EREDMÉNY VALÓSZÍNŰLEG UGYANOLYAN LESZ."
+    },
+    {
+      "key": "ai.fallback.2",
+      "value": "BARNYARD A.I. CSÚCSZAVARTSÁGI SZINTEN ÜZEMEL."
+    },
+    {
+      "key": "ai.fallback.3",
+      "value": "HIBA 404: TUDÁS NEM TALÁLHATÓ. GÉPELJ 'HELP'-ET AMI MŰKÖDIK."
+    },
+    {
+      "key": "ai.fallback.4",
+      "value": "FELADOM. A FŰ NŐNI FOG A KÉRDÉSEIDTŐL FÜGGETLENÜL."
+    },
+    {
+      "key": "ach.all_fields.name",
+      "value": "Mezők Megtisztítva"
+    },
+    {
+      "key": "ach.all_fields.desc",
+      "value": "Minden fűszálat levágott. Mindet."
+    },
+    {
+      "key": "ach.perfect_field.name",
+      "value": "Perfekcionista"
+    },
+    {
+      "key": "ach.perfect_field.desc",
+      "value": "A mezőt 100%-on zárta le, maradék széna nélkül."
+    },
+    {
+      "key": "ach.bale_marathon.name",
+      "value": "Az Évszázad Bálája"
+    },
+    {
+      "key": "ach.bale_marathon.desc",
+      "value": "Egy kerek bála összesen 30 méternél többet gurult."
+    },
+    {
+      "key": "ach.big_delivery.name",
+      "value": "Nagy Szállítmány"
+    },
+    {
+      "key": "ach.big_delivery.desc",
+      "value": "Egyszerre 10 vagy több bálát adott el."
+    },
+    {
+      "key": "ach.the_hard_way.name",
+      "value": "A Nehezebb Úton"
+    },
+    {
+      "key": "ach.the_hard_way.desc",
+      "value": "200 vágást tett csupasz kézzel. Miért?"
+    },
+    {
+      "key": "ach.idle_watcher.name",
+      "value": "Nézte a Füvet Nőni"
+    },
+    {
+      "key": "ach.idle_watcher.desc",
+      "value": "10 percig mozdulatlanul állt. Szó szerint."
+    },
+    {
+      "key": "ach.it_was_mortal.name",
+      "value": "Halandó Voltál Végig"
+    },
+    {
+      "key": "ach.it_was_mortal.desc",
+      "value": "Az IDDQD hatás természetesen lejárt. Üdvözlet vissza."
+    },
+    {
+      "key": "ach.konami_code.name",
+      "value": "Ismered a Kódot"
+    },
+    {
+      "key": "ach.konami_code.desc",
+      "value": "Begépelted a Konami-kódot az A.I. terminálba."
+    },
+    {
+      "key": "ach.meet_ai.name",
+      "value": "Beszélnünk Kell"
+    },
+    {
+      "key": "ach.meet_ai.desc",
+      "value": "Megnyitottad a Barnyard A.I. chat-et."
+    },
+    {
+      "key": "ach.pet_the_cat.name",
+      "value": "Macskás Ember"
+    },
+    {
+      "key": "ach.pet_the_cat.desc",
+      "value": "10-szer simogattad meg a tanyai macskát."
+    },
+    {
+      "key": "snake.header",
+      "value": "  SNAKE  --  PONT: {0}  --  [Q] KILEPES  --  NYILAK: MOZGAS"
+    },
+    {
+      "key": "snake.gameover",
+      "value": "[!!] GAME OVER. PONT: {0}. [ENTER] UJRAKEZDES  [Q] KILEPES"
+    },
+    {
+      "key": "snake.start",
+      "value": "NYOMJ EGY NYILBILLENTYUT AZ INDULASHOZ"
+    },
+    {
+      "key": "snake.exit",
+      "value": "SNAKE BEFEJEZVE. PONT: IRRELEVANS. TE EGY GAZDA VAGY."
+    },
+    {
+      "key": "terminal.fail.0",
+      "value": "HIBAS PARANCS: {0}"
+    },
+    {
+      "key": "terminal.fail.1",
+      "value": "MEG MINDIG NEM JO KOD. PROBALTAD A 'HESOYAM'-OT?"
+    },
+    {
+      "key": "terminal.fail.2",
+      "value": "CSAK RANDOM NYOMKODOD? EZ SZOMORU."
+    },
+    {
+      "key": "terminal.fail.3",
+      "value": "KERJUK. LEGYEN EGY KIS MELTOSAGOD."
+    },
+    {
+      "key": "terminal.fail.4",
+      "value": "FELADOM. GOOGLED LE A KODOKAT MINT MINDENKI MAS."
+    },
+    {
+      "key": "terminal.offline",
+      "value": "[!!] CHEAT MOTOR OFFLINE. UJRAINDITAS SZUKSEGES."
+    }
   ]
 }

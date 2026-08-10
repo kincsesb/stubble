@@ -70,6 +70,8 @@ namespace Fields.Tools
 
         public void OnScrollTool(InputValue value)
         {
+            var player = Fields.Core.PlayerController.Instance;
+            if (player != null && player.InputLocked) return;
             float scroll = value.Get<float>();
             if (Mathf.Abs(scroll) < 0.01f) return;
             int dir = scroll > 0 ? 1 : -1;
