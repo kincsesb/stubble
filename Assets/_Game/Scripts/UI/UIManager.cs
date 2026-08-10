@@ -74,6 +74,13 @@ namespace Fields.UI
                     return;
                 }
 
+                // Cheat terminal intercepts ESC — close it instead of opening pause menu.
+                if (Fields.World.CheatCodeTerminal.IsAnyOpen)
+                {
+                    Fields.World.CheatCodeTerminal.CloseIfOpen();
+                    return;
+                }
+
                 if (_stack.Count > 0)
                     Pop();
                 else if (cancelOrPause && pauseScreen != null)

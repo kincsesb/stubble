@@ -51,6 +51,9 @@ namespace Fields.UI
         {
             if (UIManager.Instance == null || pauseScreen == null) return;
 
+            // Terminal intercepts ESC first — don't open pause menu behind it.
+            if (Fields.World.CheatCodeTerminal.IsAnyOpen) return;
+
             // If UI is already open, UIManager's Update() handles Esc → Pop().
             // We only open the pause menu when the stack is empty.
             if (UIManager.Instance.HasAnyOpen) return;

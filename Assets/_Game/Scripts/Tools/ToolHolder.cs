@@ -85,8 +85,8 @@ namespace Fields.Tools
         public void OnUsePrimary(InputValue value)
         {
             if (Time.timeScale == 0f) return; // shop/pause is open
-            // Block tool use during baling or while carrying bales
             var player = Fields.Core.PlayerController.Instance;
+            if (player != null && player.InputLocked) return; // terminal / any modal open
             if (player != null && (player.IsBaling || player.CarriedBaleCount > 0)) return;
             bool pressed = value.isPressed;
             ActiveTool?.OnUsePrimary(pressed);

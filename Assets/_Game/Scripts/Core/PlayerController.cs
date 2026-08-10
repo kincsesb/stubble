@@ -181,12 +181,19 @@ namespace Fields.Core
                 {
                     _balingRequiresFreshPress = false;
                 }
-                else if (_pushingBale == null && _nearestBale != null)
+                else if (_pushingBale != null)
                 {
-                    // Start pushing the round bale
+                    // Toggle off — re-pressing E releases the bale
+                    _pushingBale.StopPush();
+                    _pushingBale = null;
+                    _balingRequiresFreshPress = true;
+                }
+                else if (_nearestBale != null)
+                {
+                    // Toggle on — start pushing
                     _pushingBale = _nearestBale;
                     _pushingBale.StartPush(this);
-                    _balingRequiresFreshPress = true; // prevent accidental baling
+                    _balingRequiresFreshPress = true;
                 }
                 else
                 {
@@ -195,12 +202,8 @@ namespace Fields.Core
             }
             else
             {
+                // E released: only affects baling gate, not bale push (push is now toggle)
                 _balingRequiresFreshPress = true;
-                if (_pushingBale != null)
-                {
-                    _pushingBale.StopPush();
-                    _pushingBale = null;
-                }
             }
         }
 
@@ -394,10 +397,13 @@ namespace Fields.Core
 
         public bool TryConsumeStamina(float amount)
         {
+            if (CheatCodeActivator.Instance?.IsIddqdActive == true) return true;
             if (_stamina < amount * 0.25f) return false; // slow but never hard-lock
             _stamina = Mathf.Max(0f, _stamina - amount);
             return true;
         }
+
+        public void RefillStamina() => _stamina = 100f;
 
         public float StaminaNormalized =>
             config != null ? Mathf.Clamp01(_stamina / 100f) : 1f;
@@ -618,6 +624,8 @@ namespace Fields.Core
             {
                 if (hit.collider.GetComponentInParent<Fields.Hay.SquareBale>() != null)
                     return CarriedBaleCount < 3 ? L("hud.pickup_bale") : L("hud.carry_full");
+                if (hit.collider.GetComponentInParent<Fields.World.CheatCodeTerminal>() != null)
+                    return "[E]  Use Computer";
                 if (hit.collider.GetComponentInParent<IInteractable>() != null)
                     return L("hud.interact");
             }
