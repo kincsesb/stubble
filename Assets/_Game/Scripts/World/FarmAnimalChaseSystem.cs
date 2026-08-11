@@ -12,28 +12,41 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     public Vector3 circleCenter = new Vector3(66f, 0f, -20f);
 
     // ---------------------------------------------------------------------------
-    // Phase table
+    // Phase table — editable in Inspector
     // ---------------------------------------------------------------------------
-    readonly struct PhaseConfig
+    [System.Serializable]
+    public class PhaseEntry
     {
-        public readonly float startTime;
-        public readonly int   numChickens;  // -1 = keep current
-        public readonly int   numCats;
-        public readonly bool  catIsChaser;
-        public readonly bool  idle;
-        public PhaseConfig(float t, int ch, int ca, bool chaser, bool idle)
-        { startTime = t; numChickens = ch; numCats = ca; catIsChaser = chaser; this.idle = idle; }
+        [Tooltip("Seconds from session start when this phase activates")]
+        public float startTime;
+
+        [Tooltip("How many chickens should be active (-1 = keep current count)")]
+        public int numChickens = 1;
+
+        [Tooltip("How many cats should be active (-1 = keep current count)")]
+        public int numCats = 1;
+
+        [Tooltip("If true: cats chase chickens. If false: chickens chase cats.")]
+        public bool catIsChaser = true;
+
+        [Tooltip("If true: all animals stop chasing and idle facing the field")]
+        public bool idle;
+
+        [TextArea(1, 2)]
+        [Tooltip("Readable description shown in Inspector — no effect at runtime")]
+        public string description;
     }
 
-    static readonly PhaseConfig[] Phases =
+    [Header("Phase Timeline")]
+    [SerializeField] PhaseEntry[] phases =
     {
-        new(   0f,  1,  1, true,  false), // cat chases chicken
-        new( 120f,  1,  1, false, false), // chicken chases cat
-        new( 600f,  1,  1, true,  false), // cat chases chicken again
-        new(1800f,  3,  1, false, false), // 3 chickens chase 1 cat
-        new(3600f,  3,  4, true,  false), // 4 cats chase 3 chickens
-        new(7200f, 20,  4, false, false), // 20 chickens chase 4 cats
-        new(9900f, -1, -1, false, true ), // all idle, look at field
+        new() { startTime =    0, numChickens = 1,  numCats = 1, catIsChaser = true,  idle = false, description = "Cat chases chicken" },
+        new() { startTime =  120, numChickens = 1,  numCats = 1, catIsChaser = false, idle = false, description = "Chicken chases cat" },
+        new() { startTime =  600, numChickens = 1,  numCats = 1, catIsChaser = true,  idle = false, description = "Cat chases chicken again" },
+        new() { startTime = 1800, numChickens = 3,  numCats = 1, catIsChaser = false, idle = false, description = "3 chickens chase 1 cat" },
+        new() { startTime = 3600, numChickens = 3,  numCats = 4, catIsChaser = true,  idle = false, description = "4 cats chase 3 chickens" },
+        new() { startTime = 7200, numChickens = 20, numCats = 4, catIsChaser = false, idle = false, description = "20 chickens chase 4 cats" },
+        new() { startTime = 9900, numChickens = -1, numCats = -1, catIsChaser = false, idle = true,  description = "All idle — animals watch the field" },
     };
 
     // ---------------------------------------------------------------------------
@@ -105,7 +118,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         _elapsed += Time.deltaTime;
         int p = CurrentPhaseIndex();
         if (p != _phase) TriggerPhase(p);
-        if (_phase >= 0 && Phases[_phase].idle) return;
+        if (_phase >= 0 && phases[_phase].idle) return;
         Tick();
     }
 
@@ -147,8 +160,8 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
     int CurrentPhaseIndex()
     {
-        for (int i = Phases.Length - 1; i >= 0; i--)
-            if (_elapsed >= Phases[i].startTime) return i;
+        for (int i = phases.Length - 1; i >= 0; i--)
+            if (_elapsed >= phases[i].startTime) return i;
         return 0;
     }
 
@@ -161,7 +174,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
     IEnumerator RunPhase(int p)
     {
-        var cfg = Phases[p];
+        var cfg = phases[p];
         if (cfg.idle) { DoIdlePhase(); yield break; }
 
         // Spawn extras gradually so transitions look fun
