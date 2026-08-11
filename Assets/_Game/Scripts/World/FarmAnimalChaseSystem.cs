@@ -9,7 +9,13 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     public GameObject catPrefab;
 
     [Header("Circle Path")]
+    [Tooltip("Fallback center if no metal silos found in scene")]
     public Vector3 circleCenter = new Vector3(66f, 0f, -20f);
+
+    [Header("Audio (optional — drag clips from SFX / Feel folders)")]
+    [SerializeField] AudioClip sfxRunLoop;
+    [SerializeField] AudioClip sfxCatPurr;
+    [SerializeField][Range(0f, 1f)] float sfxVolume = 0.06f;
 
     // ---------------------------------------------------------------------------
     // Phase table — editable in Inspector
@@ -40,12 +46,12 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     [Header("Phase Timeline")]
     [SerializeField] PhaseEntry[] phases =
     {
-        new() { startTime =    0, numChickens = 1,  numCats = 1, catIsChaser = true,  idle = false, description = "Cat chases chicken" },
-        new() { startTime =  120, numChickens = 1,  numCats = 1, catIsChaser = false, idle = false, description = "Chicken chases cat" },
-        new() { startTime =  600, numChickens = 1,  numCats = 1, catIsChaser = true,  idle = false, description = "Cat chases chicken again" },
-        new() { startTime = 1800, numChickens = 3,  numCats = 1, catIsChaser = false, idle = false, description = "3 chickens chase 1 cat" },
-        new() { startTime = 3600, numChickens = 3,  numCats = 4, catIsChaser = true,  idle = false, description = "4 cats chase 3 chickens" },
-        new() { startTime = 7200, numChickens = 20, numCats = 4, catIsChaser = false, idle = false, description = "20 chickens chase 4 cats" },
+        new() { startTime =    0, numChickens = 1,  numCats = 1,  catIsChaser = true,  idle = false, description = "Cat chases chicken" },
+        new() { startTime =  120, numChickens = 1,  numCats = 1,  catIsChaser = false, idle = false, description = "Chicken chases cat" },
+        new() { startTime =  600, numChickens = 1,  numCats = 1,  catIsChaser = true,  idle = false, description = "Cat chases chicken again" },
+        new() { startTime = 1800, numChickens = 3,  numCats = 1,  catIsChaser = false, idle = false, description = "3 chickens chase 1 cat" },
+        new() { startTime = 3600, numChickens = 3,  numCats = 4,  catIsChaser = true,  idle = false, description = "4 cats chase 3 chickens" },
+        new() { startTime = 7200, numChickens = 20, numCats = 4,  catIsChaser = false, idle = false, description = "20 chickens chase 4 cats" },
         new() { startTime = 9900, numChickens = -1, numCats = -1, catIsChaser = false, idle = true,  description = "All idle — animals watch the field" },
     };
 
@@ -68,15 +74,16 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     // ---------------------------------------------------------------------------
     class Animal
     {
-        public GameObject    go;
-        public Animator      anim;
+        public GameObject     go;
+        public Animator       anim;
         public ParticleSystem dustPS;
-        public float  angle;       // position on circle (radians)
-        public float  speed;       // current linear speed m/s
+        public float  angle;
+        public float  speed;
         public bool   isChicken;
         public bool   isChaser;
         public Vector3 baseScale;
-        public float  stepTime;    // drives squash/stretch
+        public float  stepTime;
+        public float  noiseSeed;   // per-animal Perlin offset
         public string playingAnim = "";
     }
 
@@ -84,6 +91,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     float _elapsed;
     int   _phase = -1;
     float _circleRadius = 18f;
+    AudioSource _audioSrc;
 
     // ---------------------------------------------------------------------------
     // Lifecycle
@@ -91,16 +99,50 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
     void Start()
     {
+        AutoLocateSilos();
+
         var chicken = FindAnimatedRoot("Chicken");
         var cat     = FindAnimatedRoot("CartoonCat_c3");
-        if (chicken != null) AddAnimal(chicken, true);
-        if (cat     != null) AddAnimal(cat,     false);
+        if (chicken != null) AddAnimal(chicken, true,  playSpawn: false);
+        if (cat     != null) AddAnimal(cat,     false, playSpawn: false);
         SpreadAngles();
         TriggerPhase(0);
+
+        SetupAudio();
     }
 
-    // Prefer the GO named `name` that carries an Animator; avoids picking up
-    // mesh-child GOs that share the same name as their animated parent.
+    void AutoLocateSilos()
+    {
+        var siloPositions = new List<Vector3>();
+        foreach (var go in Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
+        {
+            if (go.name.ToLower().Contains("silo") && go.transform.childCount > 0)
+                siloPositions.Add(go.transform.position);
+        }
+        if (siloPositions.Count >= 2)
+        {
+            Vector3 sum = Vector3.zero;
+            foreach (var p in siloPositions) sum += p;
+            var centroid = sum / siloPositions.Count;
+            // Keep Y=0, only use XZ centroid
+            circleCenter = new Vector3(centroid.x, 0f, centroid.z);
+        }
+    }
+
+    void SetupAudio()
+    {
+        if (sfxRunLoop == null && sfxCatPurr == null) return;
+        _audioSrc = gameObject.AddComponent<AudioSource>();
+        _audioSrc.spatialBlend = 0f;
+        _audioSrc.volume       = sfxVolume;
+        _audioSrc.loop         = true;
+        if (sfxRunLoop != null)
+        {
+            _audioSrc.clip = sfxRunLoop;
+            _audioSrc.Play();
+        }
+    }
+
     static GameObject FindAnimatedRoot(string name)
     {
         GameObject fallback = null;
@@ -126,19 +168,23 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     // Animal management
     // ---------------------------------------------------------------------------
 
-    void AddAnimal(GameObject go, bool isChicken)
+    void AddAnimal(GameObject go, bool isChicken, bool playSpawn = true)
     {
         var a = new Animal
         {
             go        = go,
             isChicken = isChicken,
             baseScale = go.transform.localScale,
+            noiseSeed = Random.value * 100f,
         };
         a.anim   = go.GetComponent<Animator>()
                 ?? go.GetComponentInParent<Animator>()
                 ?? go.GetComponentInChildren<Animator>();
         a.dustPS = MakeDust(go);
         _all.Add(a);
+
+        if (playSpawn)
+            StartCoroutine(SpawnPunch(go, a.baseScale, a.dustPS));
     }
 
     void SpawnAnimal(bool isChicken)
@@ -146,12 +192,43 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         var prefab = isChicken ? chickenPrefab : catPrefab;
         if (prefab == null) return;
         float angle = Random.value * Mathf.PI * 2f;
-        Vector3 pos  = CirclePos(angle);
-        pos.y        = SampleTerrainHeight(pos.x, pos.z) + 0.05f;
-        var go       = Instantiate(prefab, pos, Quaternion.identity);
-        go.name      = isChicken ? $"Chicken_{_all.Count}" : $"Cat_{_all.Count}";
-        AddAnimal(go, isChicken);
+        Vector3 pos = CirclePos(angle);
+        pos.y       = SampleTerrainHeight(pos.x, pos.z) + 0.05f;
+        var go      = Instantiate(prefab, pos, Quaternion.identity);
+        go.name     = isChicken ? $"Chicken_{_all.Count}" : $"Cat_{_all.Count}";
+        AddAnimal(go, isChicken, playSpawn: true);
         _all[^1].angle = angle;
+    }
+
+    IEnumerator SpawnPunch(GameObject go, Vector3 baseScale, ParticleSystem dustPS)
+    {
+        // Scale in: 0 → 1.18 → 1.0
+        go.transform.localScale = Vector3.zero;
+        float t = 0f;
+        while (t < 1f)
+        {
+            if (go == null) yield break;
+            t += Time.deltaTime / 0.38f;
+            float s = t < 0.55f
+                ? Mathf.SmoothStep(0f, 1.18f, t / 0.55f)
+                : Mathf.SmoothStep(1.18f, 1f, (t - 0.55f) / 0.45f);
+            go.transform.localScale = baseScale * s;
+            yield return null;
+        }
+        go.transform.localScale = baseScale;
+
+        // Dust burst on land
+        if (dustPS != null)
+        {
+            var burst = new ParticleSystem.Burst(0f, 18);
+            var em = dustPS.emission;
+            em.SetBurst(0, burst);
+            dustPS.Emit(18);
+        }
+
+        // Cat purr on cat spawn
+        if (_audioSrc != null && sfxCatPurr != null && !go.name.ToLower().Contains("chicken"))
+            _audioSrc.PlayOneShot(sfxCatPurr, sfxVolume * 0.8f);
     }
 
     // ---------------------------------------------------------------------------
@@ -177,7 +254,6 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         var cfg = phases[p];
         if (cfg.idle) { DoIdlePhase(); yield break; }
 
-        // Spawn extras gradually so transitions look fun
         while (cfg.numChickens > 0 && Chickens().Count < cfg.numChickens)
         {
             if (chickenPrefab) SpawnAnimal(true);
@@ -189,25 +265,31 @@ public class FarmAnimalChaseSystem : MonoBehaviour
             yield return new WaitForSeconds(0.35f);
         }
 
-        // Assign chaser roles
         foreach (var a in Chickens()) a.isChaser = !cfg.catIsChaser;
         foreach (var a in Cats())     a.isChaser =  cfg.catIsChaser;
 
-        // Grow circle radius as crowd grows
         _circleRadius = Mathf.Max(18f, _all.Count * 1.8f);
 
-        // Spread animals: targets evenly, chasers behind them
         var targets = cfg.catIsChaser ? Chickens() : Cats();
         var chasers = cfg.catIsChaser ? Cats()     : Chickens();
-        SpreadGroup(targets, 0f);
-        SpreadGroup(chasers, -0.45f);
+
+        // Targets clustered at 0, chasers clustered just behind at -0.5 rad
+        ClusterGroup(targets, 0f);
+        ClusterGroup(chasers, -0.5f);
     }
 
-    static void SpreadGroup(List<Animal> list, float offset)
+    // Place all animals in a tight arc centred on baseAngle.
+    // Single animal → just at baseAngle. 2+ → 0.4 rad total arc.
+    static void ClusterGroup(List<Animal> list, float baseAngle)
     {
         int n = list.Count;
+        if (n == 0) return;
+        float arc = n == 1 ? 0f : Mathf.Min(0.45f, 0.45f);
         for (int i = 0; i < n; i++)
-            list[i].angle = Mathf.Repeat(Mathf.PI * 2f * i / n + offset, Mathf.PI * 2f);
+        {
+            float t = n == 1 ? 0f : (float)i / (n - 1) - 0.5f;
+            list[i].angle = Mathf.Repeat(baseAngle + t * arc, Mathf.PI * 2f);
+        }
     }
 
     // ---------------------------------------------------------------------------
@@ -228,7 +310,6 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
             if (a.isChaser)
             {
-                // Speed up when far from target, ease off when very close (eternal chase feel)
                 var targets = a.isChicken ? cats : chickens;
                 float gap = GapToNearest(a.angle, targets);
                 float t   = Mathf.Clamp01(gap / (Mathf.PI * 0.5f));
@@ -236,7 +317,6 @@ public class FarmAnimalChaseSystem : MonoBehaviour
             }
             else
             {
-                // Panic sprint when a chaser is close behind
                 var chasers = a.isChicken ? cats : chickens;
                 float closeBehind = GapBehind(a.angle, chasers);
                 if (closeBehind < 0.7f)
@@ -249,16 +329,23 @@ public class FarmAnimalChaseSystem : MonoBehaviour
             float angSpd = modSpd / _circleRadius;
             a.angle = Mathf.Repeat(a.angle + angSpd * Time.deltaTime, Mathf.PI * 2f);
 
+            // Wobble: slight Perlin noise on angle and radius so it's not robotically circular
+            float noiseA = (Mathf.PerlinNoise(a.noiseSeed + _elapsed * 0.13f, 0f) - 0.5f) * 0.18f;
+            float noiseR = (Mathf.PerlinNoise(a.noiseSeed + _elapsed * 0.17f, 5f) - 0.5f) * 1.4f;
+            float displayAngle = a.angle + noiseA;
+            float displayR     = _circleRadius + noiseR;
+
             // Position — sample terrain so animals don't float or sink
-            Vector3 pos = CirclePos(a.angle);
+            Vector3 pos = circleCenter + new Vector3(
+                Mathf.Cos(displayAngle), 0f, Mathf.Sin(displayAngle)) * displayR;
             pos.y = SampleTerrainHeight(pos.x, pos.z) + 0.05f;
             a.go.transform.position = pos;
 
-            // Facing — tangent (counter-clockwise)
-            Vector3 tangent = new(-Mathf.Sin(a.angle), 0f, Mathf.Cos(a.angle));
+            // Facing — tangent of display angle
+            Vector3 tangent = new(-Mathf.Sin(displayAngle), 0f, Mathf.Cos(displayAngle));
             a.go.transform.rotation = Quaternion.LookRotation(tangent);
 
-            // Cartoon squash/stretch driven by step frequency
+            // Cartoon squash/stretch
             a.stepTime += Time.deltaTime * modSpd * 2.8f;
             float pulse   = Mathf.Abs(Mathf.Sin(a.stepTime));
             float scaleY  = 1f + pulse * 0.12f;
@@ -270,14 +357,14 @@ public class FarmAnimalChaseSystem : MonoBehaviour
                 a.baseScale.z * scaleXZ);
             a.go.transform.position += new Vector3(0, bounceY, 0);
 
-            // Animation — scale playback speed with actual speed
+            // Animation
             string animName = a.isChicken
                 ? CHK_RUN
                 : (modSpd > 6f ? CAT_RUN_FAST : CAT_RUN);
             PlayAnim(a, animName);
             if (a.anim) a.anim.speed = modSpd / rawBase;
 
-            // Dust — more when fast
+            // Dust
             if (a.dustPS != null)
             {
                 var em = a.dustPS.emission;
@@ -287,17 +374,16 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     }
 
     // ---------------------------------------------------------------------------
-    // Idle phase (2h 45m)
+    // Idle phase
     // ---------------------------------------------------------------------------
 
     void DoIdlePhase()
     {
-        int   total  = _all.Count;
-        float spacing = Mathf.Clamp(1.3f, 0.6f, 1.6f);
-        float lineZ  = -3.5f;
-        float startX = circleCenter.x - (total - 1) * spacing * 0.5f;
+        int   total   = _all.Count;
+        float spacing = 1.3f;
+        float lineZ   = -3.5f;
+        float startX  = circleCenter.x - (total - 1) * spacing * 0.5f;
 
-        // Look at field = face +Z, tilt head slightly down
         Quaternion idleLook = Quaternion.LookRotation(new Vector3(0f, -0.25f, 1f).normalized);
 
         for (int i = 0; i < total; i++)
@@ -321,6 +407,8 @@ public class FarmAnimalChaseSystem : MonoBehaviour
                 a.dustPS.Stop();
             }
         }
+
+        if (_audioSrc != null) _audioSrc.volume = 0f;
     }
 
     IEnumerator SlideToPos(GameObject go, Vector3 dest, Quaternion rot, float dur)
@@ -349,7 +437,6 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     Vector3 CirclePos(float angle) =>
         circleCenter + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * _circleRadius;
 
-    // Angular gap from 'from' to nearest target (ahead, CCW)
     float GapToNearest(float from, List<Animal> targets)
     {
         float min = float.MaxValue;
@@ -361,7 +448,6 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         return min > 1e6f ? Mathf.PI : min;
     }
 
-    // How far the nearest chaser is behind a target
     float GapBehind(float targetAngle, List<Animal> chasers)
     {
         float min = float.MaxValue;
@@ -404,7 +490,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     }
 
     // ---------------------------------------------------------------------------
-    // Dust particle system — foot puff feel
+    // Dust particle system
     // ---------------------------------------------------------------------------
 
     static ParticleSystem MakeDust(GameObject parent)
@@ -413,7 +499,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         psGo.transform.SetParent(parent.transform);
         psGo.transform.localPosition = new Vector3(0f, 0.03f, 0f);
 
-        var ps   = psGo.AddComponent<ParticleSystem>();
+        var ps = psGo.AddComponent<ParticleSystem>();
 
         var psRenderer = ps.GetComponent<ParticleSystemRenderer>();
         var dustMat    = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
@@ -425,8 +511,8 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         main.startSpeed      = new ParticleSystem.MinMaxCurve(0.2f, 1.1f);
         main.startSize       = new ParticleSystem.MinMaxCurve(0.06f, 0.25f);
         main.startColor      = new ParticleSystem.MinMaxGradient(
-                                    new Color(0.82f, 0.72f, 0.52f, 0.7f),
-                                    new Color(0.97f, 0.94f, 0.84f, 0.4f));
+                                   new Color(0.82f, 0.72f, 0.52f, 0.7f),
+                                   new Color(0.97f, 0.94f, 0.84f, 0.4f));
         main.loop            = true;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.maxParticles    = 60;
