@@ -26,6 +26,12 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     [SerializeField] AudioClip sfxCatPurr;
     [SerializeField][Range(0f, 1f)] float sfxVolume = 0.06f;
 
+    [Header("Capture Event")]
+    [Tooltip("How many seconds the player must watch before capture triggers")]
+    [SerializeField] float captureAfterWatchSeconds = 15f;
+    [Tooltip("Disable to prevent capture from ever triggering")]
+    [SerializeField] bool captureEnabled = true;
+
     // ---------------------------------------------------------------------------
     // Animation names
     // ---------------------------------------------------------------------------
@@ -64,6 +70,10 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     int   _phase = -1;
     float _circleRadius;
     AudioSource _audioSrc;
+
+    float _watchTimer;
+    bool  _captureTriggered;
+    bool  _captureRunning;
 
     // ---------------------------------------------------------------------------
     // Lifecycle
@@ -135,8 +145,22 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         _elapsed += Time.deltaTime;
         int p = CurrentPhaseIndex();
         if (p != _phase) TriggerPhase(p);
-        if (_phase == 2) return;   // idle — no tick
+        if (_phase == 2) return;
+        if (_captureRunning) return;
+
         Tick();
+
+        // Watch timer — only accumulates while player looks toward the animals
+        if (captureEnabled && !_captureTriggered)
+        {
+            if (IsAnyAnimalVisible())
+                _watchTimer += Time.deltaTime;
+            else
+                _watchTimer = Mathf.Max(0f, _watchTimer - Time.deltaTime * 0.5f);
+
+            if (_watchTimer >= captureAfterWatchSeconds)
+                TriggerCapture();
+        }
     }
 
     // ---------------------------------------------------------------------------
@@ -296,6 +320,226 @@ public class FarmAnimalChaseSystem : MonoBehaviour
                 em.rateOverTime = modSpd * 4.5f;
             }
         }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Capture event
+    // ---------------------------------------------------------------------------
+
+    bool IsAnyAnimalVisible()
+    {
+        var cam = Camera.main;
+        if (cam == null) return false;
+        var planes = GeometryUtility.CalculateFrustumPlanes(cam);
+        foreach (var a in _all)
+        {
+            if (a.go == null) continue;
+            if (GeometryUtility.TestPlanesAABB(planes, new Bounds(a.go.transform.position, Vector3.one * 3f)))
+                return true;
+        }
+        return false;
+    }
+
+    void TriggerCapture()
+    {
+        _captureTriggered = true;
+        var cats     = Cats();
+        var chickens = Chickens();
+        if (cats.Count == 0 || chickens.Count == 0) return;
+
+        var cat     = cats[0];
+        var chicken = chickens[0];
+        _captureRunning = true;
+        StartCoroutine(PlayCapture(cat, chicken));
+    }
+
+    IEnumerator PlayCapture(Animal cat, Animal chicken)
+    {
+        // --- 1. Cat rushes toward chicken ---
+        Vector3 chickenPos = chicken.go.transform.position;
+        Vector3 catStart   = cat.go.transform.position;
+        float   t          = 0f;
+        while (t < 1f && cat.go != null && chicken.go != null)
+        {
+            t += Time.deltaTime / 0.45f;
+            cat.go.transform.position = Vector3.Lerp(catStart, chickenPos, Mathf.SmoothStep(0f, 1f, t));
+            cat.go.transform.LookAt(chicken.go.transform.position);
+            yield return null;
+        }
+
+        if (cat.go == null || chicken.go == null) { _captureRunning = false; yield break; }
+
+        // --- 2. Attack loop (3 hits) ---
+        Vector3 capturePos = chicken.go.transform.position;
+
+        for (int hit = 0; hit < 3; hit++)
+        {
+            // Attack animation
+            string attackAnim = hit < 2 ? "Arm_Cat|Attack_F" : "Arm_Cat|Attack_Series";
+            PlayAnim(cat, attackAnim);
+            cat.playingAnim = ""; // allow re-trigger next iteration
+
+            // Dust burst + freeze frame
+            EmitCaptureDust(capturePos, hit == 2);
+            yield return StartCoroutine(FreezeFrame(hit == 2 ? 0.09f : 0.05f));
+
+            // Feel_FullHit on final strike
+            if (hit == 2) TriggerFeelHit();
+
+            // Camera shake
+            StartCoroutine(ShakeMainCamera(hit == 2 ? 0.25f : 0.12f, hit == 2 ? 0.18f : 0.06f));
+
+            yield return new WaitForSeconds(0.38f);
+        }
+
+        // --- 3. Chicken death & cat run-away ---
+        StartCoroutine(ChickenDeath(chicken));
+        StartCoroutine(CatRunAway(cat));
+        yield return new WaitForSeconds(2.5f);
+        _captureRunning = false;
+    }
+
+    IEnumerator FreezeFrame(float duration)
+    {
+        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(duration);
+        Time.timeScale = 1f;
+    }
+
+    void TriggerFeelHit()
+    {
+        // Try the pre-configured Feel_FullHit MMF_Player in the scene
+        var feelGo = GameObject.Find("Feel_FullHit");
+        if (feelGo == null) return;
+        var player = feelGo.GetComponent<MoreMountains.Feedbacks.MMF_Player>();
+        player?.PlayFeedbacks(feelGo.transform.position);
+    }
+
+    IEnumerator ShakeMainCamera(float duration, float magnitude)
+    {
+        var cam = Camera.main;
+        if (cam == null) yield break;
+        Vector3 origin = cam.transform.localPosition;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float fade = 1f - elapsed / duration;
+            cam.transform.localPosition = origin + (Vector3)Random.insideUnitCircle * magnitude * fade;
+            yield return null;
+        }
+        cam.transform.localPosition = origin;
+    }
+
+    void EmitCaptureDust(Vector3 pos, bool big)
+    {
+        int count  = big ? 60 : 25;
+        float size = big ? 0.8f : 0.35f;
+
+        var psGo = new GameObject("_CaptureDust");
+        psGo.transform.position = pos + Vector3.up * 0.3f;
+        var ps   = psGo.AddComponent<ParticleSystem>();
+
+        var rend = ps.GetComponent<ParticleSystemRenderer>();
+        var mat  = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+        mat.SetColor("_BaseColor", new Color(0.85f, 0.75f, 0.55f, 0.9f));
+        rend.material = mat;
+
+        var main = ps.main;
+        main.startLifetime   = new ParticleSystem.MinMaxCurve(0.4f, big ? 1.4f : 0.9f);
+        main.startSpeed      = new ParticleSystem.MinMaxCurve(1.5f, big ? 5f : 3f);
+        main.startSize       = new ParticleSystem.MinMaxCurve(size * 0.5f, size * 1.5f);
+        main.startColor      = new ParticleSystem.MinMaxGradient(
+            new Color(0.9f, 0.8f, 0.6f, 0.9f), new Color(1f, 0.95f, 0.8f, 0.5f));
+        main.gravityModifier = 0.4f;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.loop            = false;
+
+        var shape = ps.shape;
+        shape.shapeType = ParticleSystemShapeType.Sphere;
+        shape.radius    = big ? 0.8f : 0.4f;
+
+        var colorOL = ps.colorOverLifetime;
+        colorOL.enabled = true;
+        var grad = new Gradient();
+        grad.SetKeys(
+            new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+            new[] { new GradientAlphaKey(0.9f, 0f), new GradientAlphaKey(0f, 1f) });
+        colorOL.color = new ParticleSystem.MinMaxGradient(grad);
+
+        ps.Emit(count);
+        Destroy(psGo, 2.5f);
+    }
+
+    IEnumerator ChickenDeath(Animal chicken)
+    {
+        if (chicken.go == null) yield break;
+        _all.Remove(chicken);
+
+        if (chicken.dustPS != null) { chicken.dustPS.emission.enabled = false; chicken.dustPS.Stop(); }
+
+        // Theatrical: giant dust explosion, chicken vanishes instantly
+        EmitCaptureDust(chicken.go.transform.position, big: true);
+        EmitCaptureDust(chicken.go.transform.position + Vector3.up * 0.4f, big: true);
+        Destroy(chicken.go);
+    }
+
+    IEnumerator CatRunAway(Animal cat)
+    {
+        if (cat.go == null) yield break;
+        _all.Remove(cat);
+
+        if (cat.dustPS != null)
+        {
+            var em = cat.dustPS.emission;
+            em.rateOverTime = 0f;
+            cat.dustPS.Stop();
+        }
+
+        // --- Sit triumphantly ---
+        PlayAnim(cat, CAT_SIT);
+        if (cat.anim) cat.anim.speed = 1f;
+        yield return new WaitForSeconds(1.0f);
+
+        // --- Roll / lie belly ---
+        if (cat.go == null) yield break;
+        PlayAnim(cat, "Arm_Cat|Trans_Sit_LieBelly");
+        yield return new WaitForSeconds(0.5f);
+        PlayAnim(cat, "Arm_Cat|Lie_belly_loop_2");
+        yield return new WaitForSeconds(1.2f);
+
+        // --- Get up ---
+        if (cat.go == null) yield break;
+        PlayAnim(cat, "Arm_Cat|Lie_belly_end");
+        yield return new WaitForSeconds(0.5f);
+
+        // --- Sprint away ---
+        if (cat.go == null) yield break;
+        PlayAnim(cat, CAT_RUN_FAST);
+        if (cat.anim) cat.anim.speed = 1.6f;
+
+        Vector3 awayDir = (cat.go.transform.position - circleCenter).normalized;
+        awayDir.y = 0f;
+        if (awayDir == Vector3.zero) awayDir = Vector3.forward;
+
+        if (cat.dustPS != null)
+        {
+            cat.dustPS.Play();
+            var em2 = cat.dustPS.emission;
+            em2.rateOverTime = 35f;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < 4f && cat.go != null)
+        {
+            elapsed += Time.deltaTime;
+            cat.go.transform.position += awayDir * 9f * Time.deltaTime;
+            cat.go.transform.rotation  = Quaternion.LookRotation(awayDir);
+            float shrink = Mathf.Clamp01(1f - elapsed / 3.5f);
+            cat.go.transform.localScale = cat.baseScale * shrink;
+            yield return null;
+        }
+        if (cat.go != null) Destroy(cat.go);
     }
 
     // ---------------------------------------------------------------------------
