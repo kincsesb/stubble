@@ -109,7 +109,8 @@ namespace Fields.World
             EnsureActivator();
             BuildUI();
             _canvas.gameObject.SetActive(false);
-            _audioSrc = gameObject.GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
+            _audioSrc = gameObject.GetComponent<AudioSource>();
+            if (!_audioSrc) _audioSrc = gameObject.AddComponent<AudioSource>();
             _audioSrc.spatialBlend = 0f;
             _audioSrc.playOnAwake  = false;
         }
@@ -273,9 +274,11 @@ namespace Fields.World
 
         void PlayTypingSfx()
         {
-            if (sfxTyping == null || _audioSrc == null) return;
-            _audioSrc.pitch = Random.Range(0.92f, 1.08f);
-            _audioSrc.PlayOneShot(sfxTyping, 0.45f);
+            if (!sfxTyping || !_audioSrc) return;
+            _audioSrc.pitch        = Random.Range(0.93f, 1.07f);
+            _audioSrc.panStereo    = Random.Range(-0.08f, 0.08f);
+            float vol              = Random.Range(0.38f, 0.54f);
+            _audioSrc.PlayOneShot(sfxTyping, vol);
         }
 
         // ── Submit ───────────────────────────────────────────────────────── //
