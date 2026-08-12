@@ -26,11 +26,22 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     [SerializeField] AudioClip sfxCatPurr;
     [SerializeField][Range(0f, 1f)] float sfxVolume = 0.06f;
 
+    [Header("Capture Audio")]
+    [SerializeField] AudioClip sfxCatAttack1;
+    [SerializeField] AudioClip sfxCatAttack2;
+    [SerializeField] AudioClip sfxChickenAttacked;
+    [SerializeField] AudioClip sfxChickenRunning;
+    [SerializeField] AudioClip sfxAfterAttack;
+
     [Header("Capture Event")]
     [Tooltip("How many seconds the player must watch before capture triggers")]
     [SerializeField] float captureAfterWatchSeconds = 15f;
     [Tooltip("Disable to prevent capture from ever triggering")]
     [SerializeField] bool captureEnabled = true;
+    [Tooltip("Cat sprints toward this transform after the victory roll")]
+    [SerializeField] Transform quitPosition;
+    [Tooltip("Animals run to the circle point nearest this transform before attacking")]
+    [SerializeField] Transform fenceCorner;
 
     // ---------------------------------------------------------------------------
     // Animation names
@@ -74,6 +85,11 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     float _watchTimer;
     bool  _captureTriggered;
     bool  _captureRunning;
+    bool  _captureArmed;
+    float _captureTargetAngle;
+    float _chkRunSfxTimer;
+    AudioSource _chickenAttackedSrc;
+    AudioSource _afterAttackSrc;
 
     // ---------------------------------------------------------------------------
     // Lifecycle
@@ -153,13 +169,34 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         // Watch timer — only accumulates while player looks toward the animals
         if (captureEnabled && !_captureTriggered)
         {
-            if (IsAnyAnimalVisible())
+            if (AreBothAnimalsVisible())
                 _watchTimer += Time.deltaTime;
             else
                 _watchTimer = Mathf.Max(0f, _watchTimer - Time.deltaTime * 0.5f);
 
             if (_watchTimer >= captureAfterWatchSeconds)
                 TriggerCapture();
+        }
+
+        // Armed: wait until the cat reaches the fence-corner angle on the circle
+        if (_captureArmed)
+        {
+            var cats     = Cats();
+            var chickens = Chickens();
+            if (cats.Count == 0 || chickens.Count == 0) { _captureArmed = false; return; }
+
+            var cat     = cats[0];
+            float arcLeft = Mathf.Repeat(_captureTargetAngle - cat.angle, Mathf.PI * 2f);
+            if (arcLeft < 0.18f)
+            {
+                _captureArmed   = false;
+                _captureRunning = true;
+                // Snap cat to exact target point on circle
+                float tx = circleCenter.x + Mathf.Cos(_captureTargetAngle) * _circleRadius;
+                float tz = circleCenter.z + Mathf.Sin(_captureTargetAngle) * _circleRadius;
+                Vector3 snapPos = new(tx, SampleTerrainHeight(tx, tz) + 0.05f, tz);
+                StartCoroutine(PlayCapture(cat, chickens[0], snapPos));
+            }
         }
     }
 
@@ -320,24 +357,41 @@ public class FarmAnimalChaseSystem : MonoBehaviour
                 em.rateOverTime = modSpd * 4.5f;
             }
         }
+
+        // Chicken running SFX — one-shot repeated at clip length intervals
+        var runChickens = Chickens();
+        if (sfxChickenRunning != null && runChickens.Count > 0)
+        {
+            _chkRunSfxTimer -= Time.deltaTime;
+            if (_chkRunSfxTimer <= 0f)
+            {
+                var chk = runChickens[0];
+                PlayOneShotPitched(sfxChickenRunning, Random.Range(0.95f, 1.05f), 0.04f,
+                                   chk.go != null ? chk.go.transform.position : (Vector3?)null,
+                                   spatialBlend: 1f, maxDist: 10f);
+                _chkRunSfxTimer = sfxChickenRunning.length * 0.85f;
+            }
+        }
     }
 
     // ---------------------------------------------------------------------------
     // Capture event
     // ---------------------------------------------------------------------------
 
-    bool IsAnyAnimalVisible()
+    bool AreBothAnimalsVisible()
     {
         var cam = Camera.main;
         if (cam == null) return false;
-        var planes = GeometryUtility.CalculateFrustumPlanes(cam);
+        var planes  = GeometryUtility.CalculateFrustumPlanes(cam);
+        bool catSeen = false, chickenSeen = false;
         foreach (var a in _all)
         {
             if (a.go == null) continue;
-            if (GeometryUtility.TestPlanesAABB(planes, new Bounds(a.go.transform.position, Vector3.one * 3f)))
-                return true;
+            if (!GeometryUtility.TestPlanesAABB(planes, new Bounds(a.go.transform.position, Vector3.one * 3f))) continue;
+            if (a.isChicken) chickenSeen = true;
+            else             catSeen     = true;
         }
-        return false;
+        return catSeen && chickenSeen;
     }
 
     void TriggerCapture()
@@ -347,22 +401,41 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         var chickens = Chickens();
         if (cats.Count == 0 || chickens.Count == 0) return;
 
-        var cat     = cats[0];
-        var chicken = chickens[0];
-        _captureRunning = true;
-        StartCoroutine(PlayCapture(cat, chicken));
+        // Compute fence corner angle on the circle
+        if (fenceCorner != null)
+        {
+            Vector3 toCorner = fenceCorner.position - circleCenter;
+            toCorner.y = 0f;
+            _captureTargetAngle = Mathf.Repeat(Mathf.Atan2(toCorner.z, toCorner.x), Mathf.PI * 2f);
+        }
+        else
+        {
+            _captureTargetAngle = Mathf.PI * 1.5f; // south of circle as fallback
+        }
+        _captureArmed = true;
     }
 
-    IEnumerator PlayCapture(Animal cat, Animal chicken)
+    IEnumerator PlayCapture(Animal cat, Animal chicken, Vector3 snapPos)
     {
-        // --- 1. Cat rushes toward chicken ---
-        Vector3 chickenPos = chicken.go.transform.position;
-        Vector3 catStart   = cat.go.transform.position;
-        float   t          = 0f;
+        // --- 1. Only the cat runs toward the chicken (chicken stays on circle) ---
+        // snapPos is unused for movement — attack happens at chicken's current position
+        Vector3 dest     = chicken.go.transform.position;
+        Vector3 catStart = cat.go.transform.position;
+        float   t        = 0f;
+        float   catDist  = Vector3.Distance(new Vector3(catStart.x, 0, catStart.z), new Vector3(dest.x, 0, dest.z));
+        float   rushDur  = Mathf.Max(catDist / CAT_CHASER_SPD, 0.3f);
+
+        if (cat.anim)     cat.anim.applyRootMotion = false;
+        if (chicken.anim) chicken.anim.applyRootMotion = false;
+
+        PlayAnim(cat,     CAT_RUN_FAST);
+        PlayAnim(chicken, CHK_IDLE);   // chicken freezes immediately, stays in place
+
         while (t < 1f && cat.go != null && chicken.go != null)
         {
-            t += Time.deltaTime / 0.45f;
-            cat.go.transform.position = Vector3.Lerp(catStart, chickenPos, Mathf.SmoothStep(0f, 1f, t));
+            t += Time.deltaTime / rushDur;
+            float s = Mathf.SmoothStep(0f, 1f, t);
+            cat.go.transform.position = Vector3.Lerp(catStart, dest, s);
             cat.go.transform.LookAt(chicken.go.transform.position);
             yield return null;
         }
@@ -379,6 +452,22 @@ public class FarmAnimalChaseSystem : MonoBehaviour
             PlayAnim(cat, attackAnim);
             cat.playingAnim = ""; // allow re-trigger next iteration
 
+            // Cat attack SFX (alternate clips)
+            PlayOneShotPitched(hit % 2 == 0 ? sfxCatAttack1 : sfxCatAttack2, Random.Range(0.95f, 1.05f));
+            // Chicken reaction SFX at 135% speed — stored so it can be stopped later
+            if (sfxChickenAttacked != null)
+            {
+                if (_chickenAttackedSrc != null) Destroy(_chickenAttackedSrc.gameObject);
+                var go = new GameObject("_ChkAttackedSFX");
+                _chickenAttackedSrc = go.AddComponent<AudioSource>();
+                _chickenAttackedSrc.clip         = sfxChickenAttacked;
+                _chickenAttackedSrc.pitch         = 1.35f;
+                _chickenAttackedSrc.volume        = sfxVolume * 6f * 0.35f;
+                _chickenAttackedSrc.spatialBlend  = 0f;
+                _chickenAttackedSrc.Play();
+                Destroy(go, sfxChickenAttacked.length / 1.35f + 0.2f);
+            }
+
             // Dust burst + freeze frame
             EmitCaptureDust(capturePos, hit == 2);
             yield return StartCoroutine(FreezeFrame(hit == 2 ? 0.09f : 0.05f));
@@ -394,7 +483,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
         // --- 3. Chicken death & cat run-away ---
         StartCoroutine(ChickenDeath(chicken));
-        StartCoroutine(CatRunAway(cat));
+        StartCoroutine(CatRunAway(cat, dest));
         yield return new WaitForSeconds(2.5f);
         _captureRunning = false;
     }
@@ -476,7 +565,10 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         if (chicken.go == null) yield break;
         _all.Remove(chicken);
 
-        if (chicken.dustPS != null) { chicken.dustPS.emission.enabled = false; chicken.dustPS.Stop(); }
+        if (chicken.dustPS != null) { var em = chicken.dustPS.emission; em.enabled = false; chicken.dustPS.Stop(); }
+
+        // Stop chicken attacked SFX immediately when chicken dies
+        if (_chickenAttackedSrc != null) { Destroy(_chickenAttackedSrc.gameObject); _chickenAttackedSrc = null; }
 
         // Theatrical: giant dust explosion, chicken vanishes instantly
         EmitCaptureDust(chicken.go.transform.position, big: true);
@@ -484,7 +576,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         Destroy(chicken.go);
     }
 
-    IEnumerator CatRunAway(Animal cat)
+    IEnumerator CatRunAway(Animal cat, Vector3 attackPos)
     {
         if (cat.go == null) yield break;
         _all.Remove(cat);
@@ -511,16 +603,49 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         // --- Get up ---
         if (cat.go == null) yield break;
         PlayAnim(cat, "Arm_Cat|Lie_belly_end");
+        if (sfxAfterAttack != null)
+        {
+            var go = new GameObject("_AfterAttackSFX");
+            _afterAttackSrc = go.AddComponent<AudioSource>();
+            _afterAttackSrc.clip = sfxAfterAttack;
+            _afterAttackSrc.volume = sfxVolume * 6f * 0.9f;
+            _afterAttackSrc.spatialBlend = 0f;
+            _afterAttackSrc.Play();
+        }
         yield return new WaitForSeconds(0.5f);
 
         // --- Sprint away ---
         if (cat.go == null) yield break;
+        if (_afterAttackSrc != null) { Destroy(_afterAttackSrc.gameObject); _afterAttackSrc = null; }
+        if (cat.anim) cat.anim.applyRootMotion = false;
         PlayAnim(cat, CAT_RUN_FAST);
         if (cat.anim) cat.anim.speed = 1.6f;
 
-        Vector3 awayDir = (cat.go.transform.position - circleCenter).normalized;
-        awayDir.y = 0f;
-        if (awayDir == Vector3.zero) awayDir = Vector3.forward;
+        Vector3 sprintFrom = cat.go != null ? cat.go.transform.position : attackPos;
+        Vector3 awayDir;
+        if (quitPosition != null)
+        {
+            awayDir = quitPosition.position - sprintFrom;
+            awayDir.y = 0f;
+            awayDir = awayDir.sqrMagnitude < 0.01f ? Vector3.forward : awayDir.normalized;
+        }
+        else
+        {
+            awayDir = (sprintFrom - circleCenter);
+            awayDir.y = 0f;
+            awayDir = awayDir.sqrMagnitude < 0.01f ? Vector3.forward : awayDir.normalized;
+        }
+        // Running-on-grass loop for cat sprint
+        AudioSource sprintAudio = null;
+        if (sfxRunLoop != null && cat.go != null)
+        {
+            sprintAudio = cat.go.AddComponent<AudioSource>();
+            sprintAudio.clip         = sfxRunLoop;
+            sprintAudio.loop         = true;
+            sprintAudio.spatialBlend = 0f;
+            sprintAudio.volume       = sfxVolume * 6f * 0.8f;
+            sprintAudio.Play();
+        }
 
         if (cat.dustPS != null)
         {
@@ -529,14 +654,18 @@ public class FarmAnimalChaseSystem : MonoBehaviour
             em2.rateOverTime = 35f;
         }
 
-        float elapsed = 0f;
-        while (elapsed < 4f && cat.go != null)
+        float elapsed   = 0f;
+        float sprintDur = 6f;
+        float shrinkDur = 7f;
+        float baseVol   = sprintAudio != null ? sprintAudio.volume : 0f;
+        while (elapsed < sprintDur && cat.go != null)
         {
             elapsed += Time.deltaTime;
             cat.go.transform.position += awayDir * 9f * Time.deltaTime;
             cat.go.transform.rotation  = Quaternion.LookRotation(awayDir);
-            float shrink = Mathf.Clamp01(1f - elapsed / 3.5f);
+            float shrink = Mathf.Clamp01(1f - elapsed / shrinkDur);
             cat.go.transform.localScale = cat.baseScale * shrink;
+            if (sprintAudio != null) sprintAudio.volume = baseVol * shrink;
             yield return null;
         }
         if (cat.go != null) Destroy(cat.go);
@@ -605,6 +734,23 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     // ---------------------------------------------------------------------------
     // Helpers
     // ---------------------------------------------------------------------------
+
+    void PlayOneShotPitched(AudioClip clip, float pitch = 1f, float vol = 1f,
+                             Vector3? worldPos = null, float spatialBlend = 0f, float maxDist = 20f)
+    {
+        if (clip == null) return;
+        var go  = new GameObject("_SFX");
+        if (worldPos.HasValue) go.transform.position = worldPos.Value;
+        var src = go.AddComponent<AudioSource>();
+        src.clip             = clip;
+        src.pitch            = pitch;
+        src.volume           = sfxVolume * vol * 6f;
+        src.spatialBlend     = spatialBlend;
+        src.maxDistance      = maxDist;
+        src.rolloffMode      = AudioRolloffMode.Linear;
+        src.Play();
+        Destroy(go, clip.length / Mathf.Max(pitch, 0.01f) + 0.2f);
+    }
 
     float BaseSpeed(Animal a) => a.isChicken
         ? (a.isChaser ? CHICK_CHASER_SPD : CHICK_TARGET_SPD)

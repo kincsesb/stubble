@@ -92,6 +92,10 @@ namespace Fields.World
         // Scroll control: only snap to bottom when new content arrives
         bool _scrollDirty;
 
+        // Audio
+        [SerializeField] AudioClip sfxTyping;
+        AudioSource _audioSrc;
+
         // UI refs
         Canvas         _canvas;
         TextMeshProUGUI _mainText;
@@ -105,6 +109,9 @@ namespace Fields.World
             EnsureActivator();
             BuildUI();
             _canvas.gameObject.SetActive(false);
+            _audioSrc = gameObject.GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
+            _audioSrc.spatialBlend = 0f;
+            _audioSrc.playOnAwake  = false;
         }
 
         void OnDestroy()
@@ -139,6 +146,7 @@ namespace Fields.World
             if (kb.backspaceKey.wasPressedThisFrame && _currentInput.Length > 0)
             {
                 _currentInput = _currentInput[..^1];
+                PlayTypingSfx();
                 RefreshDisplay();
             }
 
@@ -259,7 +267,15 @@ namespace Fields.World
             if (c < 32 || c == 127) return;
             if (_currentInput.Length >= 24) return;
             _currentInput += c;
+            PlayTypingSfx();
             RefreshDisplay();
+        }
+
+        void PlayTypingSfx()
+        {
+            if (sfxTyping == null || _audioSrc == null) return;
+            _audioSrc.pitch = Random.Range(0.92f, 1.08f);
+            _audioSrc.PlayOneShot(sfxTyping, 0.45f);
         }
 
         // ── Submit ───────────────────────────────────────────────────────── //
@@ -590,7 +606,7 @@ namespace Fields.World
             _mainText.color = C_GREEN;
             _mainText.alignment = TextAlignmentOptions.TopLeft;
             _mainText.overflowMode = TextOverflowModes.Overflow;
-            _mainText.enableWordWrapping = false;
+            _mainText.textWrappingMode = TextWrappingModes.NoWrap;
             _mainText.richText = true;
             var le = textGO.GetComponent<LayoutElement>();
             le.flexibleWidth = 1f;
