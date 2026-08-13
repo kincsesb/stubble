@@ -54,6 +54,9 @@ namespace Fields.Core
 
         public bool IsCompleted => _completed;
 
+        /// <summary>Resets completion flag so the parcel can be completed again (used by loop ending).</summary>
+        public void ResetCompletion() => _completed = false;
+
         void OnTriggerEnter(Collider other)
         {
             if (other.CompareTag("Player"))

@@ -1007,6 +1007,26 @@
     {
       "key": "terminal.offline",
       "value": "[!!] CHEAT MOTOR OFFLINE. UJRAINDITAS SZUKSEGES."
+    },
+    {
+      "key": "end.comment.nuclear",
+      "value": "A mezoknek {0} oraja volt. A vegso iteletet valasztottak."
+    },
+    {
+      "key": "end.loop.title",
+      "value": "Mezok megfrissultek!"
+    },
+    {
+      "key": "end.loop.comment",
+      "value": "3 ora alatt. A fu meghajol elottes. Csinalod ujra."
+    },
+    {
+      "key": "settings.theatrical",
+      "value": "Theatralis Befejezesek"
+    },
+    {
+      "key": "settings.theatrical.desc",
+      "value": "Speed-run loop vagy nuklearis finale. Kikapcsolva csendes befejezes."
     }
   ]
 }

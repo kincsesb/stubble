@@ -18,7 +18,7 @@ namespace Fields.Save
     [Serializable]
     public class SaveData
     {
-        public const int CURRENT_VERSION = 2;
+        public const int CURRENT_VERSION = 3;
 
         // v1 compat: old saves have "version":1, new saves leave this 0.
         public int version = 0;
@@ -60,6 +60,8 @@ namespace Fields.Save
         public int gridRows;
         /// <summary>RLE-encoded cut grid. Each int: (value &lt;&lt; 24 | count).</summary>
         public int[] cutGridRLE;
+        /// <summary>Base64-encoded PNG snapshot of the GPU mask RT. Null = not present, fall back to RLE rebuild.</summary>
+        public string grassMaskPng;
         // Hay accumulation grid (col-major float[], size = collCols * collRows)
         public int   hayCollCols;
         public int   hayCollRows;
@@ -77,6 +79,9 @@ namespace Fields.Save
         public int   hayUnits;
         /// <summary>Parcel where the hay was originally cut (for income attribution).</summary>
         public int   originParcelIndex;
+        // v3: round-bale controller state (heading XZ, accumulated roll)
+        public float headingX, headingZ;
+        public float rollAngle;
     }
 
     // ── Per-player statistics (v2) ─────────────────────────────────────────── //

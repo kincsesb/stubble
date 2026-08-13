@@ -38,6 +38,14 @@ namespace Fields.Core
 
         public int CompletedParcels => _completedParcels;
 
+        /// <summary>Resets completion state after a loop ending so the field can be won again.</summary>
+        public void ResetAllParcels()
+        {
+            _completedParcels = 0;
+            foreach (var p in parcels)
+                if (p != null) p.ResetCompletion();
+        }
+
         /// <summary>Set before scene reload to skip the main menu and start a fresh game immediately.</summary>
         public static bool PendingFreshStart { get; set; }
 
@@ -117,7 +125,7 @@ namespace Fields.Core
                 GameEvents.FireFullGameCompleted(totalTime);
 
                 SteamManager.Instance?.OnAllFieldsComplete();
-                if (endScreenRoot != null) endScreenRoot.SetActive(true);
+                // EndingOrchestrator handles when to show endScreenRoot
             }
         }
     }

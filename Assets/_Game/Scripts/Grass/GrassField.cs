@@ -28,9 +28,10 @@ namespace Fields.Grass
 
         // CPU state — bool[col, row], true = uncut
         bool[,] _cutGrid;
+        bool[,] _isGrassCell;  // false = dirt/path, never cuttable
         int _gridCols;
         int _gridRows;
-        int _totalCells;
+        int _totalCells;  // only grass cells count toward completion
         int _cutCount;
 
         public event Action<int, int> OnCellCut; // (gridCol, gridRow)
@@ -51,6 +52,7 @@ namespace Fields.Grass
         {
             InitCpuGrid();
             InitGpuBuffers();
+            InitGrassMask();
         }
 
         void OnDestroy()
@@ -136,7 +138,7 @@ namespace Fields.Grass
         {
             for (int row = 0; row < _gridRows; row++)
                 for (int col = 0; col < _gridCols; col++)
-                    _cutGrid[col, row] = true;
+                    _cutGrid[col, row] = _isGrassCell == null || _isGrassCell[col, row];
             _cutCount = 0;
             RebuildGpuFromCpu();
         }
@@ -144,17 +146,61 @@ namespace Fields.Grass
         /// <summary>Returns a copy of the cut grid for saving. True = uncut.</summary>
         public bool[,] GetCutGrid() => (bool[,])_cutGrid.Clone();
 
-        /// <summary>Restores cut state from a loaded save (true = uncut).</summary>
+        /// <summary>Restores cut state from a loaded save (true = uncut). Also rebuilds GPU. Use LoadCutGridCpuOnly when restoring GPU from a texture snapshot.</summary>
         public void LoadCutGrid(bool[,] grid)
+        {
+            LoadCutGridCpuOnly(grid);
+            RebuildGpuFromCpu();
+        }
+
+        /// <summary>Sets CPU grid only — no GPU draw calls. Caller must follow with RestoreGpuMask().</summary>
+        public void LoadCutGridCpuOnly(bool[,] grid)
         {
             _cutCount = 0;
             for (int row = 0; row < _gridRows; row++)
+            {
                 for (int col = 0; col < _gridCols; col++)
                 {
-                    _cutGrid[col, row] = grid[col, row];
-                    if (!grid[col, row]) _cutCount++;
+                    bool isGrass = _isGrassCell == null || _isGrassCell[col, row];
+                    if (!isGrass)
+                        _cutGrid[col, row] = false;
+                    else
+                    {
+                        _cutGrid[col, row] = grid[col, row];
+                        if (!grid[col, row]) _cutCount++;
+                    }
                 }
-            RebuildGpuFromCpu();
+            }
+        }
+
+        /// <summary>Captures the GPU mask RT as a PNG (1 GPU readback). Store in save file as base64.</summary>
+        public byte[] CaptureGpuMaskPng()
+        {
+            if (_maskRT == null) return null;
+            var tex = new Texture2D(_maskRT.width, _maskRT.height, TextureFormat.RGB24, false);
+            var prev = RenderTexture.active;
+            RenderTexture.active = _maskRT;
+            tex.ReadPixels(new Rect(0, 0, _maskRT.width, _maskRT.height), 0, 0);
+            tex.Apply();
+            RenderTexture.active = prev;
+            var png = tex.EncodeToPNG();
+            Destroy(tex);
+            return png;
+        }
+
+        /// <summary>Restores the GPU mask RT from a PNG snapshot — 1 Graphics.Blit, no per-cell drawing.</summary>
+        public void RestoreGpuMask(byte[] pngBytes)
+        {
+            if (pngBytes == null || pngBytes.Length == 0) { RebuildGpuFromCpu(); return; }
+            var tex = new Texture2D(2, 2, TextureFormat.RGB24, false);
+            if (!ImageConversion.LoadImage(tex, pngBytes) || tex.width != _maskRT.width)
+            {
+                Destroy(tex);
+                RebuildGpuFromCpu();
+                return;
+            }
+            Graphics.Blit(tex, _maskRT);
+            Destroy(tex);
         }
 
         public int GridCols => _gridCols;
@@ -182,10 +228,70 @@ namespace Fields.Grass
             _gridRows = Mathf.RoundToInt(fieldSize.y / config.gridCellSize);
             _totalCells = _gridCols * _gridRows;
             _cutGrid = new bool[_gridCols, _gridRows]; // default false = uncut
-            // Populate all cells as uncut (true)
+            // Populate all cells as uncut (true) — InitGrassMask() corrects dirt cells later
             for (int row = 0; row < _gridRows; row++)
                 for (int col = 0; col < _gridCols; col++)
                     _cutGrid[col, row] = true;
+        }
+
+        /// <summary>
+        /// Reads terrain exclusion layers from GrassChunkManager (Inspector-configured) and
+        /// marks dirt/path cells as permanently non-cuttable. Rebuilds the GPU mask so dirt
+        /// areas appear dark from the start. Falls back to all-grass if no terrain is found.
+        /// </summary>
+        void InitGrassMask()
+        {
+            _isGrassCell = new bool[_gridCols, _gridRows];
+
+            var gcm = GetComponent<GrassChunkManager>();
+            Terrain terrain = GetComponent<Terrain>() ?? Terrain.activeTerrain;
+            int[] excluded  = gcm?.excludedLayerIndices;
+            float threshold = gcm != null ? gcm.excludeThreshold : 0.5f;
+
+            bool hasExclusion = terrain != null && excluded != null && excluded.Length > 0;
+
+            float[,,] alphamap  = null;
+            int alphaW = 0, alphaH = 0, alphaLayers = 0;
+            Vector3 terrainOrigin = Vector3.zero;
+            Vector3 terrainSize   = Vector3.one;
+
+            if (hasExclusion)
+            {
+                var td = terrain.terrainData;
+                alphaW      = td.alphamapWidth;
+                alphaH      = td.alphamapHeight;
+                alphaLayers = td.alphamapLayers;
+                alphamap    = td.GetAlphamaps(0, 0, alphaW, alphaH);
+                terrainOrigin = terrain.transform.position;
+                terrainSize   = td.size;
+            }
+
+            int grassCount = 0;
+            for (int r = 0; r < _gridRows; r++)
+            {
+                for (int c = 0; c < _gridCols; c++)
+                {
+                    bool isGrass = true;
+                    if (alphamap != null)
+                    {
+                        Vector3 wp   = GridToWorld(c, r);
+                        float normX  = Mathf.Clamp01((wp.x - terrainOrigin.x) / terrainSize.x);
+                        float normZ  = Mathf.Clamp01((wp.z - terrainOrigin.z) / terrainSize.z);
+                        int ax       = Mathf.Clamp((int)(normX * alphaW), 0, alphaW - 1);
+                        int az       = Mathf.Clamp((int)(normZ * alphaH), 0, alphaH - 1);
+                        foreach (int li in excluded)
+                            if (li < alphaLayers && alphamap[az, ax, li] > threshold)
+                            { isGrass = false; break; }
+                    }
+                    _isGrassCell[c, r] = isGrass;
+                    _cutGrid[c, r]     = isGrass;  // dirt cells start as false (no grass)
+                    if (isGrass) grassCount++;
+                }
+            }
+            _totalCells = grassCount;
+
+            // Sync GPU so dirt areas start dark
+            RebuildGpuFromCpu();
         }
 
         void InitGpuBuffers()
@@ -209,6 +315,7 @@ namespace Fields.Grass
 
         void TryCutCell(int col, int row)
         {
+            if (_isGrassCell != null && !_isGrassCell[col, row]) return;
             if (!_cutGrid[col, row]) return;
             _cutGrid[col, row] = false;
             _cutCount++;
@@ -253,21 +360,37 @@ namespace Fields.Grass
 
         void RebuildGpuFromCpu()
         {
-            // Clear to white then draw black for every cut cell
+            // Clear to white (all grass visible)
             var cmd = CommandBufferPool.Get("RebuildGrassMask");
             cmd.SetRenderTarget(_maskRT);
             cmd.ClearRenderTarget(false, true, Color.white);
             Graphics.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
 
+            if (_cutCount == 0) return;
+
+            // Merge contiguous cut runs per row into single capsule draw calls.
+            // Worst case = _gridRows GPU calls instead of _cutCount — safe at any coverage.
+            float capsuleRadius = (config.gridCellSize / fieldSize.x) * 0.7f;
             for (int row = 0; row < _gridRows; row++)
-                for (int col = 0; col < _gridCols; col++)
-                    if (!_cutGrid[col, row])
+            {
+                int runStart = -1;
+                for (int col = 0; col <= _gridCols; col++)
+                {
+                    bool isCut = col < _gridCols && !_cutGrid[col, row];
+                    if (isCut && runStart < 0)
                     {
-                        Vector3 wp = GridToWorld(col, row);
-                        float uvRadius = config.gridCellSize / fieldSize.x * 0.6f;
-                        DrawCircleToRT(WorldToUV(wp), uvRadius);
+                        runStart = col;
                     }
+                    else if (!isCut && runStart >= 0)
+                    {
+                        Vector2 uvFrom = WorldToUV(GridToWorld(runStart, row));
+                        Vector2 uvTo   = WorldToUV(GridToWorld(col - 1,  row));
+                        DrawCapsuleToRT(uvFrom, uvTo, capsuleRadius);
+                        runStart = -1;
+                    }
+                }
+            }
         }
 
         // ------------------------------------------------------------------ //
@@ -303,6 +426,15 @@ namespace Fields.Grass
             Vector3 local = transform.InverseTransformPoint(worldPos);
             return local.x >= 0f && local.x <= fieldSize.x
                 && local.z >= 0f && local.z <= fieldSize.y;
+        }
+
+        /// <summary>Returns true if the cell at worldPos has been cut (false = uncut).</summary>
+        public bool IsPositionCut(Vector3 worldPos)
+        {
+            if (_cutGrid == null) return false;
+            WorldToGrid(worldPos, out int col, out int row);
+            if (!InGrid(col, row)) return false;
+            return !_cutGrid[col, row]; // false in grid = cut
         }
 
         bool InGrid(int col, int row) =>

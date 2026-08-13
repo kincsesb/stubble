@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Fields.Core.Data;
 using UnityEngine;
@@ -145,10 +146,11 @@ namespace Fields.Grass
             int maxBlades = Mathf.RoundToInt(width * depth * bladeDensity * densityFraction);
             maxBlades = Mathf.Min(maxBlades, 30000);
 
-            var verts    = new Vector3[maxBlades * 4];
-            var uvs      = new Vector2[maxBlades * 4];
-            var tris     = new int[maxBlades * 6];
-            var fieldUVs = new Vector2[maxBlades * 4];
+            var verts      = new Vector3[maxBlades * 4];
+            var uvs        = new Vector2[maxBlades * 4];
+            var tris       = new int[maxBlades * 6];
+            var fieldUVs   = new Vector2[maxBlades * 4];
+            var groundYUVs = new Vector2[maxBlades * 4]; // UV2: x = groundY, y = unused
 
             const float bladeHalfWidth = 0.16f;
             const float bladeHeight    = 0.80f;
@@ -181,10 +183,11 @@ namespace Fields.Grass
                 float oz2 = bladeHalfWidth * sin;
 
                 int v = placed * 4;
-                verts[v + 0] = new Vector3(rx - ox2, groundY,               rz - oz2);
-                verts[v + 1] = new Vector3(rx + ox2, groundY,               rz + oz2);
-                verts[v + 2] = new Vector3(rx - ox2, groundY + bladeHeight, rz - oz2);
-                verts[v + 3] = new Vector3(rx + ox2, groundY + bladeHeight, rz + oz2);
+                // Blade Y is ground-relative (0=base, bladeHeight=tip); groundY passed via UV2
+                verts[v + 0] = new Vector3(rx - ox2, 0f,          rz - oz2);
+                verts[v + 1] = new Vector3(rx + ox2, 0f,          rz + oz2);
+                verts[v + 2] = new Vector3(rx - ox2, bladeHeight, rz - oz2);
+                verts[v + 3] = new Vector3(rx + ox2, bladeHeight, rz + oz2);
 
                 uvs[v + 0] = new Vector2(0f, 0f);
                 uvs[v + 1] = new Vector2(1f, 0f);
@@ -194,6 +197,9 @@ namespace Fields.Grass
                 var fuv = new Vector2(maskU, maskV);
                 fieldUVs[v + 0] = fieldUVs[v + 1] = fieldUVs[v + 2] = fieldUVs[v + 3] = fuv;
 
+                var gyuv = new Vector2(groundY, 0f);
+                groundYUVs[v + 0] = groundYUVs[v + 1] = groundYUVs[v + 2] = groundYUVs[v + 3] = gyuv;
+
                 int t = placed * 6;
                 tris[t + 0] = v;     tris[t + 1] = v + 2; tris[t + 2] = v + 1;
                 tris[t + 3] = v + 1; tris[t + 4] = v + 2; tris[t + 5] = v + 3;
@@ -201,10 +207,11 @@ namespace Fields.Grass
             }
 
             // Trim arrays to actual placed count
-            System.Array.Resize(ref verts,    placed * 4);
-            System.Array.Resize(ref uvs,      placed * 4);
-            System.Array.Resize(ref fieldUVs, placed * 4);
-            System.Array.Resize(ref tris,     placed * 6);
+            System.Array.Resize(ref verts,      placed * 4);
+            System.Array.Resize(ref uvs,        placed * 4);
+            System.Array.Resize(ref fieldUVs,   placed * 4);
+            System.Array.Resize(ref groundYUVs, placed * 4);
+            System.Array.Resize(ref tris,       placed * 6);
 
             var mesh = new Mesh
             {
@@ -214,6 +221,7 @@ namespace Fields.Grass
             mesh.SetVertices(verts);
             mesh.SetUVs(0, uvs);
             mesh.SetUVs(1, fieldUVs);
+            mesh.SetUVs(2, groundYUVs);
             mesh.SetTriangles(tris, 0);
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
@@ -249,6 +257,61 @@ namespace Fields.Grass
                     chunk.mf.sharedMesh = chunk.lodMeshes[band]; // zero GC — just swap ref
                 }
             }
+        }
+
+        /// <summary>Instantly scales all chunk GOs on Y — use for hard-set (start/end of animation).</summary>
+        public void SetHeightScale(float scale)
+        {
+            foreach (var c in _chunks)
+                if (c.go != null) c.go.transform.localScale = new Vector3(1f, scale, 1f);
+        }
+
+        /// <summary>
+        /// Theatrical wave pop-in: chunks ripple outward from worldCenter.
+        /// maxDelay = wave travel time; duration = per-chunk bounce duration; overshoot > 1 for cartoon punch.
+        /// </summary>
+        public void AnimatePopInWave(Vector3 worldCenter, float maxDelay = 0.55f, float duration = 0.75f, float overshoot = 1.45f)
+        {
+            SetHeightScale(0f);
+
+            float maxDist = 0.01f;
+            foreach (var c in _chunks)
+                if (c.go != null) maxDist = Mathf.Max(maxDist, Vector3.Distance(c.go.transform.position, worldCenter));
+
+            foreach (var c in _chunks)
+                if (c.go != null)
+                {
+                    float delay = (Vector3.Distance(c.go.transform.position, worldCenter) / maxDist) * maxDelay;
+                    StartCoroutine(PopInChunk(c.go, delay, duration, overshoot));
+                }
+        }
+
+        IEnumerator PopInChunk(GameObject go, float delay, float duration, float overshoot)
+        {
+            if (delay > 0.005f) yield return new WaitForSecondsRealtime(delay);
+
+            const float growFraction = 0.50f;
+            float growEnd = duration * growFraction;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float scale;
+                if (elapsed <= growEnd)
+                {
+                    float n = elapsed / growEnd;
+                    scale = Mathf.Lerp(0f, overshoot, 1f - Mathf.Pow(1f - n, 2f));
+                }
+                else
+                {
+                    float n = (elapsed - growEnd) / (duration - growEnd);
+                    scale = Mathf.Lerp(overshoot, 1f, 1f - Mathf.Pow(1f - n, 3f));
+                }
+                if (go != null) go.transform.localScale = new Vector3(1f, scale, 1f);
+                yield return null;
+            }
+            if (go != null) go.transform.localScale = Vector3.one;
         }
 
         // ------------------------------------------------------------------ //

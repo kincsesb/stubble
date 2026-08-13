@@ -207,12 +207,14 @@ namespace Fields.Save
                 var gf = grassFields[i];
                 if (gf == null) continue;
 
+                var pngBytes = gf.CaptureGpuMaskPng();
                 var fd = new FieldSaveData
                 {
-                    parcelIndex = i,
-                    gridCols    = gf.GridCols,
-                    gridRows    = gf.GridRows,
-                    cutGridRLE  = RLEEncoder.Encode(gf.GetCutGrid(), gf.GridCols, gf.GridRows)
+                    parcelIndex  = i,
+                    gridCols     = gf.GridCols,
+                    gridRows     = gf.GridRows,
+                    cutGridRLE   = RLEEncoder.Encode(gf.GetCutGrid(), gf.GridCols, gf.GridRows),
+                    grassMaskPng = pngBytes != null ? System.Convert.ToBase64String(pngBytes) : null
                 };
 
                 var hay = i < hayAccumulationSystems.Length ? hayAccumulationSystems[i] : null;
@@ -262,7 +264,8 @@ namespace Fields.Save
 
             foreach (var rb in UnityEngine.Object.FindObjectsByType<RoundBale>(FindObjectsSortMode.None))
             {
-                var t = rb.transform;
+                var t       = rb.transform;
+                Vector3 hdg = rb.GetHeading();
                 list.Add(new BaleSaveData
                 {
                     posX = t.position.x, posY = t.position.y, posZ = t.position.z,
@@ -270,7 +273,10 @@ namespace Fields.Save
                     rotZ = t.rotation.z, rotW = t.rotation.w,
                     isRound           = true,
                     hayUnits          = rb.HayUnits,
-                    originParcelIndex = 0,  // round bales don't carry origin yet
+                    originParcelIndex = 0,
+                    headingX          = hdg.x,
+                    headingZ          = hdg.z,
+                    rollAngle         = rb.GetRollAngle(),
                 });
             }
 
@@ -344,7 +350,20 @@ namespace Fields.Save
 
                 var gf = grassFields[i];
                 if (gf != null && fd.cutGridRLE != null)
-                    gf.LoadCutGrid(RLEEncoder.Decode(fd.cutGridRLE, fd.gridCols, fd.gridRows));
+                {
+                    var grid = RLEEncoder.Decode(fd.cutGridRLE, fd.gridCols, fd.gridRows);
+                    if (!string.IsNullOrEmpty(fd.grassMaskPng))
+                    {
+                        // Fast path: set CPU grid, restore GPU from PNG snapshot (1 blit)
+                        gf.LoadCutGridCpuOnly(grid);
+                        gf.RestoreGpuMask(System.Convert.FromBase64String(fd.grassMaskPng));
+                    }
+                    else
+                    {
+                        // Backward compat: no snapshot → capsule-based GPU rebuild
+                        gf.LoadCutGrid(grid);
+                    }
+                }
 
                 var hay = i < hayAccumulationSystems.Length ? hayAccumulationSystems[i] : null;
                 if (hay != null && fd.hayGrid != null && fd.hayCollCols > 0 && fd.hayCollRows > 0)
@@ -367,6 +386,7 @@ namespace Fields.Save
             var ss = SessionState.Instance;
             if (ss != null)
             {
+                ss.LoadTotalPlaytime(data.totalPlaytime);
                 if (data.playerStats != null)
                     foreach (var ps in data.playerStats)
                     {
@@ -423,6 +443,13 @@ namespace Fields.Save
             {
                 var rb = go.GetComponent<RoundBale>();
                 if (rb != null) rb.hayUnits = bd.hayUnits;
+                var ctrl = go.GetComponent<Fields.Hay.RoundBaleController>();
+                if (ctrl != null)
+                {
+                    Vector3 heading = new Vector3(bd.headingX, 0f, bd.headingZ);
+                    if (heading.sqrMagnitude < 0.001f) heading = Vector3.forward;
+                    ctrl.SetStateFromSave(heading, bd.rollAngle);
+                }
             }
         }
 
@@ -440,7 +467,7 @@ namespace Fields.Save
         static void RunMigrations(SaveData data, int fromVersion)
         {
             if (fromVersion < 2) MigrateV1ToV2(data);
-            // Future: if (fromVersion < 3) MigrateV2ToV3(data);
+            if (fromVersion < 3) MigrateV2ToV3(data);
         }
 
         /// <summary>
@@ -485,6 +512,28 @@ namespace Fields.Save
             // ── Stamp new version ─────────────────────────────────────────── //
             data.schemaVersion = SaveData.CURRENT_VERSION;
             data.version       = 0;  // clear v1 marker
+        }
+
+        /// <summary>
+        /// v2→v3: adds heading/rollAngle defaults to existing round bales.
+        /// No data is lost — square bale fields are untouched.
+        /// </summary>
+        internal static void MigrateV2ToV3(SaveData data)
+        {
+            if (data.bales != null)
+                foreach (var bd in data.bales)
+                    if (bd.isRound && bd.headingX == 0f && bd.headingZ == 0f)
+                    {
+                        // Derive forward from saved quaternion rotation
+                        var rot = new Quaternion(bd.rotX, bd.rotY, bd.rotZ, bd.rotW);
+                        Vector3 fwd = rot * Vector3.forward;
+                        fwd.y = 0f;
+                        if (fwd.sqrMagnitude > 0.001f) fwd.Normalize(); else fwd = Vector3.forward;
+                        bd.headingX = fwd.x;
+                        bd.headingZ = fwd.z;
+                        bd.rollAngle = 0f;
+                    }
+            data.schemaVersion = SaveData.CURRENT_VERSION;
         }
 
         // ================================================================== //

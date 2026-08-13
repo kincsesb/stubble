@@ -1003,6 +1003,26 @@
     {
       "key": "terminal.offline",
       "value": "[!!] CHEAT ENGINE OFFLINE. RESTART REQUIRED."
+    },
+    {
+      "key": "end.comment.nuclear",
+      "value": "The fields had {0} hours. They chose extinction."
+    },
+    {
+      "key": "end.loop.title",
+      "value": "Fields Refreshed!"
+    },
+    {
+      "key": "end.loop.comment",
+      "value": "Under 3 hours. The grass bows to you. Go again."
+    },
+    {
+      "key": "settings.theatrical",
+      "value": "Theatrical Endings"
+    },
+    {
+      "key": "settings.theatrical.desc",
+      "value": "Speed-run loop or nuclear finale. Off for a quiet finish."
     }
   ]
 }

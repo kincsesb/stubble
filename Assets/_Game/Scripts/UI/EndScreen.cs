@@ -10,9 +10,12 @@ namespace Fields.UI
     /// <summary>
     /// Shown when the whole field is cleared.
     /// Displays final stats + a snarky localized comment.
+    /// Set PendingEndingType before activating so BuildComment picks the right branch.
     /// </summary>
     public class EndScreen : MonoBehaviour
     {
+        public enum EndingType { Peaceful, Loop, Nuclear }
+        public static EndingType PendingEndingType = EndingType.Peaceful;
         [Header("Text fields")]
         public TextMeshProUGUI totalEarningsText;
         public TextMeshProUGUI timePlayedText;
@@ -91,6 +94,13 @@ namespace Fields.UI
             int totalBales, int totalSwings, int mins, int secs)
         {
             if (loc == null) return string.Empty;
+
+            // Theatrical ending overrides — checked first
+            if (PendingEndingType == EndingType.Nuclear)
+            {
+                int hours = Mathf.FloorToInt(elapsed / 3600f);
+                return loc.Get("end.comment.nuclear", hours);
+            }
 
             // Priority-ordered comment selection
             if (elapsed < 20f * 60f)
