@@ -1,16 +1,10 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Fields.Network;
 
 namespace Fields.UI
 {
-    /// <summary>
-    /// Co-op submenu pushed from the main menu.
-    /// UI is complete; netcode is stubbed until Stage 2.
-    ///
-    /// Two tabs: Host (lobby setup) and Join (friends' lobby list).
-    /// Both panels show persistent notices explaining guest/host save semantics.
-    /// </summary>
     public class CoopScreen : UIScreen
     {
         [Header("Tabs")]
@@ -30,6 +24,10 @@ namespace Fields.UI
         [Header("Notice (shown on both panels)")]
         public TextMeshProUGUI noticeText;
 
+        [Header("Status")]
+        [Tooltip("Optional — shows lobby creation status below the Start button")]
+        public TextMeshProUGUI statusText;
+
         [Header("Navigation")]
         public Button backButton;
 
@@ -39,7 +37,7 @@ namespace Fields.UI
             base.Awake();
             if (hostTabButton) hostTabButton.onClick.AddListener(() => SelectTab(0));
             if (joinTabButton) joinTabButton.onClick.AddListener(() => SelectTab(1));
-            if (backButton)    backButton.onClick.AddListener(() => UIManager.Instance?.Pop());
+            if (backButton)    backButton.onClick.AddListener(OnBack);
             if (inviteButton)  inviteButton.onClick.AddListener(OnInvite);
             if (startButton)   startButton.onClick.AddListener(OnStart);
         }
@@ -48,6 +46,26 @@ namespace Fields.UI
         {
             RefreshNotice();
             SelectTab(0);
+
+            // Invite only becomes active once a lobby exists
+            if (inviteButton) inviteButton.interactable = false;
+            if (startButton)  startButton.interactable  = true;
+            SetStatus("");
+
+            var csm = CoopSessionManager.Instance;
+            if (csm != null) csm.OnLobbyReady += HandleLobbyReady;
+        }
+
+        protected override void OnScreenClosed()
+        {
+            var csm = CoopSessionManager.Instance;
+            if (csm != null) csm.OnLobbyReady -= HandleLobbyReady;
+        }
+
+        void HandleLobbyReady()
+        {
+            if (inviteButton) inviteButton.interactable = true;
+            SetStatus("Lobby ready — invite friends!");
         }
 
         void RefreshNotice()
@@ -73,17 +91,36 @@ namespace Fields.UI
             }
         }
 
-        void OnInvite()
+        void OnBack()
         {
-#if !DISABLESTEAMWORKS
-            Steamworks.SteamFriends.ActivateGameOverlayInviteDialog(default);
-#endif
-            Debug.Log("[CoopScreen] Steam invite overlay — wired in Stage 2.");
+            var csm = CoopSessionManager.Instance;
+            if (csm != null && csm.IsLobbyActive)
+                csm.LeaveGame();
+
+            UIManager.Instance?.Pop();
         }
 
         void OnStart()
         {
-            Debug.Log("[CoopScreen] Start lobby — wired in Stage 2.");
+            if (startButton) startButton.interactable = false;
+            SetStatus("Creating lobby...");
+            CoopSessionManager.Instance?.HostGame();
+        }
+
+        void OnInvite()
+        {
+#if !DISABLESTEAMWORKS
+            var csm = CoopSessionManager.Instance;
+            if (csm != null && csm.IsLobbyActive)
+                Steamworks.SteamFriends.ActivateGameOverlayInviteDialog(csm.CurrentLobby);
+            else
+                Debug.LogWarning("[CoopScreen] Invite pressed but no active lobby.");
+#endif
+        }
+
+        void SetStatus(string msg)
+        {
+            if (statusText != null) statusText.text = msg;
         }
 
         protected override GameObject GetDefaultFocus() =>

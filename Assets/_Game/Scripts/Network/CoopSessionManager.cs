@@ -25,6 +25,10 @@ namespace Fields.Network
         CSteamID _currentLobby;
         bool _isHost;
 
+        public CSteamID CurrentLobby  => _currentLobby;
+        public bool     IsLobbyActive => _currentLobby.IsValid();
+        public event System.Action OnLobbyReady;
+
         void Awake()
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -75,6 +79,7 @@ namespace Fields.Network
             _isHost = true;
             NetworkManager.singleton.StartHost();
             Debug.Log("[Coop] Started as host.");
+            OnLobbyReady?.Invoke();
         }
 
         void StartClient(string ip)
