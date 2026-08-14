@@ -82,7 +82,7 @@ namespace Fields.UI
             }
             SetText(squareBalesText,  $"{squareBales}");
             SetText(roundBalesText,   $"{roundBales}");
-            SetText(moneyEarnedText,  $"${moneyEarned}");
+            SetText(moneyEarnedText,  LocalizationManager.Instance != null ? LocalizationManager.Instance.FormatMoney(moneyEarned) : $"${moneyEarned}");
             SetText(timeSpentText,    FormatTime(timeSeconds));
 
             if (statusText != null) statusText.gameObject.SetActive(false);
@@ -147,7 +147,7 @@ namespace Fields.UI
             // Bales & economy
             SetText(squareBalesText, $"{parcel.SquareBalesMade}");
             SetText(roundBalesText,  $"{parcel.RoundBalesMade}");
-            SetText(moneyEarnedText, $"${parcel.MoneyEarned}");
+            SetText(moneyEarnedText, LocalizationManager.Instance != null ? LocalizationManager.Instance.FormatMoney(parcel.MoneyEarned) : $"${parcel.MoneyEarned}");
             SetText(timeSpentText,   FormatTime(parcel.TimeSpentSeconds));
 
             // Status
@@ -186,7 +186,7 @@ namespace Fields.UI
             var data = ParcelManager.Instance.parcels.Length > parcelIndex
                 ? ParcelManager.Instance.parcels[parcelIndex]
                 : null;
-            unlockPriceText.text = data != null ? L("shop.unlock", data.unlockCost) : "";
+            unlockPriceText.text = data != null ? L("shop.unlock", LocalizationManager.Instance != null ? LocalizationManager.Instance.ToLocal((long)data.unlockCost) : (long)data.unlockCost) : "";
         }
 
         static void SetText(TextMeshProUGUI t, string v) { if (t != null) t.text = v; }

@@ -2,7 +2,7 @@
   "entries": [
     {
       "key": "hud.money",
-      "value": "$ {0}"
+      "value": "¥{0}"
     },
     {
       "key": "hud.completion",
@@ -74,15 +74,15 @@
     },
     {
       "key": "shop.balance",
-      "value": "余额:  $ {0}"
+      "value": "余额:  ¥{0}"
     },
     {
       "key": "shop.buy",
-      "value": "购买  ${0}"
+      "value": "购买  ¥{0}"
     },
     {
       "key": "shop.upgrade",
-      "value": "升级  ${0}"
+      "value": "升级  ¥{0}"
     },
     {
       "key": "shop.owned",
@@ -94,7 +94,7 @@
     },
     {
       "key": "shop.unlock",
-      "value": "解锁  ${0}"
+      "value": "解锁  ¥{0}"
     },
     {
       "key": "shop.locked",
@@ -126,7 +126,7 @@
     },
     {
       "key": "shop.upgrade.stats",
-      "value": "Lv{0}→{1}  速:{2:0.0}×  力:{3:0.0}×  ${4}"
+      "value": "Lv{0}→{1}  速:{2:0.0}×  力:{3:0.0}×  ¥{4}"
     },
     {
       "key": "tool.handsickle",
@@ -226,7 +226,7 @@
     },
     {
       "key": "endscreen.earned",
-      "value": "收入: ${0}"
+      "value": "收入: ¥{0}"
     },
     {
       "key": "endscreen.time",
@@ -242,7 +242,7 @@
     },
     {
       "key": "end.earnings",
-      "value": "总收入: ${0}"
+      "value": "总收入: ¥{0}"
     },
     {
       "key": "end.time",
@@ -1003,6 +1003,10 @@
     {
       "key": "terminal.offline",
       "value": "[!!] CHEAT ENGINE OFFLINE. RESTART REQUIRED."
+    },
+    {
+      "key": "currency.rate",
+      "value": "7.2"
     }
   ]
 }

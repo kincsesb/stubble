@@ -1027,6 +1027,10 @@
     {
       "key": "settings.theatrical.desc",
       "value": "Speed-run loop vagy nuklearis finale. Kikapcsolva csendes befejezes."
+    },
+    {
+      "key": "currency.rate",
+      "value": "320"
     }
   ]
 }

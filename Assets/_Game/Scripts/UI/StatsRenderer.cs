@@ -34,7 +34,7 @@ namespace Fields.UI
 
             // ── Session summary ─────────────────────────────────────────── //
             AddHeader(container, L("journal.sec.session", "Session"));
-            AddRow(container, L("journal.label.wallet",      "Wallet"),     $"${cm?.Money ?? 0}");
+            AddRow(container, L("journal.label.wallet",      "Wallet"),     FormatMoney(cm?.Money ?? 0));
             AddRow(container, L("journal.label.overall",     "Completion"), $"{overallPct:F0}%");
             AddRow(container, L("journal.label.totaltime",   "Total time"), FormatTime(ss?.TotalPlaytime ?? 0f));
             AddDiv(container);
@@ -75,7 +75,7 @@ namespace Fields.UI
 
                 AddRow(container,
                     L("journal.label.earned",      "Earned"),
-                    $"${p.MoneyEarned:N0}");
+                    FormatMoney(p.MoneyEarned));
 
                 AddRow(container,
                     L("journal.label.playtime",    "Playtime"),
@@ -95,6 +95,12 @@ namespace Fields.UI
             if (loc == null) return fallback;
             string v = loc.Get(key);
             return string.IsNullOrEmpty(v) || v == key ? fallback : v;
+        }
+
+        static string FormatMoney(long usd)
+        {
+            var loc = LocalizationManager.Instance;
+            return loc != null ? loc.FormatMoney(usd) : $"${usd}";
         }
 
         static string FormatTime(float seconds)

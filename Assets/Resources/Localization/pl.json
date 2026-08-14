@@ -2,7 +2,7 @@
   "entries": [
     {
       "key": "hud.money",
-      "value": "$ {0}"
+      "value": "{0} zł"
     },
     {
       "key": "hud.completion",
@@ -74,15 +74,15 @@
     },
     {
       "key": "shop.balance",
-      "value": "Saldo:  $ {0}"
+      "value": "Saldo:  {0} zł"
     },
     {
       "key": "shop.buy",
-      "value": "Kup  ${0}"
+      "value": "Kup  {0} zł"
     },
     {
       "key": "shop.upgrade",
-      "value": "Ulepsz  ${0}"
+      "value": "Ulepsz  {0} zł"
     },
     {
       "key": "shop.owned",
@@ -94,7 +94,7 @@
     },
     {
       "key": "shop.unlock",
-      "value": "Odblokuj  ${0}"
+      "value": "Odblokuj  {0} zł"
     },
     {
       "key": "shop.locked",
@@ -126,7 +126,7 @@
     },
     {
       "key": "shop.upgrade.stats",
-      "value": "Pz{0}→{1}  Pr:{2:0.0}×  Sl:{3:0.0}×  ${4}"
+      "value": "Pz{0}→{1}  Pr:{2:0.0}×  Sl:{3:0.0}×  {4} zł"
     },
     {
       "key": "tool.handsickle",
@@ -226,7 +226,7 @@
     },
     {
       "key": "endscreen.earned",
-      "value": "Zarobiono: ${0}"
+      "value": "Zarobiono: {0} zł"
     },
     {
       "key": "endscreen.time",
@@ -242,7 +242,7 @@
     },
     {
       "key": "end.earnings",
-      "value": "Łączne zarobki: ${0}"
+      "value": "Łączne zarobki: {0} zł"
     },
     {
       "key": "end.time",
@@ -1003,6 +1003,10 @@
     {
       "key": "terminal.offline",
       "value": "[!!] CHEAT ENGINE OFFLINE. RESTART REQUIRED."
+    },
+    {
+      "key": "currency.rate",
+      "value": "4.0"
     }
   ]
 }

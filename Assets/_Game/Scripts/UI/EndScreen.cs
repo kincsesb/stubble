@@ -97,7 +97,7 @@ namespace Fields.UI
             // ── Required fields ───────────────────────────────────────────
             if (totalEarningsText != null)
                 totalEarningsText.text = loc != null
-                    ? loc.Get("end.earnings", money)
+                    ? loc.Get("end.earnings", loc.ToLocal(money))
                     : $"Total earnings: ${money}";
 
             if (timePlayedText != null)
@@ -170,7 +170,7 @@ namespace Fields.UI
                 return loc.Get("end.comment.hundredbales", totalBales);
 
             if (money >= 10000)
-                return loc.Get("end.comment.rich", money);
+                return loc.Get("end.comment.rich", loc.ToLocal(money));
 
             if (totalSwings > 0 && money > 2000 && (float)money / totalSwings > 20f)
                 return loc.Get("end.comment.efficient");

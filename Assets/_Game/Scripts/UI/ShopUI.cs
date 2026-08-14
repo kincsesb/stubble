@@ -194,7 +194,7 @@ namespace Fields.UI
             MakeTMPChild("Text", container.transform, 0, 20, COL_MONEY, TextAlignmentOptions.Right, stretchFill: true);
             var texts = container.GetComponentsInChildren<TextMeshProUGUI>();
             if (texts.Length > 0)
-                texts[0].text = L("shop.balance", money);
+                texts[0].text = L("shop.balance", M(money));
         }
 
         // ------------------------------------------------------------------ //
@@ -205,6 +205,14 @@ namespace Fields.UI
             Fields.Core.LocalizationManager.Instance != null
                 ? Fields.Core.LocalizationManager.Instance.Get(key, args)
                 : (args.Length > 0 ? string.Format(key, args) : key);
+
+        static long M(int usd) {
+            var loc = Fields.Core.LocalizationManager.Instance;
+            return loc != null ? loc.ToLocal((long)usd) : usd;
+        }
+
+        static string Fmt(int usd) =>
+            Fields.Core.LocalizationManager.Instance?.FormatMoney((long)usd) ?? $"${usd}";
 
         static string ToolLocKey(Fields.Core.Data.ToolType t) => t switch
         {
@@ -233,8 +241,8 @@ namespace Fields.UI
 
                 string detail = owned
                     ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] {L("shop.owned")}</color>"
-                    : $"$ {price}";
-                string btnLabel = owned ? string.Empty : L("shop.buy", price);
+                    : Fmt(price);
+                string btnLabel = owned ? string.Empty : L("shop.buy", M(price));
 
                 var row = AddRow(L(ToolLocKey(data.toolType)), detail, btnLabel, owned ? -1 : price);
                 if (!owned)
@@ -256,8 +264,8 @@ namespace Fields.UI
                 int price  = bm.roundBalerData.purchaseCost;
                 string detail = owned
                     ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] {L("shop.owned")}</color>"
-                    : $"$ {price}";
-                var row = AddRow(L("shop.roundbaler"), detail, owned ? string.Empty : L("shop.buy", price), owned ? -1 : price);
+                    : Fmt(price);
+                var row = AddRow(L("shop.roundbaler"), detail, owned ? string.Empty : L("shop.buy", M(price)), owned ? -1 : price);
                 if (!owned)
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                     {
@@ -285,8 +293,8 @@ namespace Fields.UI
 
                 int price    = data.upgradeCosts[level];
                 int nextLevel = level + 1;
-                string detail = $"{stars}  {L("shop.upgrade.stats", level, level + 1, data.speedLevels[nextLevel], data.powerLevels[nextLevel], price)}";
-                var row = AddRow($"{L(ToolLocKey(data.toolType))}  {stars}", detail, L("shop.upgrade", price), price);
+                string detail = $"{stars}  {L("shop.upgrade.stats", level, level + 1, data.speedLevels[nextLevel], data.powerLevels[nextLevel], M(price))}";
+                var row = AddRow($"{L(ToolLocKey(data.toolType))}  {stars}", detail, L("shop.upgrade", M(price)), price);
                 int idx = i;
                 row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                 {
@@ -306,8 +314,8 @@ namespace Fields.UI
                 if (bl < 3)
                 {
                     int cost = Fields.Economy.BalerManager.BalerUpgradeCosts[bl];
-                    string detail = $"{Stars(bl)}  Lv{bl}→{bl + 1}  $ {cost}";
-                    var row = AddRow(L("shop.baler"), detail, L("shop.upgrade", cost), cost);
+                    string detail = $"{Stars(bl)}  Lv{bl}→{bl + 1}  {Fmt(cost)}";
+                    var row = AddRow(L("shop.baler"), detail, L("shop.upgrade", M(cost)), cost);
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { if (bm.TryUpgradeBaler()) ShowTab(1); });
                 }
                 else AddRow(L("shop.baler"), $"{Stars(3)}  {L("shop.maxlevel")}", string.Empty, -1);
@@ -319,8 +327,8 @@ namespace Fields.UI
                 {
                     float nextMult = Fields.Economy.BalerManager.HayValueMultipliers[hvl + 1];
                     int cost = Fields.Economy.BalerManager.HayValueCosts[hvl];
-                    string detail = $"{Stars(hvl)}  ×{nextMult:0.00}  $ {cost}";
-                    var row = AddRow(L("shop.hayvalue"), detail, L("shop.upgrade", cost), cost);
+                    string detail = $"{Stars(hvl)}  ×{nextMult:0.00}  {Fmt(cost)}";
+                    var row = AddRow(L("shop.hayvalue"), detail, L("shop.upgrade", M(cost)), cost);
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { if (bm.TryUpgradeHayValue()) ShowTab(1); });
                 }
                 else AddRow(L("shop.hayvalue"), $"{Stars(3)}  {L("shop.maxlevel")}", string.Empty, -1);

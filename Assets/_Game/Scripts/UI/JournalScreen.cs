@@ -201,12 +201,13 @@ namespace Fields.UI
             SetText(statHayCollected,      $"{p?.HayPilesCollected ?? 0}");
             SetText(statSquareBales,       $"{p?.SquareBalesMade ?? 0}");
             SetText(statRoundBales,        $"{p?.RoundBalesMade ?? 0}");
-            SetText(statMoneyEarned,       $"${p?.MoneyEarned ?? 0}");
-            SetText(statMoneySpent,        $"${p?.MoneySpent ?? 0}");
+            var loc = Fields.Core.LocalizationManager.Instance;
+            SetText(statMoneyEarned,       loc != null ? loc.FormatMoney(p?.MoneyEarned ?? 0) : $"${p?.MoneyEarned ?? 0}");
+            SetText(statMoneySpent,        loc != null ? loc.FormatMoney(p?.MoneySpent ?? 0) : $"${p?.MoneySpent ?? 0}");
             SetText(statDistance,          $"{p?.DistanceTravelledM ?? 0:F0} m");
             SetText(statSwings,            $"{p?.TotalSwings ?? 0}");
             SetText(statPlaytime,          FormatTime(p?.PlaytimeSeconds ?? 0f));
-            SetText(statWallet,            $"${wallet}");
+            SetText(statWallet,            loc != null ? loc.FormatMoney(wallet) : $"${wallet}");
             SetText(statParcelsCompleted,  $"{completed} / {total}");
             SetText(statTotalPlaytime,     FormatTime(ss?.TotalPlaytime ?? 0f));
             SetText(statOverallCompletion, $"{pct:F1}%");

@@ -2,7 +2,7 @@
   "entries": [
     {
       "key": "hud.money",
-      "value": "$ {0}"
+      "value": "{0} €"
     },
     {
       "key": "hud.completion",
@@ -74,15 +74,15 @@
     },
     {
       "key": "shop.balance",
-      "value": "Saldo:  $ {0}"
+      "value": "Saldo:  {0} €"
     },
     {
       "key": "shop.buy",
-      "value": "Comprar  ${0}"
+      "value": "Comprar  {0} €"
     },
     {
       "key": "shop.upgrade",
-      "value": "Mejorar  ${0}"
+      "value": "Mejorar  {0} €"
     },
     {
       "key": "shop.owned",
@@ -94,7 +94,7 @@
     },
     {
       "key": "shop.unlock",
-      "value": "Desbloquear  ${0}"
+      "value": "Desbloquear  {0} €"
     },
     {
       "key": "shop.locked",
@@ -126,7 +126,7 @@
     },
     {
       "key": "shop.upgrade.stats",
-      "value": "Nv{0}→{1}  Vel:{2:0.0}×  Pot:{3:0.0}×  ${4}"
+      "value": "Nv{0}→{1}  Vel:{2:0.0}×  Pot:{3:0.0}×  {4} €"
     },
     {
       "key": "tool.handsickle",
@@ -226,7 +226,7 @@
     },
     {
       "key": "endscreen.earned",
-      "value": "Ganado: ${0}"
+      "value": "Ganado: {0} €"
     },
     {
       "key": "endscreen.time",
@@ -242,7 +242,7 @@
     },
     {
       "key": "end.earnings",
-      "value": "Ganancias totales: ${0}"
+      "value": "Ganancias totales: {0} €"
     },
     {
       "key": "end.time",
@@ -1003,6 +1003,10 @@
     {
       "key": "terminal.offline",
       "value": "[!!] CHEAT ENGINE OFFLINE. RESTART REQUIRED."
+    },
+    {
+      "key": "currency.rate",
+      "value": "0.92"
     }
   ]
 }

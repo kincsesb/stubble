@@ -518,7 +518,7 @@ namespace Fields.UI
 
             int m = Mathf.RoundToInt(_displayedMoney);
             moneyText.text = Fields.Core.LocalizationManager.Instance != null
-                ? Fields.Core.LocalizationManager.Instance.Get("hud.money", m)
+                ? Fields.Core.LocalizationManager.Instance.FormatMoney(m)
                 : $"$ {m}";
         }
 
@@ -788,7 +788,8 @@ namespace Fields.UI
             tmp.fontSize = 52;
             tmp.fontStyle = FontStyles.Bold;
             tmp.alignment = TextAlignmentOptions.Center;
-            tmp.text = $"+${earned}";
+            var _loc = Fields.Core.LocalizationManager.Instance;
+            tmp.text = _loc != null ? $"+{_loc.FormatMoney(earned)}" : $"+${earned}";
 
             const float riseSpeed = 70f;
             const float life = 1.3f;

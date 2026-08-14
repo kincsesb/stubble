@@ -37,6 +37,8 @@ namespace Fields.Core
         Dictionary<string, string> _table = new Dictionary<string, string>();
         Dictionary<string, string> _fallback = new Dictionary<string, string>(); // English always loaded
 
+        public float CurrencyRate { get; private set; } = 1f;
+
         // ------------------------------------------------------------------ //
 
         void Awake()
@@ -86,6 +88,7 @@ namespace Fields.Core
         void LoadTable(string langCode)
         {
             _table.Clear();
+            CurrencyRate = 1f;
             var asset = Resources.Load<TextAsset>($"Localization/{langCode}");
             if (asset == null)
             {
@@ -95,6 +98,20 @@ namespace Fields.Core
             var raw = JsonUtility.FromJson<StringTableJson>(asset.text);
             if (raw?.entries == null) return;
             foreach (var e in raw.entries) _table[e.key] = e.value;
+            if (_table.TryGetValue("currency.rate", out string rateStr) &&
+                float.TryParse(rateStr, System.Globalization.NumberStyles.Float,
+                               System.Globalization.CultureInfo.InvariantCulture, out float rate))
+                CurrencyRate = rate;
+        }
+
+        public long ToLocal(long usd) => (long)System.Math.Round(usd * CurrencyRate);
+
+        public string FormatMoney(long usd)
+        {
+            long local = ToLocal(usd);
+            string fmt = Get("hud.money");
+            try { return string.Format(fmt, local); }
+            catch { return $"${local}"; }
         }
 
         static Language LanguageFromCode(string code)

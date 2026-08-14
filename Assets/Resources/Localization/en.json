@@ -1023,6 +1023,10 @@
     {
       "key": "settings.theatrical.desc",
       "value": "Speed-run loop or nuclear finale. Off for a quiet finish."
+    },
+    {
+      "key": "currency.rate",
+      "value": "1"
     }
   ]
 }
