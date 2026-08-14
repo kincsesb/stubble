@@ -91,6 +91,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     AudioSource _chickenAttackedSrc;
     AudioSource _afterAttackSrc;
     AudioSource _catAttackSrc;
+    float _purrTimer = -1f; // seconds remaining; -1 = inactive
 
     // ---------------------------------------------------------------------------
     // Lifecycle
@@ -139,13 +140,13 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     {
         _audioSrc = gameObject.AddComponent<AudioSource>();
         _audioSrc.spatialBlend = 0f;
-        _audioSrc.volume       = sfxVolume;
+        _audioSrc.volume       = sfxVolume * 0.5f;
         _audioSrc.loop         = true;
         if (sfxRunLoop != null) { _audioSrc.clip = sfxRunLoop; _audioSrc.Play(); }
 
         _catAttackSrc = gameObject.AddComponent<AudioSource>();
         _catAttackSrc.spatialBlend = 0f;
-        _catAttackSrc.volume       = sfxVolume * 6f;
+        _catAttackSrc.volume       = sfxVolume * 3f;
     }
 
     static GameObject FindAnimatedRoot(string name)
@@ -162,6 +163,13 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
     void Update()
     {
+        // Purr auto-stop — Update-based so it survives StopAllCoroutines()
+        if (_purrTimer > 0f)
+        {
+            _purrTimer -= Time.deltaTime;
+            if (_purrTimer <= 0f) { _purrTimer = -1f; StopPurring(); }
+        }
+
         _elapsed += Time.deltaTime;
         int p = CurrentPhaseIndex();
         if (p != _phase) TriggerPhase(p);
@@ -292,7 +300,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         go.transform.localScale = baseScale;
         if (dustPS != null) dustPS.Emit(18);
         if (_audioSrc != null && sfxCatPurr != null && !go.name.ToLower().Contains("chicken"))
-            _audioSrc.PlayOneShot(sfxCatPurr, sfxVolume * 0.8f);
+            _audioSrc.PlayOneShot(sfxCatPurr, sfxVolume * 0.4f);
     }
 
     // ---------------------------------------------------------------------------
@@ -370,9 +378,9 @@ public class FarmAnimalChaseSystem : MonoBehaviour
             if (_chkRunSfxTimer <= 0f)
             {
                 var chk = runChickens[0];
-                PlayOneShotPitched(sfxChickenRunning, Random.Range(0.95f, 1.05f), 0.04f,
+                PlayOneShotPitched(sfxChickenRunning, Random.Range(0.95f, 1.05f), 1.2f,
                                    chk.go != null ? chk.go.transform.position : (Vector3?)null,
-                                   spatialBlend: 1f, maxDist: 10f);
+                                   spatialBlend: 0.4f, maxDist: 40f);
                 _chkRunSfxTimer = sfxChickenRunning.length * 0.85f;
             }
         }
@@ -472,7 +480,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
                 _chickenAttackedSrc = go.AddComponent<AudioSource>();
                 _chickenAttackedSrc.clip         = sfxChickenAttacked;
                 _chickenAttackedSrc.pitch         = 1.35f;
-                _chickenAttackedSrc.volume        = sfxVolume * 6f * 0.35f;
+                _chickenAttackedSrc.volume        = sfxVolume * 3f * 0.35f;
                 _chickenAttackedSrc.spatialBlend  = 0f;
                 _chickenAttackedSrc.Play();
                 Destroy(go, sfxChickenAttacked.length / 1.35f + 0.2f);
@@ -623,7 +631,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
             var go = new GameObject("_AfterAttackSFX");
             _afterAttackSrc = go.AddComponent<AudioSource>();
             _afterAttackSrc.clip = sfxAfterAttack;
-            _afterAttackSrc.volume = sfxVolume * 6f * 0.9f;
+            _afterAttackSrc.volume = sfxVolume * 3f * 0.9f;
             _afterAttackSrc.spatialBlend = 0f;
             _afterAttackSrc.Play();
         }
@@ -659,7 +667,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
             sprintAudio.clip         = sfxRunLoop;
             sprintAudio.loop         = true;
             sprintAudio.spatialBlend = 0f;
-            sprintAudio.volume       = sfxVolume * 6f * 0.8f;
+            sprintAudio.volume       = sfxVolume * 3f * 0.8f;
             sprintAudio.Play();
         }
 
@@ -754,13 +762,16 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     void StartPurring()
     {
         if (_audioSrc == null || sfxCatPurr == null) return;
-        _audioSrc.clip = sfxCatPurr;
-        _audioSrc.loop = true;
+        _audioSrc.clip   = sfxCatPurr;
+        _audioSrc.loop   = true;
+        _audioSrc.volume = sfxVolume * 0.5f;
         _audioSrc.Play();
+        _purrTimer = 3f;
     }
 
     void StopPurring()
     {
+        _purrTimer = -1f;
         if (_audioSrc == null) return;
         _audioSrc.Stop();
         _audioSrc.loop = false;
