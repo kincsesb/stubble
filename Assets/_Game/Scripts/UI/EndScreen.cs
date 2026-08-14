@@ -25,8 +25,12 @@ namespace Fields.UI
         public TextMeshProUGUI timePlayedText;
         public TextMeshProUGUI titleText;
 
-        [Header("Optional stat fields (assign in Inspector if you have them in the layout)")]
-        [Tooltip("e.g. 'Grass cut: 4 200 m²'")]
+        [Header("Stats content (assign ScrollView Content RectTransform)")]
+        [Tooltip("StatsRenderer fills this with per-player sections. Works in singleplayer and co-op.")]
+        public RectTransform statsContent;
+
+        [Header("Optional legacy stat fields")]
+        [Tooltip("e.g. 'Grass cut: 4 200 m2'")]
         public TextMeshProUGUI grassCutText;
 
         [Tooltip("e.g. 'Bales: 38'")]
@@ -86,6 +90,9 @@ namespace Fields.UI
 
             float cutAreaM2   = totalCutCells * CELL_SIZE_M * CELL_SIZE_M;
             float distKm      = (float)(totalDistM / 1000.0);
+
+            // ── Per-player stats (StatsRenderer) ─────────────────────────
+            StatsRenderer.Build(statsContent);
 
             // ── Required fields ───────────────────────────────────────────
             if (totalEarningsText != null)

@@ -186,20 +186,18 @@ namespace Fields.UI
 
         void RefreshStatistics()
         {
+            // Dynamic content: StatsRenderer handles single-player and co-op uniformly.
+            StatsRenderer.Build(statisticsContent);
+
+            // ── Backward-compat: update any Inspector-assigned fixed TMP fields ── //
             var ss = SessionState.Instance;
             var p  = ss?.GetPlayer(0);
+            int wallet    = Fields.Economy.CurrencyManager.Instance?.Money ?? 0;
+            int completed = Fields.Core.WorldBootstrap.Instance?.CompletedParcels ?? 0;
+            int total     = Fields.Core.WorldBootstrap.Instance?.ActiveParcelCount ?? 1;
+            float pct     = HUDController.Instance?.activeGrassField?.GetCompletionPercent() ?? 0f;
 
-            int wallet       = CurrencyManager.Instance?.Money ?? 0;
-            int completed    = Fields.Core.WorldBootstrap.Instance?.CompletedParcels ?? 0;
-            int totalParcels = Fields.Core.WorldBootstrap.Instance?.ActiveParcelCount ?? 1;
-
-            float overallPct = 0f;
-            var activeField = Fields.UI.HUDController.Instance?.activeGrassField;
-            if (activeField != null)
-                overallPct = activeField.GetCompletionPercent();
-
-            // ── Update fixed Inspector-assigned TMP fields if they exist ── //
-            SetText(statAreaCut,           $"{(p?.AreaCutCells ?? 0) * CELL_AREA_M2:F0} m²");
+            SetText(statAreaCut,           $"{(p?.AreaCutCells ?? 0) * CELL_AREA_M2:F0} m2");
             SetText(statHayCollected,      $"{p?.HayPilesCollected ?? 0}");
             SetText(statSquareBales,       $"{p?.SquareBalesMade ?? 0}");
             SetText(statRoundBales,        $"{p?.RoundBalesMade ?? 0}");
@@ -209,30 +207,9 @@ namespace Fields.UI
             SetText(statSwings,            $"{p?.TotalSwings ?? 0}");
             SetText(statPlaytime,          FormatTime(p?.PlaytimeSeconds ?? 0f));
             SetText(statWallet,            $"${wallet}");
-            SetText(statParcelsCompleted,  $"{completed} / {totalParcels}");
+            SetText(statParcelsCompleted,  $"{completed} / {total}");
             SetText(statTotalPlaytime,     FormatTime(ss?.TotalPlaytime ?? 0f));
-            SetText(statOverallCompletion, $"{overallPct:F1}%");
-
-            // ── Dynamic fallback: build rows if statisticsContent is assigned ── //
-            if (statisticsContent == null) return;
-            ClearChildren(statisticsContent);
-
-            string Loc(string k) => LocalizationManager.Instance != null ? LocalizationManager.Instance.Get(k) : k;
-
-            AddStatRow(statisticsContent, Loc("journal.label.areacut"),     $"{(p?.AreaCutCells ?? 0) * CELL_AREA_M2:F0} m²");
-            AddStatRow(statisticsContent, Loc("journal.label.hay"),         $"{p?.HayPilesCollected ?? 0}");
-            AddStatRow(statisticsContent, Loc("journal.label.squarebales"), $"{p?.SquareBalesMade ?? 0}");
-            AddStatRow(statisticsContent, Loc("journal.label.roundbales"),  $"{p?.RoundBalesMade ?? 0}");
-            AddStatRow(statisticsContent, Loc("journal.label.earned"),      $"${p?.MoneyEarned ?? 0}");
-            AddStatRow(statisticsContent, Loc("journal.label.spent"),       $"${p?.MoneySpent ?? 0}");
-            AddStatRow(statisticsContent, Loc("journal.label.distance"),    $"{p?.DistanceTravelledM ?? 0:F0} m");
-            AddStatRow(statisticsContent, Loc("journal.label.swings"),      $"{p?.TotalSwings ?? 0}");
-            AddStatRow(statisticsContent, Loc("journal.label.playtime"),    FormatTime(p?.PlaytimeSeconds ?? 0f));
-            AddSectionDivider(statisticsContent);
-            AddStatRow(statisticsContent, Loc("journal.label.wallet"),      $"${wallet}");
-            AddStatRow(statisticsContent, Loc("journal.label.parcelsdone"), $"{completed} / {totalParcels}");
-            AddStatRow(statisticsContent, Loc("journal.label.overall"),     $"{overallPct:F1}%");
-            AddStatRow(statisticsContent, Loc("journal.label.totaltime"),   FormatTime(ss?.TotalPlaytime ?? 0f));
+            SetText(statOverallCompletion, $"{pct:F1}%");
         }
 
         // ------------------------------------------------------------------ //
