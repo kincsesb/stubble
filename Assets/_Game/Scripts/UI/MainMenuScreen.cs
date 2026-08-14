@@ -1,4 +1,5 @@
 using Fields.Save;
+using Mirror;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -69,8 +70,8 @@ namespace Fields.UI
         void ClickContinue()
         {
             // WorldBootstrap already called LoadGame() — the world state is restored.
-            // Dismissing the menu is all that is needed.
-            StartGame();
+            // Do NOT reset session state here; stats were loaded from save.
+            StartGame(freshStart: false);
         }
 
         void ClickNewGame()
@@ -82,7 +83,16 @@ namespace Fields.UI
                 {
                     Fields.Core.WorldBootstrap.PendingFreshStart = true;
                     SaveSystem.Instance?.DeleteSave();
-                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                    // Use Mirror's scene change API so NetworkServer.SpawnObjects() fires
+                    // after reload — Mirror's NetworkScenePostProcess disables all scene
+                    // NetworkIdentity objects (terrains, etc.) on load, and only
+                    // SpawnObjects() re-enables them. SceneManager.LoadScene() bypasses
+                    // Mirror's loadingSceneAsync tracking, so SpawnObjects is never called.
+                    string sceneName = SceneManager.GetActiveScene().name;
+                    if (NetworkManager.singleton != null)
+                        NetworkManager.singleton.ServerChangeScene(sceneName);
+                    else
+                        SceneManager.LoadScene(sceneName);
                 };
 
                 if (confirmModal != null)
@@ -99,7 +109,7 @@ namespace Fields.UI
             }
             else
             {
-                StartGame();
+                StartGame(freshStart: true);
             }
         }
 
@@ -138,9 +148,10 @@ namespace Fields.UI
         // Game start
         // ------------------------------------------------------------------ //
 
-        public void StartGame()
+        public void StartGame(bool freshStart = false)
         {
-            Fields.Core.SessionState.Instance?.StartSinglePlayer();
+            if (freshStart)
+                Fields.Core.SessionState.Instance?.StartSinglePlayer();
             Fields.Core.RecordsManager.Instance?.ResetSessionState();
             if (menuCameraRoot) menuCameraRoot.SetActive(false);
             if (playerRoot)     playerRoot.SetActive(true);

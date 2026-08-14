@@ -58,8 +58,9 @@ Shader "Fields/GrassBlade"
             struct Attributes
             {
                 float4 positionOS : POSITION;
-                float2 uv         : TEXCOORD0;  // blade-local UV (v=height)
+                float2 uv         : TEXCOORD0;  // blade-local UV (v=height fraction 0=base 1=tip)
                 float2 fieldUV    : TEXCOORD1;  // per-blade field UV for mask
+                float2 groundYUV  : TEXCOORD2;  // x = terrain ground height in chunk local space
             };
 
             struct Varyings
@@ -85,8 +86,10 @@ Shader "Fields/GrassBlade"
                 float3 pos = IN.positionOS.xyz;
                 float  tipFrac = IN.uv.y; // 0=base, 1=tip
 
-                // Apply height scale
-                pos.y *= heightScale;
+                // pos.y is ground-relative (0=base, bladeHeight=tip); add groundY after scaling
+                // so heightScale only compresses the blade above ground, not the ground offset itself
+                float groundY = IN.groundYUV.x;
+                pos.y = groundY + pos.y * heightScale;
 
                 // Wind — tip sways, base anchored
                 float windOffset = sin(_Time.y * _WindSpeed + pos.x * 3.1 + pos.z * 2.7)

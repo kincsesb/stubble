@@ -109,6 +109,8 @@ namespace Fields.Core
         public ParcelSessionData GetParcel(int index) =>
             index >= 0 && index < Parcels.Length ? Parcels[index] : null;
 
+        internal void LoadTotalPlaytime(float seconds) => TotalPlaytime = seconds;
+
         // ------------------------------------------------------------------ //
         // Internal
         // ------------------------------------------------------------------ //

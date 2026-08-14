@@ -332,6 +332,15 @@ namespace Fields.Settings
             if (hud.baleCountText  != null) hud.baleCountText.gameObject.SetActive(Data.showCarryIndicator);
         }
 
+        // ── Gameplay ─────────────────────────────────────────────────────── //
+
+        public void SetTheatricalEnding(bool v)
+        {
+            Data.theatricalEnding = v;
+            MarkDirty();
+            NotifyChanged();
+        }
+
         // ── Language ─────────────────────────────────────────────────────── //
 
         public void ApplyLanguage()

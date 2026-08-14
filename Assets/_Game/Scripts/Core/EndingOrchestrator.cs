@@ -9,7 +9,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Fields.Core
@@ -18,7 +17,7 @@ namespace Fields.Core
     /// Routes game completion to one of three endings based on
     /// SettingsData.theatricalEnding and total playtime.
     ///
-    ///   theatrical ON  + < 3 h  → Speed-Run Loop  (grass resets, scene restarts)
+    ///   theatrical ON  + < 3 h  → Speed-Run Loop  (grass resets, player continues)
     ///   theatrical ON  + ≥ 3 h  → Nuclear         (plane, bomb, explosion)
     ///   theatrical OFF          → Peaceful         (EndScreen immediately)
     ///
@@ -30,6 +29,9 @@ namespace Fields.Core
 
         const float SPEEDRUN_THRESHOLD_SECONDS = 10800f; // 3 hours
 
+        // Fixed world-space rotation kept on the airplane model throughout the sequence.
+        static readonly Quaternion AIRPLANE_FIXED_ROTATION = Quaternion.Euler(-90f, 0f, 54f);
+
         // ── Scene references ──────────────────────────────────────────────── //
 
         [Header("Scene References")]
@@ -39,13 +41,13 @@ namespace Fields.Core
         [Tooltip("The airplane_3d_model Transform already placed in the scene.")]
         public Transform airplaneTransform;
 
-        [Tooltip("The 'Bomb' empty GameObject — airplane flies toward this.")]
+        [Tooltip("The 'Bomb' empty GameObject — airplane flies toward this, bomb spawns here.")]
         public Transform bombTarget;
 
         [Tooltip("Prefab instantiated and dropped when the plane passes over.")]
         public GameObject nuclearBombPrefab;
 
-        [Tooltip("vfx_StylizedExplosion_Nuke_L ParticleSystem in the scene.")]
+        [Tooltip("vfx_StylizedExplosion_Nuke_L ParticleSystem already placed in the scene.")]
         public ParticleSystem vfxNuke;
 
         [Tooltip("Separate URP Volume (priority 20, weight 0). Profile needs Bloom/ChromAb/Vignette/ColorAdj/LensDistort.")]
@@ -82,8 +84,8 @@ namespace Fields.Core
         [Header("Audio")]
         public AudioSource airplaneAudioSource;
         public AudioSource explosionAudioSource;
-        public AudioClip airplaneClip;    // Assets/SFX/airplane.mp3
-        public AudioClip nuclearBombClip; // Assets/SFX/nuclear-bomb.mp3
+        public AudioClip airplaneClip;
+        public AudioClip nuclearBombClip;
 
         // ── Feel ──────────────────────────────────────────────────────────── //
 
@@ -111,8 +113,35 @@ namespace Fields.Core
         public float playerTurnDuration  = 2.0f;
         public float airplaneTravelTime  = 9.0f;
         public float bombDropDuration    = 1.8f;
-        public float postBlastHold       = 4.0f;
+        public float postBlastHold       = 2.5f;
         public float fadeOutDuration     = 1.5f;
+
+        [Tooltip("Slerp speed for player body/pitch tracking during the cinematic.")]
+        public float playerTrackSpeed    = 3.5f;
+
+        // ── Nuclear Camera ────────────────────────────────────────────────── //
+
+        [Header("Nuclear Camera")]
+        [Tooltip("FOV during airplane tracking (narrower = more zoom).")]
+        public float fovAirplane = 48f;
+
+        [Tooltip("FOV during bomb drop (extra zoom on the falling bomb).")]
+        public float fovBomb = 38f;
+
+        [Tooltip("Seconds to reach each FOV target.")]
+        public float fovZoomDuration = 2.0f;
+
+        // ── Nuclear Shockwave ─────────────────────────────────────────────── //
+
+        [Header("Nuclear Shockwave")]
+        [Tooltip("Prefab (flat disc/ring mesh with fade material) spawned at impact and scaled outward.")]
+        public GameObject shockwavePrefab;
+
+        [Tooltip("Max world-space scale of the shockwave ring.")]
+        public float shockwaveMaxScale = 100f;
+
+        [Tooltip("Time in seconds for the shockwave to expand fully.")]
+        public float shockwaveDuration = 2.5f;
 
         // ── Nuclear post-process ──────────────────────────────────────────── //
 
@@ -123,19 +152,30 @@ namespace Fields.Core
         public float nukeSaturationPeak  = 60f;
         public float nukeHueShift        = -15f;
         public float nukeLensDistort     = -0.3f;
-        public float nukeLightIntensity  = 200f;
-        public float nukeLightRange      = 150f;
+
+        [Tooltip("Instantaneous white-flash intensity at the moment of detonation.")]
+        public float nukeFlashIntensity  = 15000f;
+
+        [Tooltip("Sustained orange fire glow intensity after the flash fades.")]
+        public float nukeLightIntensity  = 4000f;
+
+        [Tooltip("Point light range for the explosion glow.")]
+        public float nukeLightRange      = 300f;
+
         public Color nukeLightColor      = new Color(1f, 0.6f, 0.1f);
-        public float nukePostDecayTime   = 3.0f;
+        public float nukePostDecayTime   = 4.0f;
 
         // ── Runtime ───────────────────────────────────────────────────────── //
 
-        Bloom             _nukeBloom;
+        Bloom               _nukeBloom;
         ChromaticAberration _nukeChromAb;
-        Vignette          _nukeVignette;
-        ColorAdjustments  _nukeColorAdj;
-        LensDistortion    _nukeLensDistort;
-        Image             _fadeImage;
+        Vignette            _nukeVignette;
+        ColorAdjustments    _nukeColorAdj;
+        LensDistortion      _nukeLensDistort;
+        Image               _fadeImage;
+
+        // Stored travel direction so ContinueAirplane doesn't rely on airplaneTransform.forward
+        Vector3 _airplaneTravelDir;
 
         // ======================================================================
         // Lifecycle
@@ -204,21 +244,14 @@ namespace Fields.Core
                 gf.GetComponent<GrassChunkManager>()?.AnimatePopInWave(center);
             }
 
-            // Wait for wave to finish (maxDelay + duration + small buffer)
             yield return new WaitForSecondsRealtime(1.5f);
 
             yield return StartCoroutine(ShowLoopTitleCard());
 
-            // Reset parcel completion so the field can be won again
             WorldBootstrap.Instance?.ResetAllParcels();
-
-            // Persist the fresh grass state
             SaveSystem.Instance?.SaveGame();
 
-            // Exit cinematic — letterboxes slide back out
             yield return StartCoroutine(AnimateLetterbox(enter: false));
-
-            // Return control — player continues from exactly where they are
             SetPlayerInput(true);
         }
 
@@ -231,48 +264,101 @@ namespace Fields.Core
             EndScreen.PendingEndingType = EndScreen.EndingType.Nuclear;
             SetPlayerInput(false);
 
+            // Suppress PlayerController's own FOV/bob logic during the cinematic
+            var pc = PlayerController.Instance;
+            if (pc != null) pc.IsMounted = true;
+
             feedbackCinematicIn?.PlayFeedbacks();
             yield return StartCoroutine(AnimateLetterbox(enter: true));
 
-            // Players turn to face the airplane
-            Vector3 faceTarget = airplaneTransform != null
+            // Initial turn: face the airplane
+            Vector3 initialFace = airplaneTransform != null
                 ? airplaneTransform.position
                 : transform.position + Vector3.forward * 50f;
-            yield return StartCoroutine(RotatePlayersToward(faceTarget, playerTurnDuration));
+            yield return StartCoroutine(RotatePlayersToward(initialFace, playerTurnDuration));
 
-            // Start airplane audio (fades in during travel)
+            // Start airplane audio
             if (airplaneAudioSource != null && airplaneClip != null)
             {
-                airplaneAudioSource.clip  = airplaneClip;
-                airplaneAudioSource.loop  = true;
+                airplaneAudioSource.clip   = airplaneClip;
+                airplaneAudioSource.loop   = true;
                 airplaneAudioSource.volume = 0f;
                 airplaneAudioSource.Play();
             }
 
             feedbackNuclearBuild?.PlayFeedbacks();
 
-            // Fly airplane toward the Bomb target
+            // Compute and store travel direction for ContinueAirplane
             Vector3 bombPos = bombTarget != null ? bombTarget.position : Vector3.zero;
-            yield return StartCoroutine(MoveAirplane(bombPos, airplaneTravelTime));
+            if (airplaneTransform != null)
+            {
+                _airplaneTravelDir = bombPos - airplaneTransform.position;
+                _airplaneTravelDir.y = 0f;
+                if (_airplaneTravelDir.sqrMagnitude > 0.001f)
+                    _airplaneTravelDir.Normalize();
+            }
 
-            // Drop the bomb
+            float airplaneSpeed = airplaneTransform != null
+                ? Vector3.Distance(new Vector3(airplaneTransform.position.x, 0f, airplaneTransform.position.z),
+                                   new Vector3(bombPos.x, 0f, bombPos.z))
+                  / Mathf.Max(airplaneTravelTime, 0.1f)
+                : 20f;
+
+            // Zoom in on airplane + continuously track it
+            StartCoroutine(AnimateFOV(fovAirplane, fovZoomDuration));
+            var planeTrack = StartCoroutine(TrackWithPlayerCamera(airplaneTransform));
+            yield return StartCoroutine(MoveAirplane(bombPos, airplaneTravelTime));
+            StopCoroutine(planeTrack);
+
+            // Spawn bomb at airplane's current position
             GameObject bomb = null;
             if (nuclearBombPrefab != null && airplaneTransform != null)
                 bomb = Instantiate(nuclearBombPrefab, airplaneTransform.position, Quaternion.identity);
 
-            yield return StartCoroutine(DropBomb(bomb, bombPos, bombDropDuration));
+            // Airplane keeps flying forward (fire-and-forget)
+            StartCoroutine(ContinueAirplane(airplaneSpeed, airplaneTravelTime * 0.5f));
 
-            // EXPLOSION
+            // Zoom in more + track the falling bomb
+            StartCoroutine(AnimateFOV(fovBomb, 0.4f));
+            Coroutine bombTrack = null;
+            if (bomb != null)
+                bombTrack = StartCoroutine(TrackWithPlayerCamera(bomb.transform));
+
+            // Drop bomb straight down to terrain
+            Vector3 dropOrigin = bomb != null ? bomb.transform.position : bombPos;
+            Vector3 impactPos  = ComputeGroundPosition(dropOrigin);
+
+            if (bomb != null)
+                yield return StartCoroutine(DropBombDown(bomb, impactPos));
+            else
+                yield return new WaitForSecondsRealtime(bombDropDuration);
+
+            if (bombTrack != null) StopCoroutine(bombTrack);
+
+            // EXPLOSION ─────────────────────────────────────────────────────
             if (airplaneAudioSource != null) airplaneAudioSource.Stop();
 
             if (explosionAudioSource != null && nuclearBombClip != null)
                 explosionAudioSource.PlayOneShot(nuclearBombClip, 1f);
 
-            if (vfxNuke != null) vfxNuke.Play();
+            // VFX is placed in the scene — move it to impact and play
+            if (vfxNuke != null)
+            {
+                vfxNuke.gameObject.SetActive(true);
+                vfxNuke.transform.position = impactPos;
+                vfxNuke.Stop(true);
+                vfxNuke.Clear(true);
+                vfxNuke.Play(true);
+            }
+
+            if (bomb != null) Destroy(bomb);
 
             feedbackNuclearBlast?.PlayFeedbacks();
             StartCoroutine(AnimateNuclearVolume());
-            StartCoroutine(SpawnNukeLight(bombPos));
+            StartCoroutine(SpawnNukeLight(impactPos));
+
+            if (shockwavePrefab != null)
+                StartCoroutine(SpawnShockwave(impactPos));
 
             yield return new WaitForSecondsRealtime(postBlastHold);
 
@@ -280,13 +366,78 @@ namespace Fields.Core
             SteamManager.Instance?.UnlockAchievement(SteamManager.Achievements.THE_HARD_WAY);
 
             yield return new WaitForSecondsRealtime(1.5f);
+
+            // Delete save so the main menu shows only New Game (no Continue) after this ending
+            SaveSystem.Instance?.DeleteSave();
+
             yield return StartCoroutine(FadeToBlack(fadeOutDuration));
 
             if (endScreenRoot != null) endScreenRoot.SetActive(true);
         }
 
         // ======================================================================
-        // Airplane movement
+        // Player camera tracking — body yaw + camera pitch toward moving target
+        // ======================================================================
+
+        /// <summary>Continuously rotates player body (yaw) and cameraRoot (pitch) toward target.</summary>
+        IEnumerator TrackWithPlayerCamera(Transform target)
+        {
+            var pc = PlayerController.Instance;
+            if (pc == null || target == null) yield break;
+
+            while (target != null)
+            {
+                Vector3 toTarget = target.position - pc.transform.position;
+
+                // Horizontal body rotation (yaw)
+                Vector3 flatDir = new Vector3(toTarget.x, 0f, toTarget.z);
+                if (flatDir.sqrMagnitude > 0.01f)
+                {
+                    Quaternion desiredYaw = Quaternion.LookRotation(flatDir.normalized);
+                    pc.transform.rotation = Quaternion.Slerp(
+                        pc.transform.rotation, desiredYaw,
+                        Time.unscaledDeltaTime * playerTrackSpeed);
+                }
+
+                // Vertical camera pitch
+                if (pc.cameraRoot != null && toTarget.sqrMagnitude > 0.01f)
+                {
+                    float flatDist  = flatDir.magnitude;
+                    float pitchDeg  = Mathf.Atan2(toTarget.y, flatDist) * Mathf.Rad2Deg;
+                    pitchDeg = Mathf.Clamp(pitchDeg, -80f, 80f);
+                    Quaternion desiredPitch = Quaternion.Euler(-pitchDeg, 0f, 0f);
+                    pc.cameraRoot.localRotation = Quaternion.Slerp(
+                        pc.cameraRoot.localRotation, desiredPitch,
+                        Time.unscaledDeltaTime * playerTrackSpeed);
+                }
+
+                yield return null;
+            }
+        }
+
+        // ======================================================================
+        // FOV zoom
+        // ======================================================================
+
+        IEnumerator AnimateFOV(float targetFOV, float duration)
+        {
+            var cam = Camera.main;
+            if (cam == null) yield break;
+
+            float startFOV = cam.fieldOfView;
+            float elapsed  = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                cam.fieldOfView = Mathf.Lerp(startFOV, targetFOV,
+                    Mathf.SmoothStep(0f, 1f, elapsed / duration));
+                yield return null;
+            }
+            cam.fieldOfView = targetFOV;
+        }
+
+        // ======================================================================
+        // Airplane movement — rotation stays fixed (Inspector value)
         // ======================================================================
 
         IEnumerator MoveAirplane(Vector3 target, float duration)
@@ -295,23 +446,16 @@ namespace Fields.Core
 
             Vector3 start       = airplaneTransform.position;
             Vector3 targetFlat  = new Vector3(target.x, start.y, target.z);
-            Quaternion startRot = airplaneTransform.rotation;
-            Vector3 dir         = targetFlat - start;
-            Quaternion targetRot = dir.sqrMagnitude > 0.001f
-                ? Quaternion.LookRotation(dir.normalized)
-                : startRot;
 
             float elapsed = 0f;
             while (elapsed < duration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 float t = elapsed / duration;
 
                 airplaneTransform.position = Vector3.Lerp(start, targetFlat, t);
-                // Quick initial rotation snap, then hold
-                airplaneTransform.rotation = Quaternion.Slerp(startRot, targetRot, Mathf.Min(t * 4f, 1f));
+                airplaneTransform.rotation = AIRPLANE_FIXED_ROTATION; // hold exact Inspector rotation
 
-                // Fade in audio as plane gets closer
                 if (airplaneAudioSource != null)
                     airplaneAudioSource.volume = Mathf.Clamp01(t * 2f);
 
@@ -319,38 +463,58 @@ namespace Fields.Core
             }
 
             airplaneTransform.position = targetFlat;
+            airplaneTransform.rotation = AIRPLANE_FIXED_ROTATION;
         }
 
-        // ======================================================================
-        // Bomb drop
-        // ======================================================================
-
-        IEnumerator DropBomb(GameObject bomb, Vector3 target, float duration)
+        /// <summary>Airplane continues flying past the drop point at the same speed.</summary>
+        IEnumerator ContinueAirplane(float speed, float duration)
         {
-            if (bomb == null) yield break;
-
-            // Take control away from any Rigidbody on the prefab
-            var rb = bomb.GetComponent<Rigidbody>();
-            if (rb != null) rb.isKinematic = true;
-
-            Vector3 start      = bomb.transform.position;
-            Vector3 dropTarget = GrassField.SnapToTerrain(target);
-
+            if (airplaneTransform == null) yield break;
             float elapsed = 0f;
             while (elapsed < duration)
             {
-                elapsed += Time.deltaTime;
-                float t = elapsed / duration;
-                // Ease-in squared gives gravity feel
-                bomb.transform.position = Vector3.Lerp(start, dropTarget, t * t);
+                elapsed += Time.unscaledDeltaTime;
+                airplaneTransform.position += _airplaneTravelDir * speed * Time.unscaledDeltaTime;
+                airplaneTransform.rotation  = AIRPLANE_FIXED_ROTATION;
                 yield return null;
             }
-
-            bomb.transform.position = dropTarget;
         }
 
         // ======================================================================
-        // Player rotation
+        // Bomb drop — straight down (Y-axis), ease-in gravity feel
+        // ======================================================================
+
+        IEnumerator DropBombDown(GameObject bomb, Vector3 groundTarget)
+        {
+            if (bomb == null) yield break;
+
+            var rb = bomb.GetComponent<Rigidbody>();
+            if (rb != null) rb.isKinematic = true;
+
+            Vector3 start   = bomb.transform.position;
+            float   elapsed = 0f;
+            while (elapsed < bombDropDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = elapsed / bombDropDuration;
+                bomb.transform.position = Vector3.Lerp(start, groundTarget, t * t);
+                yield return null;
+            }
+            bomb.transform.position = groundTarget;
+        }
+
+        /// <summary>Raycast down to find terrain/collider height at worldPos.</summary>
+        Vector3 ComputeGroundPosition(Vector3 worldPos)
+        {
+            if (Physics.Raycast(worldPos + Vector3.up * 100f, Vector3.down, out RaycastHit hit, 600f))
+                return hit.point;
+            if (Terrain.activeTerrain != null)
+                return new Vector3(worldPos.x, Terrain.activeTerrain.SampleHeight(worldPos), worldPos.z);
+            return new Vector3(worldPos.x, 0f, worldPos.z);
+        }
+
+        // ======================================================================
+        // Player rotation (one-shot smooth turn)
         // ======================================================================
 
         IEnumerator RotatePlayersToward(Vector3 worldTarget, float duration)
@@ -384,12 +548,10 @@ namespace Fields.Core
         {
             if (letterboxTop == null || letterboxBottom == null) yield break;
 
-            // Top bar: hidden at +letterboxHeight, visible at 0
-            // Bottom bar: hidden at -letterboxHeight, visible at 0
-            float fromTop = enter ? letterboxHeight  :  0f;
-            float toTop   = enter ? 0f               :  letterboxHeight;
+            float fromTop = enter ?  letterboxHeight : 0f;
+            float toTop   = enter ?  0f              : letterboxHeight;
             float fromBot = enter ? -letterboxHeight  : 0f;
-            float toBot   = enter ? 0f               : -letterboxHeight;
+            float toBot   = enter ?  0f              : -letterboxHeight;
 
             float elapsed = 0f;
             while (elapsed < letterboxDuration)
@@ -473,7 +635,6 @@ namespace Fields.Core
         {
             if (nuclearVolume == null) yield break;
 
-            // Hard peak
             nuclearVolume.weight = 1f;
             if (_nukeBloom    != null) _nukeBloom.intensity.Override(nukeBloomPeak);
             if (_nukeChromAb  != null) _nukeChromAb.intensity.Override(nukeChromAbPeak);
@@ -485,10 +646,8 @@ namespace Fields.Core
             }
             if (_nukeLensDistort != null) _nukeLensDistort.intensity.Override(nukeLensDistort);
 
-            // Brief hold at peak (matches flash white-out)
             yield return new WaitForSecondsRealtime(0.15f);
 
-            // Decay
             float elapsed = 0f;
             while (elapsed < nukePostDecayTime)
             {
@@ -501,26 +660,67 @@ namespace Fields.Core
             nuclearVolume.weight = 0f;
         }
 
+        // ======================================================================
+        // Nuke light — white flash → orange fire decay
+        // ======================================================================
+
         IEnumerator SpawnNukeLight(Vector3 pos)
         {
-            var lightGO = new GameObject("NukeExplosionLight");
+            var lightGO     = new GameObject("NukeExplosionLight");
             lightGO.transform.position = pos + Vector3.up * 5f;
-            var light = lightGO.AddComponent<Light>();
+            var light       = lightGO.AddComponent<Light>();
             light.type      = LightType.Point;
-            light.color     = nukeLightColor;
             light.range     = nukeLightRange;
-            light.intensity = nukeLightIntensity;
+            light.color     = Color.white;
+            light.intensity = nukeFlashIntensity;
 
+            // White flash → orange over 0.3 s
+            const float flashDuration = 0.3f;
             float elapsed = 0f;
-            const float duration = 2.0f;
-            while (elapsed < duration)
+            while (elapsed < flashDuration)
             {
                 elapsed += Time.unscaledDeltaTime;
-                light.intensity = Mathf.Lerp(nukeLightIntensity, 0f, elapsed / duration);
+                float t = elapsed / flashDuration;
+                light.color     = Color.Lerp(Color.white, nukeLightColor, t);
+                light.intensity = Mathf.Lerp(nukeFlashIntensity, nukeLightIntensity, t);
+                yield return null;
+            }
+
+            // Orange fire glow decays
+            light.color     = nukeLightColor;
+            light.intensity = nukeLightIntensity;
+            elapsed = 0f;
+            while (elapsed < nukePostDecayTime)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = elapsed / nukePostDecayTime;
+                light.intensity = Mathf.Lerp(nukeLightIntensity, 0f, t * t);
                 yield return null;
             }
 
             Destroy(lightGO);
+        }
+
+        // ======================================================================
+        // Shockwave expansion
+        // ======================================================================
+
+        IEnumerator SpawnShockwave(Vector3 pos)
+        {
+            if (shockwavePrefab == null) yield break;
+
+            var sw      = Instantiate(shockwavePrefab, pos, Quaternion.identity);
+            float elapsed = 0f;
+            while (elapsed < shockwaveDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t     = elapsed / shockwaveDuration;
+                float scale = Mathf.Lerp(0f, shockwaveMaxScale, 1f - Mathf.Pow(1f - t, 2f));
+                sw.transform.localScale = Vector3.one * scale;
+                yield return null;
+            }
+
+            Destroy(sw);
         }
 
         // ======================================================================
@@ -532,12 +732,12 @@ namespace Fields.Core
             if (grassFields == null || grassFields.Length == 0)
                 return new Vector3(100f, 0f, 100f);
 
-            Vector3 sum = Vector3.zero;
-            int count = 0;
+            Vector3 sum   = Vector3.zero;
+            int     count = 0;
             foreach (var gf in grassFields)
             {
                 if (gf == null) continue;
-                // transform.position is the bottom-left origin; add half-size to get center
+                // transform.position is the bottom-left origin — add half fieldSize to get true center
                 Vector3 center = gf.transform.position + new Vector3(gf.fieldSize.x * 0.5f, 0f, gf.fieldSize.y * 0.5f);
                 sum += center;
                 count++;

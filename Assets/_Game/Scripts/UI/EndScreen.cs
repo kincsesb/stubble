@@ -11,15 +11,33 @@ namespace Fields.UI
     /// Shown when the whole field is cleared.
     /// Displays final stats + a snarky localized comment.
     /// Set PendingEndingType before activating so BuildComment picks the right branch.
+    ///
+    /// After a Nuclear ending the save is already deleted before this screen opens,
+    /// so the main menu will show only New Game (no Continue).
     /// </summary>
     public class EndScreen : MonoBehaviour
     {
         public enum EndingType { Peaceful, Loop, Nuclear }
         public static EndingType PendingEndingType = EndingType.Peaceful;
-        [Header("Text fields")]
+
+        [Header("Required text fields")]
         public TextMeshProUGUI totalEarningsText;
         public TextMeshProUGUI timePlayedText;
         public TextMeshProUGUI titleText;
+
+        [Header("Optional stat fields (assign in Inspector if you have them in the layout)")]
+        [Tooltip("e.g. 'Grass cut: 4 200 m²'")]
+        public TextMeshProUGUI grassCutText;
+
+        [Tooltip("e.g. 'Bales: 38'")]
+        public TextMeshProUGUI balesMadeText;
+
+        [Tooltip("e.g. 'Swings: 1 450'")]
+        public TextMeshProUGUI totalSwingsText;
+
+        [Tooltip("e.g. 'Distance: 12.4 km'")]
+        public TextMeshProUGUI distanceTravelledText;
+
         [Tooltip("Optional: assign a TMP text field to show the end-of-game comment.")]
         public TextMeshProUGUI commentText;
 
@@ -29,6 +47,9 @@ namespace Fields.UI
 
         static float _gameStartTime;
 
+        // gridCellSize default from GameConfig — used to convert cut cells to m².
+        const float CELL_SIZE_M = 0.4f;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void RecordStartTime() => _gameStartTime = Time.realtimeSinceStartup;
 
@@ -36,28 +57,37 @@ namespace Fields.UI
         {
             Time.timeScale = 0f;
 
-            var loc   = LocalizationManager.Instance;
-            var cur   = CurrencyManager.Instance;
-            var ss    = SessionState.Instance;
+            var loc = LocalizationManager.Instance;
+            var cur = CurrencyManager.Instance;
+            var ss  = SessionState.Instance;
 
             int   money   = cur  != null ? cur.Money : 0;
             float elapsed = Time.realtimeSinceStartup - _gameStartTime;
             int   mins    = Mathf.FloorToInt(elapsed / 60f);
             int   secs    = Mathf.FloorToInt(elapsed % 60f);
 
-            // Collect stats for comment selection
-            int totalBales = 0;
-            int totalSwings = 0;
+            // ── Collect per-player stats ──────────────────────────────────
+            long  totalBales    = 0;
+            long  totalSwings   = 0;
+            long  totalCutCells = 0;
+            double totalDistM   = 0;
+
             if (ss != null)
             {
-                var player = ss.GetPlayer(ss.LocalPlayerId);
-                if (player != null)
+                foreach (var p in ss.Players)
                 {
-                    totalBales  = (int)(player.SquareBalesMade + player.RoundBalesMade);
-                    totalSwings = (int)player.TotalSwings;
+                    if (p == null) continue;
+                    totalBales    += p.SquareBalesMade + p.RoundBalesMade;
+                    totalSwings   += p.TotalSwings;
+                    totalCutCells += p.AreaCutCells;
+                    totalDistM    += p.DistanceTravelledM;
                 }
             }
 
+            float cutAreaM2   = totalCutCells * CELL_SIZE_M * CELL_SIZE_M;
+            float distKm      = (float)(totalDistM / 1000.0);
+
+            // ── Required fields ───────────────────────────────────────────
             if (totalEarningsText != null)
                 totalEarningsText.text = loc != null
                     ? loc.Get("end.earnings", money)
@@ -73,8 +103,30 @@ namespace Fields.UI
                     ? loc.Get("end.title")
                     : "All Fields Cleared!";
 
+            // ── Optional stat fields ──────────────────────────────────────
+            if (grassCutText != null)
+                grassCutText.text = loc != null
+                    ? loc.Get("end.grass_cut", cutAreaM2)
+                    : $"Grass cut: {cutAreaM2:N0} m²";
+
+            if (balesMadeText != null)
+                balesMadeText.text = loc != null
+                    ? loc.Get("end.bales", totalBales)
+                    : $"Bales: {totalBales}";
+
+            if (totalSwingsText != null)
+                totalSwingsText.text = loc != null
+                    ? loc.Get("end.swings", totalSwings)
+                    : $"Swings: {totalSwings}";
+
+            if (distanceTravelledText != null)
+                distanceTravelledText.text = loc != null
+                    ? loc.Get("end.distance", distKm)
+                    : $"Distance: {distKm:F1} km";
+
             if (commentText != null)
-                commentText.text = BuildComment(loc, elapsed, money, totalBales, totalSwings, mins, secs);
+                commentText.text = BuildComment(loc, elapsed, money,
+                    (int)totalBales, (int)totalSwings, mins, secs);
 
             // Speed-run achievement
             if (elapsed < SteamManager.Thresholds.SPEEDRUN_SECONDS)
@@ -95,14 +147,12 @@ namespace Fields.UI
         {
             if (loc == null) return string.Empty;
 
-            // Theatrical ending overrides — checked first
             if (PendingEndingType == EndingType.Nuclear)
             {
                 int hours = Mathf.FloorToInt(elapsed / 3600f);
                 return loc.Get("end.comment.nuclear", hours);
             }
 
-            // Priority-ordered comment selection
             if (elapsed < 20f * 60f)
                 return loc.Get("end.comment.speedrun", mins, secs);
 
@@ -115,13 +165,11 @@ namespace Fields.UI
             if (money >= 10000)
                 return loc.Get("end.comment.rich", money);
 
-            // Lazy farmer: high money relative to swings means they used the ride-on
             if (totalSwings > 0 && money > 2000 && (float)money / totalSwings > 20f)
                 return loc.Get("end.comment.efficient");
 
-            // General pool — deterministic pick based on session data
-            int pool    = 6;
-            int pick    = Mathf.Abs((totalBales * 7 + mins * 13 + money) % pool);
+            int pool = 6;
+            int pick = Mathf.Abs((totalBales * 7 + mins * 13 + money) % pool);
             return loc.Get($"end.comment.{pick}");
         }
 
@@ -135,14 +183,16 @@ namespace Fields.UI
             if (btn == null) return;
             var tmp = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
             if (tmp == null) return;
-            tmp.text = Fields.Core.LocalizationManager.Instance != null
-                ? Fields.Core.LocalizationManager.Instance.Get(key)
+            tmp.text = LocalizationManager.Instance != null
+                ? LocalizationManager.Instance.Get(key)
                 : fallback;
         }
 
         void PlayAgain()
         {
             Time.timeScale = 1f;
+            // Reload scene → WorldBootstrap shows the main menu.
+            // For nuclear ending the save was already deleted, so Continue won't appear.
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 

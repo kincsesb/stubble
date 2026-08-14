@@ -54,6 +54,10 @@ namespace Fields.Settings
         public bool  contextualHints       = true;
         public bool  highContrastHUD       = false;
 
+        // ── Gameplay ─────────────────────────────────────────────────────── //
+        // false = peaceful (EndScreen immediately, no cutscene)
+        public bool theatricalEnding = true;
+
         // ── Language ──────────────────────────────────────────────────────── //
         public string language = "en";
     }
