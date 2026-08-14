@@ -626,8 +626,9 @@ namespace Fields.Core
                     return CarriedBaleCount < 3 ? L("hud.pickup_bale") : L("hud.carry_full");
                 if (hit.collider.GetComponentInParent<Fields.World.CheatCodeTerminal>() != null)
                     return "[E]  Use Computer";
-                if (hit.collider.GetComponentInParent<IInteractable>() != null)
-                    return L("hud.interact");
+                var hitIa = hit.collider.GetComponentInParent<IInteractable>();
+                if (hitIa != null)
+                    return hitIa is IHintProvider hp ? hp.GetHint(this) : L("hud.interact");
             }
             // Ground proximity for bales (bale at feet, player looking forward)
             var groundFront = transform.position + forward * 2f + Vector3.up * 0.5f;
@@ -666,5 +667,11 @@ namespace Fields.Core
     public interface IInteractable
     {
         void Interact(PlayerController player);
+    }
+
+    /// <summary>Optional extension for IInteractable — returns a context-sensitive HUD hint.</summary>
+    public interface IHintProvider
+    {
+        string GetHint(PlayerController player);
     }
 }

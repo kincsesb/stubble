@@ -47,6 +47,10 @@ namespace Fields.UI
         [Tooltip("TMP text for context hints. Auto-created if null.")]
         public TextMeshProUGUI promptText;
 
+        [Header("Blade wear (auto-created if null)")]
+        public MMProgressBar wearBar;
+        public TextMeshProUGUI wearBarLabel;
+
         [Header("Crosshair")]
         public Image crosshair;
         [Tooltip("Crosshair pulse scale when tool hits grass")]
@@ -62,6 +66,7 @@ namespace Fields.UI
         Image _fuelFgImg;
         Image _balingFgImg;
         Image _grassCutFgImg;
+        Image _wearFgImg;
 
         // Money animation
         float _displayedMoney;
@@ -127,6 +132,7 @@ namespace Fields.UI
             EnsureBalingBar();
             EnsureGrassCutBar();
             EnsurePromptText();
+            EnsureWearBar();
             _staminaFgImg = staminaBar?.ForegroundBar?.GetComponent<Image>();
             _fuelFgImg    = fuelBar?.ForegroundBar?.GetComponent<Image>();
         }
@@ -270,6 +276,93 @@ namespace Fields.UI
             go.SetActive(false);
         }
 
+        void EnsureWearBar()
+        {
+            if (wearBar != null)
+            {
+                _wearFgImg = wearBar.ForegroundBar?.GetComponent<Image>();
+                return;
+            }
+
+            var bgGO = new GameObject("WearBarContainer", typeof(RectTransform), typeof(Image));
+            bgGO.transform.SetParent(transform, false);
+            var bgRT = bgGO.GetComponent<RectTransform>();
+            bgRT.anchorMin = new Vector2(0.5f, 0f);
+            bgRT.anchorMax = new Vector2(0.5f, 0f);
+            bgRT.anchoredPosition = new Vector2(0f, 26f);
+            bgRT.sizeDelta = new Vector2(240f, 12f);
+            bgGO.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
+            bgGO.SetActive(false);
+
+            var fgGO = new GameObject("WearBarFill", typeof(RectTransform), typeof(Image));
+            fgGO.transform.SetParent(bgGO.transform, false);
+            var fgRT = fgGO.GetComponent<RectTransform>();
+            fgRT.pivot     = new Vector2(0f, 0.5f);
+            fgRT.anchorMin = Vector2.zero;
+            fgRT.anchorMax = Vector2.one;
+            fgRT.offsetMin = new Vector2(2f, 2f);
+            fgRT.offsetMax = new Vector2(-2f, -2f);
+            _wearFgImg = fgGO.GetComponent<Image>();
+            _wearFgImg.color = new Color(0.2f, 0.85f, 0.2f);
+
+            wearBar = bgGO.AddComponent<MMProgressBar>();
+            wearBar.ForegroundBar = fgGO.transform;
+            wearBar.FillMode = MMProgressBar.FillModes.LocalScale;
+            wearBar.BarDirection = MMProgressBar.BarDirections.LeftToRight;
+            wearBar.TimeScale = MMProgressBar.TimeScales.UnscaledTime;
+            wearBar.LerpForegroundBar = true;
+            wearBar.LerpForegroundBarSpeedIncreasing = 12f;
+            wearBar.LerpForegroundBarSpeedDecreasing = 12f;
+
+            var lGO = new GameObject("WearBarLabel", typeof(RectTransform), typeof(TextMeshProUGUI));
+            lGO.transform.SetParent(bgGO.transform, false);
+            var lRT = lGO.GetComponent<RectTransform>();
+            lRT.anchorMin = Vector2.zero;
+            lRT.anchorMax = Vector2.one;
+            lRT.offsetMin = Vector2.zero;
+            lRT.offsetMax = Vector2.zero;
+            wearBarLabel = lGO.GetComponent<TextMeshProUGUI>();
+            wearBarLabel.fontSize = 10;
+            wearBarLabel.fontStyle = TMPro.FontStyles.Bold;
+            wearBarLabel.alignment = TextAlignmentOptions.Center;
+            wearBarLabel.color = new Color(1f, 1f, 1f, 0.9f);
+        }
+
+        void UpdateWearBar()
+        {
+            if (wearBar == null) return;
+            if (!IsGameActive) { wearBar.gameObject.SetActive(false); return; }
+
+            var scythe = toolHolder?.ActiveTool as Fields.Tools.LongScythe;
+            bool show = scythe != null && scythe.WearNormalized > 0.02f;
+            wearBar.gameObject.SetActive(show);
+            if (!show) return;
+
+            float wear = scythe.WearNormalized;
+            float sharpness = 1f - wear;
+            wearBar.SetBar01(sharpness);
+
+            // green (sharp) → orange → red (dull)
+            Color c = wear < 0.5f
+                ? Color.Lerp(new Color(0.2f, 0.85f, 0.2f), new Color(1f, 0.6f, 0f), wear / 0.5f)
+                : Color.Lerp(new Color(1f, 0.6f, 0f), new Color(0.9f, 0.15f, 0.1f), (wear - 0.5f) / 0.5f);
+            if (_wearFgImg != null) _wearFgImg.color = c;
+
+            // Pulse when critical (>80% worn)
+            if (wear > 0.8f)
+            {
+                float pulse = (Mathf.Sin(Time.time * 6f) + 1f) * 0.5f;
+                wearBar.transform.localScale = new Vector3(1f + pulse * 0.04f, 1f + pulse * 0.08f, 1f);
+            }
+            else
+            {
+                wearBar.transform.localScale = Vector3.one;
+            }
+
+            if (wearBarLabel != null)
+                wearBarLabel.text = $"Kasza  {Mathf.RoundToInt(sharpness * 100)}%";
+        }
+
         void OnDestroy()
         {
             if (CurrencyManager.Instance != null)
@@ -283,6 +376,7 @@ namespace Fields.UI
             UpdateCompletion();
             UpdateBaleCount();
             UpdatePrompt();
+            UpdateWearBar();
             TickMoneyPunch();
             TickCrosshairPulse();
             TickBalingFlash();

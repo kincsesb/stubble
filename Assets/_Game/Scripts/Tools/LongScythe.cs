@@ -6,6 +6,10 @@ namespace Fields.Tools
     /// <summary>
     /// Long Scythe — sweeps a fan in the camera's forward direction during the swing arc.
     /// Fan angle ~45deg total, reach scaled by CurrentPower. Terrain-snapped.
+    ///
+    /// Blade wear: each sweep increments _wear 0→1.
+    /// At full wear: cut radius drops to wornRadiusFraction of base, stamina cost triples.
+    /// Restored by WhetstoneInteractable.
     /// </summary>
     public class LongScythe : MeleeToolBase
     {
@@ -23,6 +27,34 @@ namespace Fields.Tools
         [Tooltip("Capsule radius for each cut segment")]
         public float cutRadius = 0.15f;
 
+        [Header("Blade Wear")]
+        [Tooltip("Wear gained per full swing. 0.01 = ~100 swings to full dull (~3 min constant swinging)")]
+        [SerializeField] float wearPerSwing = 0.01f;
+        [Tooltip("At full wear, cut radius is this fraction of base (min effectiveness)")]
+        [SerializeField] float wornRadiusFraction = 0.3f;
+        [Tooltip("At full wear, stamina cost multiplies by this factor")]
+        [SerializeField] float wornStaminaMultiplier = 3f;
+
+        float _wear;       // 0 = sharp, 1 = fully dull
+        bool _warnedDull;
+
+        // Public API for WhetstoneInteractable and HUD
+        public float WearNormalized => _wear;
+
+        public void SetWear(float w)
+        {
+            _wear = Mathf.Clamp01(w);
+            if (_wear < 0.8f) _warnedDull = false;
+        }
+
+        public override void OnEquip()
+        {
+            base.OnEquip();
+            _warnedDull = _wear >= 0.8f;
+        }
+
+        // ------------------------------------------------------------------ //
+
         const float WINDUP_END = 0.25f;
         const float SWEEP_END  = 0.55f;
 
@@ -32,7 +64,17 @@ namespace Fields.Tools
         protected override void OnSweepBegin()
         {
             _prevSweepTip = CalcFanTip(0f);
-            TryConsumeStamina(5f);
+
+            float staminaCost = 5f * Mathf.Lerp(1f, wornStaminaMultiplier, _wear);
+            TryConsumeStamina(staminaCost);
+
+            _wear = Mathf.Min(1f, _wear + wearPerSwing);
+
+            if (_wear >= 0.8f && !_warnedDull)
+            {
+                _warnedDull = true;
+                Fields.UI.HUDController.Instance?.ShowToolTip("Kasza tompa!  Keress fenokot.", 3f);
+            }
         }
 
         protected override void OnSweepTick(float rawTimer)
@@ -42,7 +84,10 @@ namespace Fields.Tools
 
             if (_targetField == null) _targetField = FindNearestField(tip);
             if (_targetField != null)
-                _targetField.CutCapsule(_prevSweepTip, tip, cutRadius * CurrentPower);
+            {
+                float effectiveRadius = cutRadius * CurrentPower * Mathf.Lerp(1f, wornRadiusFraction, _wear);
+                _targetField.CutCapsule(_prevSweepTip, tip, effectiveRadius);
+            }
 
             _prevSweepTip = tip;
         }
@@ -57,14 +102,12 @@ namespace Fields.Tools
             var player = Fields.Core.PlayerController.Instance;
             Vector3 origin = player != null ? player.transform.position : transform.position;
 
-            // Camera forward projected to XZ plane
             Transform cam = player?.cameraRoot;
             Vector3 forward = cam != null ? cam.forward : transform.forward;
             forward.y = 0f;
             if (forward.sqrMagnitude < 0.001f) forward = transform.forward;
             forward.Normalize();
 
-            // Sweep from -fanHalfAngle to +fanHalfAngle
             float angle = Mathf.Lerp(-fanHalfAngle, fanHalfAngle, sweepT);
             Vector3 dir = Quaternion.Euler(0f, angle, 0f) * forward;
 
