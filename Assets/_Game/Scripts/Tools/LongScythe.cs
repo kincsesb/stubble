@@ -9,7 +9,7 @@ namespace Fields.Tools
     ///
     /// Blade wear: each sweep increments _wear 0→1.
     /// At full wear: cut radius drops to wornRadiusFraction of base, stamina cost triples.
-    /// Restored by WhetstoneInteractable.
+    /// Hold R to sharpen in place (~2.5s). Higher upgrade level = slower wear.
     /// </summary>
     public class LongScythe : MeleeToolBase
     {
@@ -17,6 +17,11 @@ namespace Fields.Tools
         {
             animWindUpRotation   = new Vector3(-10f,  70f,  10f);
             animSweepEndRotation = new Vector3(  8f, -85f, -12f);
+        }
+
+        void Start()
+        {
+            BuildSparklePS();
         }
 
         [Header("Scythe Fan Geometry")]
@@ -35,10 +40,16 @@ namespace Fields.Tools
         [Tooltip("At full wear, stamina cost multiplies by this factor")]
         [SerializeField] float wornStaminaMultiplier = 3f;
 
-        float _wear;       // 0 = sharp, 1 = fully dull
-        bool _warnedDull;
+        [Header("Sharpening")]
+        [Tooltip("Seconds of holding R required to fully sharpen")]
+        [SerializeField] float sharpenDuration = 2.5f;
 
-        // Public API for WhetstoneInteractable and HUD
+        float _wear;
+        bool _warnedDull;
+        float _sharpenHoldTimer;
+        ParticleSystem _sparklePS;
+
+        // Public API for HUD
         public float WearNormalized => _wear;
 
         public void SetWear(float w)
@@ -55,11 +66,82 @@ namespace Fields.Tools
 
         // ------------------------------------------------------------------ //
 
+        void Update()
+        {
+            if (!_isEquipped) return;
+
+            bool rDown = Input.GetKey(KeyCode.R);
+            bool canSharpen = _wear > 0.05f && _phase == SwingPhase.Idle;
+
+            if (rDown && canSharpen)
+            {
+                _sharpenHoldTimer += Time.deltaTime;
+                float pct = Mathf.Clamp01(_sharpenHoldTimer / sharpenDuration);
+                Fields.UI.HUDController.Instance?.ShowToolTip(
+                    $"Élezés... {Mathf.RoundToInt(pct * 100)}%", 0.12f);
+
+                if (_sharpenHoldTimer >= sharpenDuration)
+                {
+                    _sharpenHoldTimer = 0f;
+                    SetWear(0f);
+                    _sparklePS?.Play();
+                    Fields.UI.HUDController.Instance?.ShowToolTip("Kasza megélesítve!", 2.5f);
+                }
+            }
+            else if (_sharpenHoldTimer > 0f)
+            {
+                _sharpenHoldTimer = 0f;
+            }
+        }
+
+        void BuildSparklePS()
+        {
+            var go = new GameObject("ScytheSparkle");
+            go.transform.SetParent(transform);
+            go.transform.localPosition = new Vector3(0f, 0.5f, 0.4f);
+            go.transform.localRotation = Quaternion.identity;
+
+            _sparklePS = go.AddComponent<ParticleSystem>();
+
+            var main = _sparklePS.main;
+            main.playOnAwake = false;
+            main.loop = false;
+            main.duration = 0.6f;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.4f, 0.9f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(1.5f, 4f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.12f);
+            main.startColor = new ParticleSystem.MinMaxGradient(
+                new Color(1f, 0.95f, 0.3f, 1f),
+                new Color(1f, 1f, 1f, 1f));
+            main.gravityModifier = 0.4f;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+            var emission = _sparklePS.emission;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 40) });
+
+            var shape = _sparklePS.shape;
+            shape.shapeType = ParticleSystemShapeType.Cone;
+            shape.angle = 35f;
+            shape.radius = 0.05f;
+
+            var renderer = go.GetComponent<ParticleSystemRenderer>();
+            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            if (shader != null) renderer.material = new Material(shader);
+            renderer.renderMode = ParticleSystemRenderMode.Billboard;
+        }
+
+        // ------------------------------------------------------------------ //
+
         const float WINDUP_END = 0.25f;
         const float SWEEP_END  = 0.55f;
 
         GrassField _targetField;
         Vector3 _prevSweepTip;
+
+        // Higher upgrade level reduces wear: level 0 = full, level 3 = 30%
+        float EffectiveWearPerSwing =>
+            wearPerSwing * Mathf.Lerp(1f, 0.3f, upgradeLevel / 3f);
 
         protected override void OnSweepBegin()
         {
@@ -68,12 +150,12 @@ namespace Fields.Tools
             float staminaCost = 5f * Mathf.Lerp(1f, wornStaminaMultiplier, _wear);
             TryConsumeStamina(staminaCost);
 
-            _wear = Mathf.Min(1f, _wear + wearPerSwing);
+            _wear = Mathf.Min(1f, _wear + EffectiveWearPerSwing);
 
             if (_wear >= 0.8f && !_warnedDull)
             {
                 _warnedDull = true;
-                Fields.UI.HUDController.Instance?.ShowToolTip("Kasza tompa!  Keress fenokot.", 3f);
+                Fields.UI.HUDController.Instance?.ShowToolTip("Kasza tompa!  Tartsd [R] az élezéshez.", 3f);
             }
         }
 
