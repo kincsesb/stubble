@@ -90,6 +90,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     float _chkRunSfxTimer;
     AudioSource _chickenAttackedSrc;
     AudioSource _afterAttackSrc;
+    AudioSource _catAttackSrc;
 
     // ---------------------------------------------------------------------------
     // Lifecycle
@@ -136,12 +137,15 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
     void SetupAudio()
     {
-        if (sfxRunLoop == null && sfxCatPurr == null) return;
         _audioSrc = gameObject.AddComponent<AudioSource>();
         _audioSrc.spatialBlend = 0f;
         _audioSrc.volume       = sfxVolume;
         _audioSrc.loop         = true;
         if (sfxRunLoop != null) { _audioSrc.clip = sfxRunLoop; _audioSrc.Play(); }
+
+        _catAttackSrc = gameObject.AddComponent<AudioSource>();
+        _catAttackSrc.spatialBlend = 0f;
+        _catAttackSrc.volume       = sfxVolume * 6f;
     }
 
     static GameObject FindAnimatedRoot(string name)
@@ -452,8 +456,14 @@ public class FarmAnimalChaseSystem : MonoBehaviour
             PlayAnim(cat, attackAnim);
             cat.playingAnim = ""; // allow re-trigger next iteration
 
-            // Cat attack SFX (alternate clips)
-            PlayOneShotPitched(hit % 2 == 0 ? sfxCatAttack1 : sfxCatAttack2, Random.Range(0.95f, 1.05f));
+            // Cat attack SFX (alternate clips) — stoppable so ChickenDeath can cut it
+            AudioClip attackClip = hit % 2 == 0 ? sfxCatAttack1 : sfxCatAttack2;
+            if (_catAttackSrc != null && attackClip != null)
+            {
+                _catAttackSrc.clip  = attackClip;
+                _catAttackSrc.pitch = Random.Range(0.95f, 1.05f);
+                _catAttackSrc.Play();
+            }
             // Chicken reaction SFX at 135% speed — stored so it can be stopped later
             if (sfxChickenAttacked != null)
             {
@@ -567,6 +577,9 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
         if (chicken.dustPS != null) { var em = chicken.dustPS.emission; em.enabled = false; chicken.dustPS.Stop(); }
 
+        // Stop attack SFX the instant the chicken dies
+        if (_catAttackSrc != null) _catAttackSrc.Stop();
+
         // Stop chicken attacked SFX immediately when chicken dies
         if (_chickenAttackedSrc != null) { Destroy(_chickenAttackedSrc.gameObject); _chickenAttackedSrc = null; }
 
@@ -574,6 +587,8 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         EmitCaptureDust(chicken.go.transform.position, big: true);
         EmitCaptureDust(chicken.go.transform.position + Vector3.up * 0.4f, big: true);
         Destroy(chicken.go);
+
+        StartPurring();
     }
 
     IEnumerator CatRunAway(Animal cat, Vector3 attackPos)
@@ -617,6 +632,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         // --- Sprint away ---
         if (cat.go == null) yield break;
         if (_afterAttackSrc != null) { Destroy(_afterAttackSrc.gameObject); _afterAttackSrc = null; }
+        StopPurring();
         if (cat.anim) cat.anim.applyRootMotion = false;
         PlayAnim(cat, CAT_RUN_FAST);
         if (cat.anim) cat.anim.speed = 1.6f;
@@ -734,6 +750,21 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     // ---------------------------------------------------------------------------
     // Helpers
     // ---------------------------------------------------------------------------
+
+    void StartPurring()
+    {
+        if (_audioSrc == null || sfxCatPurr == null) return;
+        _audioSrc.clip = sfxCatPurr;
+        _audioSrc.loop = true;
+        _audioSrc.Play();
+    }
+
+    void StopPurring()
+    {
+        if (_audioSrc == null) return;
+        _audioSrc.Stop();
+        _audioSrc.loop = false;
+    }
 
     void PlayOneShotPitched(AudioClip clip, float pitch = 1f, float vol = 1f,
                              Vector3? worldPos = null, float spatialBlend = 0f, float maxDist = 20f)

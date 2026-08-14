@@ -1,441 +1,743 @@
-# Fields — Fejlesztési Feladatlista
+# Stubble — Fejlesztési Feladatlista
 
-**Projekt:** Fields (working title) — Cozy first-person kaszáló & szénakészítő szimulátor  
-**Engine:** Unity URP 6 (6000.3.20f1) | **Platform:** Windows (Steam) + Steam Deck  
-**Co-op:** 2–4 fő  
-**Spec:** `Assets/MOWING_GAME_SPEC_v1.2.md.pdf` | **Dev Estimate:** `Assets/Fields_Unity_Development_Estimate.docx`
-
----
-
-## ⚠️ Fontos döntések (docx vs spec eltérések)
-
-### Co-op networking stack
-A fejlesztői becslés **Mirror Networking + FizzySteamworks/Steamworks** transpoprt-ot javasol,
-míg az eredeti spec és az eddigi kódváz **Unity Netcode for GameObjects (NGO)**-t feltételez.
-
-| Szempont | NGO (jelenlegi kód) | Mirror + FizzySteamworks (dev ajánlás) |
-|----------|--------------------|-----------------------------------------|
-| Steam integráció | Unity Relay / UGS | Natív Steam lobby + overlay |
-| CCU cost | UGS pricing | Nincs extra cost (Steam P2P) |
-| Host migration | Támogatott | **Nincs** (spec: nincs szükség rá) |
-| Kódmennyiség | Kevesebb boilerplate | Több, de Steam-native |
-| Dev recommendation | ✗ | ✅ |
-
-**→ Döntés: Mirror + FizzySteamworks (kliens jóváhagyta)**  
-NGO eltávolítva a manifest-ből. Mirror manuális telepítés szükséges P2 előtt:
-1. Unity Asset Store → "Mirror" → ingyenes import
-2. Package Manager → Add from git URL: `https://github.com/Chykary/FizzySteamworks.git`
-3. Steamworks.NET: OpenUPM-en keresztül automatikus (`com.rlabrecque.steamworks.net`)
-
-### Asset felelősség (docx)
-A fejlesztő azt feltételezi, hogy a kliens biztosítja:
-- 3D modellek, animációk, UI art, ikonok
-- Audio, ambient sound, zene
-- Lokalizációs fájlok (stringek)
-- Achievement lista
+**Engine:** Unity 6 URP (6000.3.20f1) | **Platform:** Windows (Steam) + Steam Deck  
+**Co-op:** 2–4 fő (Mirror 96.6.4 + FizzySteamworks) | **Ár:** $6.99 | **Célidő:** ~3 óra
 
 ---
 
 ## Státusz jelölések
-- ✅ **KÉSZ** — script megírva, commitolva
-- 🔧 **RÉSZBEN** — kód kész, Unity Editor wiring hiányzik
+
+- ✅ **KÉSZ** — implementálva és commitolva
+- 🔧 **RÉSZBEN** — kód kész, wiring vagy finomítás hiányzik
 - ⏳ **PENDING** — nem kezdődött el
-- 🚫 **BLOKKOLT** — függőség hiányzik
+- 🚫 **BLOKKOLT** — külső függőség hiányzik
 
 ---
 
-## PHASE 0 — Skeleton / Foundation
-> **Dev estimate: M1 (Vertical Slice/Core Foundation), 6–8 hét, $4,000**
+## PHASE 0–3 — Foundation, Core, Co-op, Polish
 
-### P0-01 | Project Setup — URP, csomagok, mappastruktúra
-**Status:** ✅ KÉSZ
+> Minden P0–P3 task lezárva. Részletes előzmény: git history.
 
-**Kész:**
-- Unity 6 URP projekt ✅
-- InputSystem 1.19.0 ✅
-- Shader Graph 17.3.0 ✅  
-- manifest.json-ba felvéve: NGO 2.4.0, Cinemachine 3.1.4 ✅
-- Mappa struktúra: `Assets/_Game/Scripts/{Core,Grass,Tools,Hay,Economy,Network,UI,Save}` ✅
-- Layers: Ground(6), Uncut(7), Obstacle(8), Bale(9), HayPile(10), Player(13) ✅
-- Tags: Player, HayPile, Bale, Stand, ParcelBoundary ✅
-- Physics Matrix: Player↔HayPile IGNORE, HayPile↔Bale/Uncut/Obstacle IGNORE ✅
-- Input Action Asset: Move, Look, UsePrimary, Interact, Drop, Sprint, ToolSelect, ScrollTool ✅
-- Bootstrap: single GAME scene, all managers present as GOs ✅
+| Task | Státusz |
+|------|---------|
+| P0 — Project setup, grass system, player, tools, világ, gazdaság, save | ✅ KÉSZ |
+| P1 — Mind az 5 tool, bálázó gép, Shop UI, parcel completion, EndScreen | ✅ KÉSZ |
+| P2 — Mirror co-op, grass sync, bála/economy replication, Steam lobby | ✅ KÉSZ |
+| P3 — Audio (9 SFX), Feel lib, LOD optimalizálás, Steam (25 ach.), 9 nyelv | ✅ KÉSZ |
+| P2-05 — Co-op QA gameplay tesztelés 2+ játékossal | ⏳ PENDING |
 
 ---
 
-### P0-02 | Core ScriptableObject architektúra
-**Status:** ✅ KÉSZ
+## PHASE 4 — Karakterek & Animációk
 
-**Fájlok:** `Assets/_Game/Scripts/Core/Data/`
-- `ToolData.cs` — toolName, icon, speedLevels[4], enduranceLevels[4], powerLevels[4], upgradeCosts[3], purchaseCost ✅
-- `ParcelData.cs` — parcelName, unlockCost, cuttableArea, targetTimeMinutes ✅
-- `GameConfig.cs` — gridCellSize(0.4), collectionCellSize(6), hayUnitsPerCollectionCell(60) ✅
-- `BalerData.cs` — compressionSpeed, carryCapacity, density szintek, round bale physics ✅
+> Blokkoló: 3D asset delivery (4 karakter modell, 4 tool modell + rig + animációk).
 
-**Hiányzik (Unity Editor):**
-- [ ] Default asset példányok létrehozása: `Assets/_Game/Config/` (5 ToolData + 1 GameConfig + 2 BalerData + 4 ParcelData)
+### V4-01 | 3D Karakterek integrálása
+**Status:** 🚫 BLOKKOLT — modellek hiányoznak
 
----
-
-### P0-03 | Grass System — RenderTexture mask + CPU logikai grid
-**Status:** ✅ KÉSZ
-
-**Fájlok:** `Assets/_Game/Scripts/Grass/GrassField.cs`
-- CPU bool[,] grid (igazságforrás) ✅
-- GPU R8 RenderTexture ping-pong CommandBuffer ✅
-- `CutArea(pos, radius)` + `CutCapsule(from, to, radius)` ✅
-- `GetCompletionPercent()`, `GetCutGrid()`, `LoadCutGrid()` ✅
-- `OnCellCut` event ✅
-- Debug Gizmo ✅
-
-**Hiányzik:**
-- [ ] GrassField prefab bekötése a 4 parcelre Unity Editorban
+- [ ] 4 egyedi karakter prefab létrehozása (1P nézet: csak karok + tool látszik)
+- [ ] Karakter kiválasztó képernyő a főmenübe
+- [ ] Co-op: más játékosok 3rd-person karakterként jelennek meg
+- [ ] NetworkedPlayer: karakter index SyncVar-ként szinkronizálva
 
 ---
 
-### P0-04 | Grass Shader + chunked mesh rendering
-**Status:** ✅ KÉSZ
+### V4-02 | 3D Tool Modellek integrálása
+**Status:** 🚫 BLOKKOLT — tool modellek hiányoznak
 
-**Fájlok:**
-- `Assets/_Game/Shaders/GrassMaskWrite.shader` — Hidden CommandBuffer writer, min-blend ✅
-- `Assets/_Game/Shaders/GrassBlade.shader` — URP ForwardLit, vertex mask sampling, stubble collapse ✅
-- `Assets/_Game/Scripts/Grass/GrassChunkManager.cs` — 10×10m chunks, 3 LOD szint (100%/50%/20%) ✅
-- `Assets/_Game/Materials/GrassBlade_Material.mat` — shader bekötve, RT runtime-ban bindel ✅
-- GrassChunkManager mind a 4 terénre config+material bekötve ✅
-
-**Megjegyzés:** _GrassMask RT az asset-ben NULL — GrassChunkManager.Start() bindeli per-terrain instance-ra runtime-ban.
+- [ ] HandSickle, LongScythe, StringTrimmer, PushMower — 3D model csere placeholder helyett
+- [ ] Tool animátor controller per-tool (Idle, WindUp, Sweep, Recovery állapotok)
+- [ ] MeleeToolBase.cs: meglévő FSM animátor triggerekre kötve
 
 ---
 
-### P0-05 | Player Controller — FP mozgás, kézrendszer
-**Status:** ✅ KÉSZ
+### V4-03 | Interakciós Animációk
+**Status:** 🚫 BLOKKOLT — animációk hiányoznak
 
-**Fájlok:** `Assets/_Game/Scripts/Core/PlayerController.cs`
-- CharacterController mozgás ✅
-- Mouse + gamepad look ✅
-- Head bob placeholder ✅
-- Carry penalty (25/40/50%) GameConfig-ból ✅
-- Stamina soft-limit (soha nem hard-lockout) ✅
-- IInteractable raycast ✅
-- HayPile pickup/drop ✅
-- PlayerController.Instance singleton ✅
-- IsMounted flag (HandleMovement/Bob/FOV suppressed while riding mower) ✅
-- Stamina init bug fix (100f, nem hayUnitsPerCollectionCell) ✅
-
-**Scénában:**
-- Player GO: CharacterController, PlayerController, SwingFeelController, ToolHolder, PlayerInput ✅
-- CameraRoot → [MainCamera, HandsRoot → [HandSickle, LongScythe, StringTrimmer, PushMower]] ✅
-- _Feel → [Feel_FullHit, Feel_Partial, Feel_Whiff, Feel_Obstacle] ✅
-- PlayerInput: InputSystem_Actions, SendMessages mode ✅
-- Gamepad circular dead-zone + sensitivity: `gamepadDeadZone=0.1`, `gamepadSensitivity=180` ✅
-
-**P2-ben szükséges:**
-- [ ] NGO NetworkBehaviour → P2-ben
-- [ ] Co-op: más játékos névjegy (TMPro) → P2
+- [ ] Kaszálás: WindUp → Sweep → Recovery (per karakter, per tool)
+- [ ] Bálázás: E-tartás animáció (lehajol, présel)
+- [ ] HayPile felvétel / lerakás
+- [ ] Ride-on mower: seated idle + kormány animáció
+- [ ] Idle animáció (légzés, várakozás)
 
 ---
 
-### P0-06 | Tool System váz — BaseTool, swing FSM, HandSickle
-**Status:** ✅ KÉSZ
+## PHASE 5 — Viral & Cinematic Features
 
-**Fájlok:** `Assets/_Game/Scripts/Tools/`
-- `BaseTool.cs` — equip/unequip, stat helpers ✅
-- `MeleeToolBase.cs` — swing FSM WindUp 25% / Sweep 30% / Recovery 45%, input queue ✅
-- `PoweredToolBase.cs` — fuel pool, engine on/off ✅
-- `HandSickle.cs` — CutCapsule sweep frame, cells-cut tracking ✅
-- `ToolHolder.cs` — 1-5 key + scroll selection ✅
-
-**Hiányzik (Unity Editor):**
-- [ ] HandSickle prefab + BladeTip Transform beállítás
-- [ ] ToolHolder-be ToolData bekötése
+> Ezek a leginkább sharable / memelhető pillanatok. Marketing szempontból kritikus fázis.
 
 ---
 
-### P0-07 | Világ váz — 4 parcel terrain, kerítések, stand + bálázó pozíciók
-**Status:** ✅ KÉSZ
+### V5-01 | Kerek Bála Gurulás — Fix + Cinematic Kamera
+**Status:** 🔧 RÉSZBEN — gurulás van, terrain-követés és pivot hibás
 
-> **Döntés:** Nincs gate! Egy összenyitott nagy mező, a 4 parcella csak logikai egység (completion tracking + achievements). ParcelGate.cs törölve.
+**Problémák (javítandó):**
+- [ ] **Terrain-követés:** a bála jelenleg lebeg / átsüpped a terepen — Rigidbody + MeshCollider vagy SphereCast alapú lejtőkövetés szükséges
+- [ ] **Pivot pont:** a gördülési tengely nem a bála közepén van — prefab center of mass fix
+- [ ] **Forgás-irány:** a bála csak egy tengelyen forog, lejtőn célzatosan kell pörögnie
 
-**Fájlok:** `Assets/_Game/Scripts/Core/`
-- `ParcelBoundary.cs` — trigger, completion check (100% cut + 0 HayPile), player enter/exit event ✅
-- `WorldBootstrap.cs` — load-on-start, save-on-parcel-complete, end screen ✅
-
-**Scénában:**
-- 4× 100×100m Terrain (összesen 200×200m) ✅
-- 12°-os lejtő Terrain_Parcel_3-on (west→east, max 21.3m magassági különbség) ✅
-- 4× ParcelBoundary BoxCollider trigger ✅
-- GrassField + HayAccumulationSystem mind a 4 parcellán ✅
-- SaleStand, Baler, RideOnMower GO-k scénában ✅
-
----
-
-### P0-08 | Széna akkumuláció + HayPile spawn
-**Status:** ✅ KÉSZ
-
-**Fájlok:** `Assets/_Game/Scripts/Hay/`
-- `HayAccumulationSystem.cs` — 6×6m collection grid, 60 unit threshold, HayPile spawn, 3-fázisú decal stub ✅
-- `HayPile.cs` — IPickupable carry interface ✅
-
-**Hiányzik (Unity Editor):**
-- [ ] HayPile prefab (3 méret placeholder mesh)
-- [ ] Loose hay decal 3 fázis (placeholder material)
+**Cinematic kamera (hozzáadandó):**
+- [ ] Ha a kerek bála 2+ másodpercig folyamatosan gurul és >3m/s sebességet ér el → cinematic kamera aktivál
+- [ ] Kamera a bála mögé/mellé csúszik (Cinemachine Virtual Camera), követi a bálát
+- [ ] Slow-motion faktor: `Time.timeScale = 0.6` a cinematic alatt
+- [ ] Játékos input nem blokkolódik (csak a kameranézet vált)
+- [ ] Ha a bála megáll vagy leesik → 1.5s után visszavált FP kamerára
+- [ ] `RoundBale.cs`-be: sebesség threshold + `CinematicCameraController` hívás
 
 ---
 
-### P0-09 | Gazdaság váz — CurrencyManager, Shop stub
-**Status:** ✅ KÉSZ
+### V5-02 | AFK Madár — Cinematic Shoulder Bird
+**Status:** ⏳ PENDING
 
-**Fájlok:** `Assets/_Game/Scripts/Economy/`
-- `CurrencyManager.cs` — Earn/TrySpend, OnMoneyChanged event ✅
-- `ToolUnlockManager.cs` — purchase + 3-level upgrade ✅
-- `ParcelManager.cs` — unlock flow, gate opening ✅
-- `ShopPlaceholder.cs` — OnGUI, 3 tab (Tools/Upgrades/Unlocks) ✅
-- `SaleStand.cs` — IInteractable + sell stub ✅
-
-**Hiányzik:**
-- [ ] Stand prefab bekötése SaleStand-dal + ShopPlaceholder-rel
-
----
-
-### P0-10 | Alap HUD + Mentési rendszer váz
-**Status:** ✅ KÉSZ
-
-**Fájlok:**
-- `Assets/_Game/Scripts/Save/SaveData.cs` — versioned schema (v1) ✅
-- `Assets/_Game/Scripts/Save/RLEEncoder.cs` — RLE encoding ✅
-- `Assets/_Game/Scripts/Save/SaveSystem.cs` — save/load, autosave (parcel kész / vásárlás / 60mp) ✅
-- `Assets/_Game/Scripts/UI/HUDController.cs` — stamina/fuel bar fade, SmoothDamp money counter (0.4s), completion %, bale count, LocalizationManager ✅
-
-**Inspector-ban bekötve:**
-- HUD Canvas: staminaBar, moneyText, completionText, baleCountText, crosshair ✅
-- SaveSystem: grassFields[4] + hayAccumulationSystems[4] ✅
-- WorldBootstrap: endScreenRoot → EndScreen_Canvas ✅
-- EndScreen_Canvas: EndScreen component, titleText, totalEarningsText, timePlayedText, playAgainButton, quitButton ✅
+**Logika:**
+- [ ] `AFKDetector.cs` — ha a játékos **60 másodpercig** nem mozdul (pozíció + rotáció threshold), aktivál
+- [ ] Madár prefab spawn: a játékos válla közelében repül be, leül (animált)
+- [ ] Cinematic kamera: Cinemachine virtual cam lassan köré kerül elölről, a játékos arcát/vállát mutatja
+- [ ] Hangeffekt: madárcsiripelés loop amíg ül
+- [ ] Ha a játékos mozdul → madár elrepül (animáció), FP kamera visszavált
+- [ ] Co-op: mindenki látja a madarat a saját karakterén (NetworkBehaviour spawn)
+- [ ] `PlayerController.cs`-be: mozgás/input event → `AFKDetector.ResetTimer()`
 
 ---
 
-## PHASE 1 — Core Systems
-> **Dev estimate: M1 vége + M2 + M3, 4–5 hét, $3,000**
+### V5-03 | Befejező Cinematic — Gyors befejezés (<3 óra)
+**Status:** ⏳ PENDING
 
-### P1-01 | Swing Feel System — Hit/Whiff, kamera kick, partikulák
-**Status:** ✅ KÉSZ
+**Feltétel:** Az utolsó fűszál levágásakor, ha a játékidő < 3 óra
 
-**Tervezett fájlok:**
-- `SwingResultCalculator.cs` — arc cell intersection counting (Full >60%, Partial 15-60%, Whiff <15%)
-- `CameraKickSystem.cs` — spring-damped, első 3 swing 3° boost
-- `IToolAudioSource` interface + `PlaceholderToolAudio.cs`
-- Particle system (grass burst + sparks)
+**Szekvencia:**
+- [ ] Input lock (0.5s fade-out)
+- [ ] Cinemachine kamera lassan hátrafordul és a lekaszált mezőre néz (wide shot)
+- [ ] 2 másodperces csend + természet hangok felerősödnek
+- [ ] **Grass regrowth "bump" effekt:** az egész mező fűje egyszerre visszanő — egy hullámszerű animáció (GrassBlade vertex shader: `_GrowthT` 0→1 over 2s, Easing: easeOutBack "bump")
+- [ ] A visszanövés csúcsán, képernyő közepén alul megjelenik a szöveg: **"Oh shit, here we go again..."** — GTA San Andreas referencia, halvány fehér, kis betűméret, 2.5s után kifakul
+- [ ] Fade to black → EndScreen megjelenik
+- [ ] Achievement: `ACH_SPEED_COMPLETE` — "Kész időben"
 
----
-
-### P1-02 | Mind az 5 szerszám implementálva
-**Status:** ✅ KÉSZ — HandSickle, LongScythe, StringTrimmer, PushMower, RideOnMower
-
-**Tervezett fájlok:**
-- `LongScythe.cs` — 1.4–2.4m arc, lassabb swing
-- `StringTrimmer.cs` — folyamatos vágás, bogging (-20%), RPM animáció
-- `PushMower.cs` — CutCapsule deck, -20% mozgás uncut fűn, pivot fordulás
-- `RideOnMower.cs` — kinematic arcade, 0→full 1.5s, body roll/pitch, FP seated cam
+**Implementáció:**
+- [ ] `WorldBootstrap.cs`: `OnGameComplete(float elapsedSeconds)` → elágazás < / > 10800s
+- [ ] `GrassBlade.shader`: `_GrowthT` uniform hozzáadása, visszanövő animáció kulcsframe
+- [ ] `CinematicDirector.cs`: új script, timeline/coroutine alapú szekvencia vezérlő
 
 ---
 
-### P1-03 | Bálázó gép + négyszög/kerek bála fizika
-**Status:** ✅ KÉSZ — Baler.cs, SquareBale.cs, RoundBale.cs (80kg, 8° lejtőn gurul)
+### V5-04 | Befejező Cinematic — Lassú befejezés (>3 óra)
+**Status:** ⏳ PENDING
 
-**Tervezett fájlok:**
-- `Baler.cs` — kompressziós folyamat, "thunk" + shake, ejectált bála
-- `SquareBale.cs` — carry 1/2/3 stack, képtakarás szándékos
-- `RoundBale.cs` — Rigidbody ~80kg, Drag 1.5, AngularDrag 2.0, 8°+ lejtőn gurul
+**Feltétel:** Az utolsó fűszál levágásakor, ha a játékidő ≥ 3 óra
 
----
+**Szekvencia:**
+- [ ] Input lock
+- [ ] Cinemachine kamera lassan a **szélmalom irányába** fordul és közelít
+- [ ] Hangeffekt: távolból repülő repülőgép zúgása erősödik
+- [ ] **Repülő megjelenik** az égen (egyszerű mesh + contrail particle), áthúz a mező felett
+- [ ] **Atombomba leesik** a repülőből (mesh + füst trail)
+- [ ] Robbanás: screen shake, flash, particle explosion, drámai hang
+- [ ] Fade to black → EndScreen "You took too long." szöveggel
+- [ ] Achievement: `ACH_TOO_LONG` — "Farmolás: Végleges megoldás"
 
-### P1-04 | Shop UI, Upgrade rendszer, Parcel unlock flow
-**Status:** ✅ KÉSZ — ShopUI.cs + Shop_Canvas jelenetben ✅, SaleStand bekötve ✅, ShopUI.allTools[5] + allParcels[4] bekötve ✅, ToolUnlockManager.allTools[5] bekötve ✅, ParcelManager.parcels[4] bekötve ✅
-
----
-
-### P1-05 | Teljes eladási loop, parcel completion, végképernyő
-**Status:** ✅ KÉSZ — SaleStand (hay+bale eladás, multiplier), EndScreen.cs (stats, Play Again/Quit, speed-run achievement), end.* lokalizáció kulcsok
-
-**Fájlok:**
-- `EndScreen.cs` — OnEnable stats, lokalizált gombok, speed-run (sub-30 min) achievement, SceneManager.LoadScene play again ✅
-
----
-
-## PHASE 2 — Co-op
-> **Dev estimate: C1–C5, 11–13 hét, $5,500**
-> ⚠️ **Networking döntés szükséges: NGO (jelenlegi) vs Mirror + FizzySteamworks (dev ajánlás)**
-
-### P2-01 | Co-op Foundation — session flow, player spawn
-**Status:** ✅ KÉSZ
-
-**Fájlok:**
-- `CoopSessionManager.cs` — Steam lobby create/join, Mirror host/client start ✅
-- `FieldsNetworkManager.cs` — `NetworkManager` subclass, spawn points, late-join grid snapshot küldés ✅
-
-**Scénában (GAME):**
-- FieldsNetworkManager GO: FieldsNetworkManager + FizzySteamworks transport ✅
-- playerPrefab = Player, balePrefab = SquareBale, hayPilePrefab = HayPile_Size1 ✅
-- spawnPoints[4] = SpawnPoint_0..3, maxConnections = 4 ✅
-- spawnPrefabs[3] (Player + SquareBale + HayPile_Size1) ✅
-- CoopSessionManager GO ✅
+**Implementáció:**
+- [ ] `CinematicDirector.cs`: külön coroutine branch a > 3h véghez
+- [ ] Repülő prefab (egyszerű low-poly), bomb prefab, robbanás particle system
+- [ ] `EndScreen.cs`: alternatív szöveg ha `tooLong == true`
 
 ---
 
-### P2-02 | Player + Tool Replication
-**Status:** ✅ KÉSZ
+## PHASE 6 — Vicces Achievementek & Easter Eggek
 
-**Fájlok:**
-- `NetworkedPlayer.cs` — `NetworkBehaviour`, SyncVar pos/yaw, Command UseTool, TargetRpc haptics ✅
+> Alacsony implementációs cost, magas viral potenciál.
 
-**Prefab:**
-- Player.prefab: NetworkIdentity + NetworkedPlayer hozzáadva ✅
+### V6-01 | Achievement csomag — Mém achievementek
+**Status:** ⏳ PENDING
 
----
+Az összes achievement a meglévő `SteamManager.UnlockAchievement(string id)` API-n keresztül oldódik fel. Az ellenőrzési pontok alább per-achievement részletezve. A Steam achievement ID-k egyeznek az alábbi `ACH_*` konstansokkal.
 
-### P2-03 | Fű szinkronizáció — CPU grid delta sync
-**Status:** ✅ KÉSZ
-
-**Fájlok:**
-- `GrassNetSync.cs` — Command/ClientRpc cut broadcast, TargetRpc late-join RLE snapshot ✅
-
-**Scénában:**
-- GrassNetSync + NetworkIdentity mind a 4 Terrain_Parcel GO-ra ✅
-- CutAreaInterceptor + CutCapsuleInterceptor delegate: client-oldalon átirányít Cmd-re ✅
+**Implementáció általánosan:**
+- [ ] `SteamManager.Achievements` statikus osztályba felvenni az új konstansokat
+- [ ] `SteamManager.Thresholds`-ba kerülnek a numerikus küszöbök
+- [ ] Az ellenőrző hívások a legközelebb lévő logikai pontba kerülnek (nem külön Tracker osztály)
 
 ---
 
-### P2-04 | Bálák + Economy + Host Save
-**Status:** ✅ KÉSZ
-
-**Fájlok:**
-- `EconomyNetSync.cs` — SyncVar money, Command purchase/sell, Server spawn bale/haypile; OnStartClient interceptors ✅
-- `HayAccumulationSystem.cs` — `SpawnHayPileInterceptor` delegate ✅
-- `Baler.cs` — `SpawnBaleInterceptor` delegate ✅
-- `FieldsNetworkManager.cs` — `balePrefab` + `hayPilePrefab` fields for Command-based spawning ✅
-
-**Scénában:**
-- EconomyNetSync GO: NetworkIdentity + EconomyNetSync ✅
-- SquareBale.prefab + HayPile_Size1.prefab: NetworkIdentity hozzáadva ✅
+**`ACH_TOUCH_GRASS` — "Touch Grass"**
+*"You touched grass. Literally."*
+- Trigger: `GameEvents.OnGridCellCut` első hívása (bármely tool, bármely parcel)
+- Hívás helye: `StatisticsTracker.OnGridCellCut()` — első cut után `SteamManager.Instance?.UnlockAchievement(...)`
+- Elvárás: megjelenik az első kaszáláskor, nem késleltethető
 
 ---
 
-### P2-05 | Co-op QA + Polish
-**Status:** ⏳ PENDING — gameplay tesztelés 2+ játékossal szükséges
+**`ACH_FREE_REAL_ESTATE` — "It's Free Real Estate"**
+*"You bought land. The grass was already there."*
+- Trigger: `GameEvents.OnParcelUnlocked` első hívása
+- Hívás helye: `StatisticsTracker.OnParcelUnlocked()` — parcelCount == 1 esetén
+- Elvárás: csak az első vásárláskor tüzel, második parcelre nem
 
 ---
 
-## PHASE 3 — Polish
-> **Dev estimate: M5 (Ship Candidate), 2.5–3 hét, $2,000**
-
-### P3-01 | Audio rendszer
-**Status:** ✅ KÉSZ — ToolAudioManager, 9 AudioSource, swing/trimmer/pushmower/tractor/money SFX, background ambient
-
----
-
-### P3-02 | Kamera feel tuning + Haptics + Accessibility
-**Status:** ✅ KÉSZ
-
-- `PlayerController`: FOV sprint kick (60°→65°, Lerp speed 6), `TriggerHaptics(low, high, duration)` → `Gamepad.SetMotorSpeeds`, sprint low-freq idle rumble
-- `MeleeToolBase`: sweep-begin fires haptic thump via `_owner.TriggerHaptics(0.35, 0.65, 0.10s)`
-- `AccessibilitySettings`: singleton, FOV slider 50–110°, motion blur toggle (URP Volume), 4 colorblind modes (`Shader.EnableKeyword`), PlayerPrefs persist; debug overlay F10
-- AccessibilitySettings GO scénában + player ref bekötve ✅
+**`ACH_NPC_BEHAVIOR` — "NPC Behaviour"**
+*"You walked the same path 10 times. You are the NPC."*
+- Trigger: a játékos 10-szer kasszál ugyanazon a ~3m sugarú körzetben (nem egymás után, összesen a session során)
+- Detektálás: `NpcBehaviourTracker.cs` (új, lightweight) — `OnGridCellCut` eventre figyel, az utolsó 50 vágási pozíciót tárolja egy `Queue<Vector3>`-ban; ha egy 3m sugarú cellán belül >10 találat akkumulálódik → unlock
+- Elvárás: NEM kell egymás után 10-szer, csak ugyanazon a területen összességében; az optimális kaszáló-útvonal NEM triggeri (mert különböző cellákat vág)
 
 ---
 
-### P3-03 | Teljesítmény optimalizálás — 60 fps integrated GPU
-**Status:** ✅ KÉSZ
-
-- `GrassChunkManager`: 3 LOD mesh pre-build chunkonként (runtime zero GC), LOD check 8 frameenként, sqrMagnitude dist
-- `GrassBlade.shader`: `#pragma multi_compile_instancing` + colorblind shader keywords
-- Draw call target: <150 (Frame Debugger ellenőrzés szükséges Editorban)
-
----
-
-### P3-04 | Game Feel Pass — partikulák, VFX, UI animációk
-**Status:** ✅ KÉSZ
-
-- `HUDController`: pénz earn scale-punch (sin bounce), completion milestone flash 25/50/75/100% (zöld tint + scale), crosshair `PulseHit()` minden cell cut-on; static `Instance`
-- `GrassCutFX`: `PulseHit()` + `OnFirstCut()` Steam achievement hív minden vágásnál
+**`ACH_GONE_WITH_WIND` — "Gone With The Wind"**
+*"A bale rolled off the map. It's someone else's problem now."*
+- Trigger: `RoundBale` pozíciója eléri a terrain boundary szélét (map edge collider vagy `transform.position.x/z > mapBounds` check)
+- Hívás helye: `RoundBale.Update()` — boundary check, egyszer tüzel per bála, nem repeated
+- Elvárás: a bála fizikailag guruljon le (ne teleport), a boundary ~5m-rel a látható terepen kívül legyen
 
 ---
 
-### P3-05 | Steam integráció — Steamworks SDK, 25 achievement, Cloud save
-**Status:** ✅ KÉSZ
-
-- `SteamManager`: `#if STEAMWORKS_NET` guarded; 25 achievement konstans (ACH_*); `CloudSave/CloudLoad` — SaveSystem használja; convenience wrappers: `OnFirstCut`, `OnParcelComplete`, `OnEarnMoney`, `OnToolPurchased`, stb.
-- `CurrencyManager.Earn()`: `SteamManager.Instance?.OnEarnMoney(_money)` hívás
-- `GrassCutFX`: `OnFirstCut()` első vágásnál
-
-**Hiányzik (telepítés):**
-- [ ] Steamworks.NET OpenUPM: `com.rlabrecque.steamworks.net`
-- [ ] steam_appid.txt: valós AppID beírása
-- [ ] Achievement ID-k véglegesítése a klienssel (Steamworks partner dashboard)
+**`ACH_THIS_IS_FINE` — "This Is Fine"**
+*"You lost 3 bales. The field is fine. Everything is fine."*
+- Trigger: session során 3 bála elveszik anélkül hogy eladták volna (dropped + 60s timeout után despawn, VAGY beleesik a kútba, VAGY traktor löki ki a kezedből)
+- Detektálás: `SessionState.LocalPlayer.BalesLost` counter, `++` minden `SquareBale.OnDespawnWithoutSale()` és `OnKnockFromPlayer()` hívásakor
+- Hívás helye: `StatisticsTracker` — `BalesLost >= 3` esetén unlock
+- Elvárás: az eladott bálák NEM számítanak elveszettnek; a counter session-szinten akkumulál
 
 ---
 
-### P3-06 | Lokalizáció — 9 nyelv, string externalizáció
-**Status:** ✅ KÉSZ
-
-- `LocalizationManager`: singleton, JSON string table-ok `Resources/Localization/*.json`-ból, angol fallback beépítve, PlayerPrefs persist ✅
-- `en.json` + `hu.json`: minden kulcs kitöltve ✅
-- `de/ru/zh-Hans/pl/es/pt-BR/jp.json`: üres stub — kliens tölti ki
-- LocalizationManager GO scénában ✅
-- ShopUI: `L()` helper via LocalizationManager.Get() ✅
-- HUDController: hud.money / hud.completion / hud.bales ✅
-- Nyelvek: EN, HU, DE, RU, ZH-Hans, PL, ES, PT-BR, JP
-
-**Hiányzik (kliens feladata):**
-- [ ] Kliens localiz. fordítások (7 nyelv: de/ru/zh-Hans/pl/es/pt-BR/jp)
+**`ACH_FRIENDLY_FIRE` — "Friendly Fire"**
+*"The scythe does not discriminate."*
+- Trigger: co-op-ban `MeleeToolBase.OnSweepHit()` egy másik `PlayerController`-t talál el (nem önmagát)
+- Hívás helye: `MeleeToolBase.cs` — `hit.collider.TryGetComponent<PlayerController>(out var other) && other != localPlayer`
+- Elvárás: csak co-op-ban (2+ játékos aktív); single-playerben nem érhető el; véletlenszerű és szándékos egyaránt számít
 
 ---
 
-## Dev Estimate összefoglaló (Fields_Unity_Development_Estimate.docx)
+**`ACH_TETRIS` — "Tetris Farmer"**
+*"Four bales, neatly stacked. Somewhere, a Tetris theme plays."*
+- Trigger: 4 `SquareBale` objektum egyszerre 1.5m-en belül van egymástól (2×2 elrendezés vagy torony)
+- Detektálás: `BaleStackDetector.cs` (új) — minden bála spawn/drop esetén `Physics.OverlapSphere(pos, 1.5f, baleLayer)` → ha ≥4 találat → unlock
+- Elvárás: báláknak a földön kell lenniük (nem kézben tartva); a detektálás a drop pillanatában fut le
 
-| Milestone | Fókusz | Idő | Fix ár |
-|-----------|--------|-----|--------|
-| **M1** | Vertical Slice / Core Foundation | 6–8 hét | $4,000 |
-| **M2** | Tools Complete | 2.5–3 hét | $1,750 |
-| **M3** | Baling Complete | 1.5–2 hét | $1,250 |
-| **M4** | Content Complete | 2–2.5 hét | $1,500 |
-| **M5** | Ship Candidate | 2.5–3 hét | $2,000 |
-| **Stage 1** | Single Player | **15–18.5 hét** | **$10,500** |
-| **C1** | Mirror + Steam session | 2–2.5 hét | $1,000 |
-| **C2** | Player + Tool Replication | 2–2.5 hét | $1,000 |
-| **C3** | Grass + Hay Sync | 2.5–3 hét | $1,300 |
-| **C4** | Bálák + Economy + Host Save | 2.5–3 hét | $1,300 |
-| **C5** | Co-op QA + Polish | 2 hét | $900 |
-| **Stage 2** | Co-op Multiplayer | **11–13 hét** | **$5,500** |
-| **Teljes projekt** | | **6.5–8 hónap** | **$16,000** |
+---
 
-**Nem tartalmazza:** 3D art, animáció, audio, lokalizáció tartalom, dedicated server, host migration, anti-cheat.
+**`ACH_SKILL_ISSUE` — "Skill Issue"**
+*"The slope won. The slope always wins."*
+- Trigger: játékos bálát ejt (drop vagy knockback) olyan ponton ahol a terrain slope >15 fok
+- Detektálás: `PlayerController.DropSquareBales()` híváskor → `Physics.Raycast` lefelé → `TerrainSampler.GetSlopeAngle(pos)` → ha >15f → unlock
+- Elvárás: NEM kell a bálának legurulnia (a lejtőn való ejtés elég); a traktor knockback is számít ha a talaj lejtős
+
+---
+
+**`ACH_SPEED_COMPLETE` — "Certified Fresh Hay"**
+*"Done in record time. The cows are impressed."*
+- Trigger: `EndScreen.OnEnable()` — `elapsed < SteamManager.Thresholds.SPEEDRUN_SECONDS` (már implementálva `EndScreen.cs`-ben)
+- Elvárás: már kész, csak a Steam ID-t kell felvenni a `SteamManager.Achievements`-be ha még nincs
+
+---
+
+**`ACH_TOO_LONG` — "Farmolás: Végleges megoldás"**
+*"You were warned."*
+- Trigger: Nuclear ending lezárultakor (`EndingOrchestrator` nuclear path vége)
+- Hívás helye: `EndingOrchestrator` — a nuclear sequence befejezésekor, mielőtt az EndScreen megnyílik
+- Elvárás: csak a Nuclear ending triggereli, a Peaceful/Loop nem
+
+---
+
+**`ACH_AFK_BIRD` — "New Friend"**
+*"A bird landed on you. You are officially a Disney protagonist."*
+- Trigger: V5-02 `AFKDetector` bird spawn esemény — madár leszáll a játékos vállára
+- Hívás helye: `AFKDetector.OnBirdLanded()` callback
+- Elvárás: V5-02 implementációjának függvénye; a madárnak fizikailag le kell ülnie
+
+---
+
+**`ACH_MIDNIGHT` — "Midnight Harvest"**
+*"You sold hay at midnight. We don't judge. We just note it."*
+- Trigger: `SaleStand.Interact()` meghívásakor `System.DateTime.Now.Hour == 0` (helyi idő szerint)
+- Hívás helye: `SaleStand.Interact()` — az earn hívás után, külön check
+- Elvárás: valódi rendszerórán alapul, nem in-game időn; 00:00–00:59 között bármikor számít
+
+---
+
+**`ACH_NICE_69` — "Nice."**
+*"Nice."*
+- Trigger: `CurrencyManager._money == 69` bármely tranzakció után
+- Hívás helye: `CurrencyManager.CheckSpecialAmounts()` — `Earn()` és `TrySpend()` után egyaránt hívva (V6-02-ben részletezve)
+- Elvárás: toast is jelenik meg (*"Nice."*) az achievement mellett; nem kell pontosan eladásból jönnie
+
+---
+
+**`ACH_BLAZE_420` — "Blaze It, Farmer"**
+*"$420. The hay business is booming."*
+- Trigger: `CurrencyManager._money == 420`
+- Hívás és elvárás: azonos az `ACH_NICE_69`-cel
+
+---
+
+**`ACH_HESOYAM` / `ACH_MOTHERLODE` / `ACH_DOOM` — Cheat kód achievementek**
+- Trigger: `CheatCodeActivator.Activate(string code)` — V6-02 implementációjának része
+- Elvárás: az activator hívja az unlock-ot, nem a terminál közvetlenül
+
+---
+
+**`ACH_SHEEP` — "Did You See That?"**
+*"A sheep ran through your field. This is not in the manual."*
+- Trigger: ritka birka NPC megjelenik a mezőn, és a játékos **látja** (kamerájának forward vektora a birka irányába mutat, ≤30m, 3 másodpercig)
+- Spawn esély: `1/500` per mowing tick (kb. ~3-5 percenként 1 esély ha folyamatosan kaszálsz)
+- A birka megjelenik a mező szélén, átfut a másik oldalra (~8 másodperc), eltűnik — semmi más
+- Hívás helye: `SheepSpawner.cs` (új, egyszerű) — spawn + timer + player facing check
+- Elvárás: ha a játékos nem néz oda, NEM kapja meg az achievementet; ez szándékos
+
+---
+
+**`ACH_FOUR_LEAF` — "Four Leaf Clover"**
+*"All four of you, together. For one brief moment, united by hay."*
+- Trigger: mind a 4 aktív co-op játékos 2m-en belül van egymástól, legalább 3 másodpercig
+- Detektálás: `CoopProximityDetector.cs` (új) — minden frame-ben, csak ha `NetworkedPlayer.activeCount == 4`; 3s folyamatos proximity → unlock
+- Elvárás: csak 4 játékos esetén érhető el; 2-3 fős co-op-ban nem triggerelhető
+
+---
+
+**`ACH_42KM` — (csak szám: "42")**
+*[Steam leírás szándékosan üres — a játék nem magyaráz]*
+- Trigger: `SessionState.LocalPlayer.DistanceTravelledM >= 42000`
+- Hívás helye: `StatisticsTracker.Update()` — egyszer ellenőrzi és unlock-ol
+- Elvárás: a Steam oldalon nincsen leírás, csak a szám "42" szerepel achievement névként; a közösség kitalálja a referenciát
+
+---
+
+### V6-02 | Cheat Kód Rendszer — Név-alapú és Runtime kódok
+**Status:** ⏳ PENDING
+
+**Implementáció:** `NameCodeHandler.cs` (névbevitelnél figyel) + `CheatCodeActivator.cs` (runtime, bárhonnan hívható)
+
+#### Név-alapú kódok (karakter névválasztásnál aktivál)
+
+| Név | Hatás | Referencia |
+|-----|-------|-----------|
+| `hesoyam` | +50.000$ azonnal + `ACH_HESOYAM` achievement | GTA San Andreas |
+| `motherlode` | +50.000$ + "Sims Energy" achievement toast | The Sims |
+| `iddqd` | Végtelen stamina **és** végtelen üzemanyag 5 percig + `ACH_DOOM` achievement | DOOM |
+
+**Technikai részletek:**
+- [ ] `NameCodeHandler.cs` — névbevitel `OnEndEdit` eseményre figyel, case-insensitive összehasonlítás
+- [ ] `CheatCodeActivator.cs` — singleton, `Activate(string code)` publikus API, `CurrencyManager` / `PlayerController` / `PoweredToolBase` módosítja
+- [ ] `iddqd` esetén: `PlayerController._stamina = float.MaxValue` guard + `PoweredToolBase._fuel = float.MaxValue` guard, 300s timer után visszaáll
+- [ ] Minden kód aktiválásakor: rövid "cheat aktivált" toast UI + achievement unlock
+- [ ] Kódok nem stackelhetők (ugyanaz a kód másodszor nem vált ki hatást)
+
+#### Pénz-összeg alapú achievementek (CurrencyManager.Earn() után ellenőriz)
+- [ ] `ACH_NICE_69` — ha a játékos egyenlege pontosan $69 → *"Nice."* toast + achievement
+- [ ] `ACH_BLAZE_420` — ha a játékos egyenlege pontosan $420 → *"Blaze It, Farmer"* toast + achievement
+- [ ] `CurrencyManager.cs`-be: `CheckSpecialAmounts()` hívás minden `Earn()` / `TrySpend()` után
+
+---
+
+### V6-03 | Easter Egg — Bála GPS hang
+**Status:** ⏳ PENDING
+
+**Mit csinál:** Ha egy kerek bála 3+ másodpercig folyamatosan a Sale Standtól *távolodó* irányba gurul, egy GPS hang szólal meg: *"Please make a U-turn when possible."*
+
+**"Rossz irány" definíciója:**
+- `Vector3.Dot(bale.velocity.normalized, directionToSaleStand) < -0.5f` — azaz a bála mozgásvektora több mint 120 fokkal eltér a stand irányától
+- A check csak akkor fut, ha a bála sebessége `> 1.5 m/s` (lassú kúszásnál ne triggerelje)
+
+**Implementáció:**
+- [ ] `RoundBale.cs`: `_wrongDirTimer` float — minden frame-ben inkrementál ha feltétel teljesül, resetel ha nem
+- [ ] `_wrongDirTimer >= 3f` → `AudioSource.PlayOneShot(sfxGpsUturn)` — egy dedikált AudioClip slot az Inspectorban
+- [ ] Cooldown: 60s a következő GPS hívásig (ne ismételje végtelenszer ha a bála lejtőn van)
+- [ ] A hang 2D (spatialBlend = 0) — mintha a farmernek van GPS-e a zsebében
+- [ ] Egyszerre csak 1 aktív GPS hang (ha több bála gurul rossz irányba, nem rakódnak egymásra)
+
+---
+
+### V6-04 | Easter Egg — "Certified Fresh Hay" eladási kommentek
+**Status:** ⏳ PENDING
+
+**Mit csinál:** Minden eladáskor (bármekkora összegnél) a Sale Stand egy szubjektív, abszurd "minőségértékelést" mutat a pénz-animáció alatt, 2.5 másodpercig látható toast formájában.
+
+**Megjelenítés:**
+- A meglévő `HUDController` toast rendszerben jelenik meg, a pénzösszeg felirat alatt
+- Halvány szín (pl. `#AAAAAA`), kisebb betűméret mint a pénz
+- 2.5s után kifakul (alpha tween), nem kell kattintani
+
+**Kommentek pool (en.json `sale.comment.*` kulcsok, 10 db):**
+- `sale.comment.0`: *"The cows voted this Hay of the Year. The vote was not close."*
+- `sale.comment.1`: *"Slightly dusty. We'll take it."*
+- `sale.comment.2`: *"Suspicious origin. Accepted anyway."*
+- `sale.comment.3`: *"Premium quality. According to you."*
+- `sale.comment.4`: *"Gordon Ramsay saw this. He left. He's not coming back."*
+- `sale.comment.5`: *"The hay has character. Too much character, arguably."*
+- `sale.comment.6`: *"We've seen worse. Once."*
+- `sale.comment.7`: *"A+ packaging. C- content. We'll average it out."*
+- `sale.comment.8`: *"The buyer wept. We're not sure why. We didn't ask."*
+- `sale.comment.9`: *"Certified fresh. Do not question the certification process."*
+
+**Kiválasztás logikája:** nem teljesen random — az előző eladáshoz képest más komment jön (lastIndex tracking), így nem ismétlődhet kétszer egymás után.
+
+**Implementáció:**
+- [ ] `SaleStand.cs`: `ShowSaleComment(int earned)` metódus, `_lastCommentIndex` int field
+- [ ] `HUDController.ShowSaleComment(string text)` — új metódus, meglévő toast rendszer alapján
+- [ ] `en.json` + `hu.json`: 10-10 komment hozzáadva a `sale.comment.*` kulcsokhoz
+- [ ] Ha `earned == 0` (üres eladás): ne jelenjen meg komment
+
+---
+
+### V6-05 | Easter Egg — Konami Kód Speedrun Timer
+**Status:** ⏳ PENDING
+
+**Mit csinál:** A Konami-kód (↑↑↓↓←→←→) begépelése után a HUD-on megjelenik egy ms-pontos speedrun timer, amely a session elejétől mér. A speedrun közösség meg fogja találni, és ingyen marketingeli a játékot.
+
+**Input szekvencia:**
+- `Up Up Down Down Left Right Left Right` — 8 input, bármikor begépelhető játék közben
+- Keyboard: `W W S S A D A D` (WASD layout alapján) — NINCS B A a végén, mert az Interact és Jump
+- Gamepad: D-pad `Up Up Down Down Left Right Left Right`
+- Az `InputSequenceDetector` az InputSystem `InputAction` Performed callbackjeit figyeli
+
+**Timer megjelenítése:**
+- Pozíció: jobb felső sarok, a completion % HUD elem fölé igazítva
+- Formátum: `HH:MM:SS.mmm` — pl. `00:47:23.441`
+- Font: monospace (a meglévő terminal fonthoz hasonló stílus)
+- Szín: halvány fehér (`#CCCCCC`), kis betűméret — nem tolakodik
+- Toggle: első kód → megjelenik; második begépelésre → eltűnik
+- Csak a jelenlegi session elejétől mér (`Time.realtimeSinceStartup`); nem mentett
+
+**Implementáció:**
+- [ ] `InputSequenceDetector.cs` — általános szekvencia detektor: `Vector2[]` elvárt irányok, `OnSequenceCompleted` Unity event
+- [ ] `SpeedrunTimerHUD.cs` — `Update()` frissíti a szöveget, `Toggle()` be/ki kapcsol
+- [ ] `InputSequenceDetector` és `SpeedrunTimerHUD` egyazon GameObject-en a scene-ben (nem PlayerController, scene-szintű)
+- [ ] Achievement: `ACH_KONAMI_CODE` — a meglévő Konami achievement (SteamManager-ben már van) az `InputSequenceDetector.OnSequenceCompleted` hívásból unlock-ol
 
 ---
 
 ## Anti-pattern lista — TILOS (Spec §8.11)
 
-1. Cut animáció ami blokkol inputot — soha, queue helyette
-2. Randomizált swing timing — tönkreteszi a meditatív ritmust
-3. Hard stamina lockout — lassít, de nem állít meg
+1. Cut animáció blokkol inputot — queue helyette
+2. Randomizált swing timing — tönkreteszi a ritmust
+3. Hard stamina lockout — lassít de nem állít meg
 4. Egyetlen vágó hang variáció nélkül
-5. Fű eltüntetése tarlóvá laposítás helyett
+5. Fű eltüntetése — tarlóvá laposítás kell
 6. Realisztikus jármű fizika
-7. Játékos felborítása bálák által (csak odébb tolja)
-8. Lejtőn guruló kerek bála "megjavítása" — az a játék
+7. Játékos felborítása bálák által — csak odébb tolja
+8. Lejtőn guruló kerek bála "megjavítása" — **ez a játék**
 9. UI számok snapping — mindig animálva
-10. Tutorial popup-özón — max 5 egysoros hint összesen
+10. Tutorial popup-özón — max 5 egysoros hint
+11. Unicode szimbólumok (★☆✓) ShopUI-ban — LiberationSans SDF nem támogatja
 
 ---
 
-## Függőségi gráf
+## Nuclear Ending — Nyitott hibák & TODO
 
+### NUK-01 | Bomba nem látható a kamera számára
+**Status:** ⏳ PENDING
+- A bomba spawn-olódik de a kamera nem követi megfelelően (pitch nem vált le elég gyorsan)
+- A távoli nézet miatt a blure-özés következtében látszik a bomba más logika kell mint a repülőre.
+- (külön kamera használata a bombára.)
+- `TrackWithPlayerCamera` pitch-tracking lassú (`playerTrackSpeed = 3.5f`) a gyorsan eső bombához képest
+- Fix: külön, gyorsabb track speed a bomb fázishoz, vagy külön coroutine
+
+### NUK-02 | Bare hand nem aktiválódik (Nuclear ending)
+**Status:** ⏳ PENDING
+- `EquipBareHand()` csak a Loop endingben van meghívva, a Nuclear sequence-ből hiányzik
+- Fix: `pc.GetComponentInChildren<ToolHolder>()?.EquipBareHand()` hozzáadása a `NuclearSequence()` elejéhez
+
+### NUK-03 | EndScreen nem töltődik be a Nuclear ending után
+**Status:** ⏳ PENDING
+- A `endScreenRoot.SetActive(true)` sor elérésére valami megakadályozza a coroutine-t
+- Valószínű ok: kivétel valahol a szekvenciában (feedbackNuclearBlast / AnimateNuclearVolume / SpawnNukeLight)
+- Fix: try-catch / Debug.LogError hozzáadása a sequence kulcslépéseihez, vagy nullable safety
+
+### NUK-04 | Repülő hangja a játék indulásától hallható
+**Status:** ⏳ PENDING
+- Az `airplaneAudioSource` valószínűleg `Play On Awake = true` az Inspectorban, ezért a game startkor azonnal szól
+- Fix: `airplaneAudioSource.Stop()` hívás az `EndingOrchestrator.Awake()` / `Start()`-ban, vagy `Play On Awake` kikapcsolása a Inspectorban az AudioSource komponensen
+
+### NUK-05 | Play Again → nem úgy néz ki mint egy New Game
+**Status:** ⏳ PENDING
+- `EndScreen.PlayAgain()` csak újratölti a scenet, de a `WorldBootstrap.PendingFreshStart = true` nincs beállítva
+- Így a főmenű jelenik meg (nem a játék) és esetleg Continue is látszik
+- Fix: `WorldBootstrap.PendingFreshStart = true` + `SaveSystem.DeleteSave()` beállítása `PlayAgain()`-ben, Mirror scene change API használata
+
+### NUK-06 | Óriási villám / lightning flash a bomba becsapódásakor
+**Status:** ⏳ PENDING
+- A becsapódáskor nincs drámai fényhatás (csak a `SpawnNukeLight` pontfénye)
+- Kell: pillanatnyi teljes fehér screen flash (pl. `Image` alpha 0→1→0 kb. 3 frame alatt), + nagyon magas `nukeFlashIntensity` (`~15000`) + esetleg `HDR Bloom` spike
+- Fix: külön `FlashScreen()` coroutine ami egy UI Image-et villant fehérre, + a `nukeFlashIntensity` értékét drasztikusan emelni (jelenlegi 15000 de lehet nem elég nagy a Bloom threshold miatt)
+
+---
+
+## Függőségek és kockázatok
+
+| Kockázat | Súlyosság | Mitigation |
+|----------|-----------|------------|
+| 3D asset delivery késik (V4 block) | 🔴 Magas | Placeholder mesh-ekkel fejlesztés, swap in later |
+| Bála terrain-követés fizika bugos | 🟡 Közepes | SphereCast alapú megoldás stabilabb mint Rigidbody MeshCollider |
+| Cinematic kamera + co-op szinkron | 🟡 Közepes | Cinematic csak lokálisan fut, nem kell hálózaton szinkronizálni |
+| >3h ending spoiler kerülendő | 🟢 Alacsony | Ne kerüljön trailerbe, csak a játékon belül fedezhető fel |
+
+---
+
+## PHASE 7 — Co-op Chaos & Viral Mechanics
+
+> Ezek a mechanikák co-op stream-content generátorok. Minden egyes mechanika egy potenciális clip. Prioritás: alacsony kód-cost, magas vicc-sűrűség.
+
+---
+
+### V7-00 | Bála Outline — Sárga highlight interaktálható bálákhoz
+**Status:** ⏳ PENDING
+
+- [ ] Az interaktálható bálán sárga outline jelenik meg, ha a játékos közel van (felvehető / eladható távolság)
+- [ ] `SquareBale.cs` + `RoundBale.cs`: `OnTriggerEnter/Exit` a player közelségi colliderrel → renderer outline material swap
+- [ ] Outline csak a legközelebbi bálán legyen aktív egyszerre (ne minden bálán egyszerre)
+- [ ] Co-op: lokálisan számított, nincs hálózati szinkron szükség
+
+---
+
+### V7-01 | WC Buff — "Porcelain Throne"
+**Status:** ⏳ PENDING
+
+**Logika:**
+- WC objektum a pajta/barn közelében, `IInteractable` interface
+- Leülés: `PlayerController.IsSitting = true` → mozgás blokkolva, animáció (sit pose)
+- `SaleStand.SellBales()`: minden eladáskor check → ha `AnyPlayerSitting()` → értékmultiplier **+10%**
+- Felállás: újabb `E` gomb
+
+**Implementáció:**
+- [ ] `ToiletInteractable.cs` — `IInteractable`, `IsSitting` toggle, `NetworkedPlayer` SyncVar szinkron (co-op)
+- [ ] `SaleStand.GetParcelMultiplier()`: `+ (ToiletInteractable.AnyoneSeated ? 0.10f : 0f)` szorzó
+- [ ] HUD tooltip: *"Someone is working hard for the team."*
+- [ ] Ha egyszerre 2 játékos próbál ülni (csak 1 WC): toast *"Occupied."*
+
+**Achievement-ek:**
+- `ACH_PORCELAIN_THRONE` — **"Porcelain Throne"** — leültél a WC-re
+- `ACH_MORAL_SUPPORT` — **"Moral Support"** — te ültél miközben a másik eladott
+- `ACH_QUEUE_THEORY` — **"Queue Theory"** — co-op-ban mindenki egyszerre próbált ülni
+
+---
+
+### V7-02 | Kutya Szar + Damilos Fűnyíró — "Occupational Hazard"
+**Status:** ⏳ PENDING
+
+**Logika:**
+- 5–8 db `DogPoop` objektum szétszórva a mezőn (alacsony, fűben rejtett, kis barna mesh)
+- `StringTrimmer.OnSweep()`: ellenőriz `DogPoop`-ot a sweep cone-ban → ha talál → `CameraFXController.PlayPoopSplatter()`
+- Egyéb eszközök (kasza, push mower, ride-on): NEM triggereli — a damilos specifikus (fizikailag indokolt, oldalra csap)
+- Bare Hand + E a poopra: felvehető, dobható más játékos irányába (`ThrowObject()`)
+
+**Vizuális effekt:**
+- [ ] Barna splash overlay (`ScreenFX` UI Image, screen-space), alpha fade 15 másodperc alatt
+- [ ] SFX: undorító fröccs hang (rövid, egyedi clip)
+- [ ] HUD toast: *"...you should've seen that."*
+- [ ] Ha más játékos kamerájára fröccsen (dob): ugyanaz az overlay + *"Really?"* toast
+
+**Implementáció:**
+- [ ] `DogPoopObject.cs` — trigger zone, `IsActive` flag (ha felvette valaki → deaktivál)
+- [ ] `CameraFXController.cs` — `PlayPoopSplatter(float duration)` metódus, `Image` alpha coroutine
+- [ ] `StringTrimmer.cs` → `OnSweepHit()`: `Physics.OverlapSphere` → `DogPoopObject` check
+
+**Achievement-ek:**
+- `ACH_OCCUPATIONAL_HAZARD` — **"Occupational Hazard"** — elcsaptad a szart
+- `ACH_DEDICATED_WORKER` — **"Dedicated Worker"** — kézzel vetted fel
+- `ACH_FRIENDLY_SPLATTER` — **"Friendly Splatter"** — más játékos kamerájára dobted
+
+---
+
+### V7-03 | Alkohol — "Liquid Courage"
+**Status:** ⏳ PENDING
+
+**Logika:**
+- Interaktálható palack (barn-ban elhelyezve, fix pozíció — NEM vásárolható, nem respawn)
+- `PlayerController.isDrunk = true`, **120 másodperc** időtartam
+- Co-op: másik játékosnak "odakínálható" (E a játékos közelében aki tartja) — ők döntik el elfogadják-e
+
+**Hatások amíg részeg:**
+- Swing speed multiplier: **×1.35** (gyorsabb kaszálás)
+- Camera sway: sin hullám yaw-ra `±3°, 0.8Hz`
+- Chromatic aberration enyhe boost (URP Volume)
+- Alkalmi hiccup SFX (véletlenszerűen 8–20 másodpercenként)
+- HUD: `LIQUID COURAGE: 1:47` visszaszámláló
+
+**Traktorra vonatkozó szabályok:**
+- `RideOnMower.TryMount()`: ha `isDrunk` → MEGTAGAD + toast: *"YOU'VE HAD ENOUGH."*
+- Ha mégis megpróbál felszállni 3-szor egymás után: felszáll, azonnal leesik, 5 másodpercig blokkolja a traktort
+- Push Mower részegen: engedélyezett, de a sway miatt nehézkes célozni
+
+**Implementáció:**
+- [ ] `DrinkableBottle.cs` — `IInteractable`, `PlayerController.SetDrunk(120f)` hívás
+- [ ] `PlayerController`: `isDrunk` bool, `_drunkTimer`, `ApplyDrunkSway()` az `UpdateCamera()`-ban
+- [ ] `RideOnMower.TryMount()`: `if (player.isDrunk) return false;` guard
+- [ ] `ToolAudioManager`: `PlayHiccup()` metódus (új AudioSource slot, ha kell)
+
+**Achievement-ek:**
+- `ACH_LIQUID_COURAGE` — **"Liquid Courage"** — első ivás
+- `ACH_DESIGNATED_DRIVER` — **"Designated Driver"** — te sober voltál amíg a többiek ittak
+- `ACH_INTERVENTION` — **"Intervention"** — 3× próbáltál részegen traktorra szállni
+- `ACH_FULL_EXPERIENCE` — **"The Full Experience"** — részegen ültél a WC-re *(Alkohol + WC kombó)*
+
+---
+
+### V7-04 | Kavics Projektil — "Rock and Roll"
+**Status:** ⏳ PENDING
+
+**Logika:**
+- Bármely **melee / motor eszközzel** (Hand Sickle, Long Scythe, Push Mower, Ride-On Mower) véletlenszerűen elcsapható egy rejtett kavics
+- **String Trimmerrel NEM** — fizikailag indokolt (a damilos nem dobja ki a törmeléket)
+- Valószínűség: **1/150 swing** melee eszközöknél, **1/80 mowing tick** powered eszközöknél
+- Kavics véletlenszerű irányban indul, de előnyben részesíti a legközelebbi másik játékost (`Physics.Raycast` → closest `PlayerController`)
+- Becsapódás: a célzott játékosnál kis screen shake + `_externalVelocity` lökés + flinch SFX
+
+**Cinematic kamera:**
+- Az OKOZÓ játékosnál aktivál (aki a kavicsot elcsapta), nem a célpontnál
+- Cinemachine Virtual Cam: kicsit oldalra csúszik, **0.4s slow-motion** (`Time.timeScale = 0.4f`), a kavics röppályáját mutatja
+- A kavics a kamerában látható kis mesh (`RockProjectile` prefab, fast Rigidbody, 40–60 m/s)
+- Becsapódás pillanatában visszavált FP kamerára, `Time.timeScale = 1f`
+- Ha nem talált el senkit (kavics kiment a mezőn): nincs slow-mo, csak SFX
+
+**Bála veszteség:**
+- Ha a célzott játékos épp bálát cipel: `DropSquareBales()` kényszerítve — bálák szétszóródnak
+- Ha bálázás közben kapja (E tartva): bálázás megszakítva, timer reset
+
+**Implementáció:**
+- [ ] `RockProjectile.cs` — `Rigidbody`, `OnCollisionEnter` → `PlayerController.TakeRockHit()`, destroy after 5s
+- [ ] `MeleeToolBase.OnSweepHit()` + `PoweredToolBase.OnMowTick()`: 1/N eséllyel `TrySpawnRock()`
+- [ ] `TrySpawnRock()`: raycast legközelebbi playert, spawn `RockProjectile`, `AddForce` irányba
+- [ ] `CinematicRockCamera.cs`: coroutine, Cinemachine blending, `Time.timeScale` kezelés
+- [ ] String Trimmer kivétel: `StringTrimmer` nem hívja `TrySpawnRock()`-ot
+
+**Achievement-ek:**
+- `ACH_ROCK_AND_ROLL` — **"Rock and Roll"** — elcsaptál egy kavicsot
+- `ACH_HEADSHOT` — **"Headshot"** — kavics eltalált egy másik játékost
+- `ACH_DUCK` — **"Duck!"** — te voltál a célpont és elvesztetted a bálád
+- `ACH_THREE_BIRDS` — **"One Stone"** — egy kavics 2 játékost ért el (bounce / átsüvít)
+
+---
+
+### V7-05 | Traktoros Ütközés — "Involuntary Flight"
+**Status:** ⏳ PENDING
+
+**Logika:**
+- `RideOnMower` sebességalapú ütközés detektálás (`OnControllerColliderHit` vagy trigger)
+- Csak **>2 m/s** traktor sebességnél aktivál (lassú mowing nem dob el senkit)
+- Az elütött játékos `_externalVelocity` kap: `forward * speed * 2.5f + Vector3.up * 4f`
+- Magatehetetlenül repül: input lock **0.8 másodpercig** repülés közben (nem tud korrigálni)
+- Landoláskor: puff particle + dull thud SFX
+
+**Bála veszteség:**
+- `DropSquareBales()` kényszerítve az ütközéskor
+- A kiesett bálák random `Physics.AddForce` iránnyal szóródnak szét (3-5 irány)
+- Más játékos felveheti a szétszóródott bálát és eladhatja → achievement
+
+**Részeg sofőr:**
+- Ha az ütő játékos részeg (`isDrunk`): `speed * 3.5f + Vector3.up * 6f` — erősebb lökés
+- Toast az ütöttnél: *"IMPAIRED DRIVER"*
+
+**Implementáció:**
+- [ ] `RideOnMower.cs`: `OnControllerColliderHit(ControllerColliderHit hit)` → `TryHitPlayer(hit)`
+- [ ] `TryHitPlayer()`: speed check → `player.AddExternalVelocity(impulse)` + `player.DropSquareBales()` + `player.LockInputFor(0.8f)`
+- [ ] `PlayerController.LockInputFor(float seconds)` — új metódus, `_inputLockTimer` float
+
+**Achievement-ek:**
+- `ACH_INVOLUNTARY_FLIGHT` — **"Involuntary Flight"** — traktoros elrepített
+- `ACH_CHAUFFEUR` — **"Chauffeur"** — te repítettél el valakit
+- `ACH_ECONOMY_CLASS` — **"Economy Class"** — 10+ métert repültél egy ütéssel
+- `ACH_FREELOADING` — **"Freeloading"** — felvettél és eladtál egy másik játékos által elejtett bálát
+
+---
+
+### V8-07 | Cat Economy — "Cat Tax"
+**Status:** ⏳ PENDING
+
+**Logika — szorzók stackelnek, egyszerre több feltétel is aktív lehet:**
+
+- Bárki ül a WC-n (V7-01): **+10%**
+- Macska követ egy játékost (simogatás után): **+5%**
+- Macska nézi miközben bálázol (5m-en belül, szemben áll): **+15%**
+- Macska veled szemben ül és nyalogatja magát, miközben te a WC-n ülsz: **+20%**
+
+A WC-n ülés bónusza (+10%) és a macska WC-s bónusza (+20%) egymásra rakódik — tehát a WC + macska kombó önmagában **+30%** a csapatnak.
+
+**Co-op példa:** A játékos ül a WC-n, a macska szemben nyalogatja magát → B játékos eladja a bálát → B játékos **+30%**-ot kap az eladáson.
+
+**Macska követése (simogatás mechanika):**
+- `E` tartva a macska közelében (1.5m, 1.2s) → macska követ 5 percig
+- Miközben követ: `CatFollowing = true` → `SaleStand` +5% bónusz
+- Ha a macska bálázáskor 5m-en belül van és a játékos felé néz: +15% (felülírja a +5%-ot)
+
+**Macska WC-detektálás:**
+- `ToiletInteractable.SeatedPlayer` referencia → `CatEconomy.CheckCatToiletBonus()`
+- Macska `IsSittingIdle` (animátor state: `Sit_loop_1` vagy `Sit_loop_2`) ÉS `Vector3.Dot(cat.forward, toPlayer) > 0.7f` (szemben néz) ÉS `distance < 2m` → aktív
+- Nincs időkorlát — amíg a feltételek fennállnak, a bónusz él
+
+**Implementáció:**
+- [ ] `CatEconomyManager.cs` — singleton, `GetCurrentSaleMultiplier()` visszaad `float` bónusz értéket; `SaleStand` ezt hívja
+- [ ] `FarmAnimalChaseSystem.cs`: `IsCatFollowing` property, `IsCatWatchingBaling(Vector3 balePos)` metódus
+- [ ] `ToiletInteractable.cs` (V7-01): `SeatedPlayer` property expose-olása `CatEconomyManager`-nek
+- [ ] `CatEconomy`: `IsGrooming()` = macska `Sit_loop` animban van ÉS `_phase >= 1` (idle fázisban) ÉS szembe néz az ülő játékossal
+
+**Achievement-ek:**
+- `ACH_CAT_TAX` — **"Cat Tax"** — macska bónusszal adtál el bálát
+- `ACH_PRODUCTIVITY_HACK` — **"Productivity Hack"** — WC + macska kombó egyszerre aktív volt eladáskor
+- `ACH_PET_THE_CAT` — **"Pet the Cat"** *(már létezik a SteamManager-ben)* — simogatás triggerel
+
+---
+
+### V8-08 | Csirke Hadsereg — "They Remember"
+**Status:** ⏳ PENDING
+
+**Trigger:** A macska megöli a csirkét ÉS az eltelt játékidő **< 10 perc** (`_elapsed < 600f` a `FarmAnimalChaseSystem`-ben).
+
+**Logika:**
+- `ChickenDeath()` coroutine-ban: ha trigger feltétel teljesül → `StartCoroutine(SpawnChickenArmy())`
+- Csirkék fokozatosan jelennek meg a **silók és a red barn** közelében, hullámokban:
+  - **0. hullám** (azonnal): 3 csirke, 30m-en belül a silóktól, idle animáció
+  - **2. perc:** +4 csirke, barn északi oldala
+  - **4. perc:** +5 csirke, silók másik oldala, körbe állnak
+  - **6. perc:** +6 csirke, minden csoport közelebb tolódik 5 méterrel
+  - **8. perc+:** minden további 2 percben +3 csirke, max **30 csirke** összes
+- Csirkék **semmit nem csinálnak** — csak állnak és néznek
+- Ha a játékos **5m-en belül** megközelít bármelyik csoportot: az egész csoport szinkronban a játékos felé fordul (animáció nélkül, snap rotation), majd visszafordulnak ha elmegy
+- Hangeffekt: nagyon halk, távoli "clucking" loop (3D spatial, csak ha közel vagy)
+
+**Vizuális:**
+- Ugyanaz a `Chicken` prefab mint az eredeti csirke, csak `FarmAnimalChaseSystem` AI nélkül
+- Enyhe lélegzés/idle bob animáció (`CHK_IDLE` state)
+- Éjszaka (ha van nap-éjjel ciklus): sötétben csak a szemeik csillognak
+
+**Implementáció:**
+- [ ] `ChickenArmyController.cs` — singleton, `Activate()` hívja `FarmAnimalChaseSystem.ChickenDeath()`, `IEnumerator SpawnWaves()`
+- [ ] `SpawnWaves()`: `WaitForSeconds(120f)` ciklusban, random pozíció a silo/barn körüli `float radius` sugarú gyűrűn belül
+- [ ] `FarmAnimalChaseSystem.ChickenDeath()`: `if (_elapsed < 600f) ChickenArmyController.Instance?.Activate();`
+- [ ] Csirkék: `NavMeshAgent` nélkül, `Animator` only, `LookAt` playerhez ha közel
+
+**Achievement-ek:**
+- `ACH_THEY_REMEMBER` — **"They Remember"** — a csirke hadsereg megjelent
+- `ACH_SURROUNDED` — **"Surrounded"** — 20+ csirke van egyszerre a mezőn
+- `ACH_WALK_AWAY` — **"Just Walk Away"** — 30 csirke jelenlétében fejezted be a mezőt
+
+---
+
+### FIX-CHASE-01 | Cat Attack Audio — Vágás + Purr Indítás
+**Status:** ✅ KÉSZ
+
+**Probléma:**
+A macska támadáshangjai (`sfxCatAttack1` / `sfxCatAttack2`) jelenleg `PlayOneShotPitched()`-al játszódnak, amit nem lehet megállítani. A csirke eltűnésekor (`Destroy(chicken.go)`) ezért a hang tovább megy egy félmondaton belül, holott a csirke már nincs. Utána a purring sem indul el automatikusan — csak `PlayOneShot`-ként volt bekötve a korábbi fázis-váltásoknál.
+
+**Javítás:**
+
+**1. Cat attack SFX — legyen stoppable:**
+- [ ] `FarmAnimalChaseSystem`: új `AudioSource _catAttackSrc` mező (a többi mellett)
+- [ ] `PlayCapture()` attack loop-ban: `sfxCatAttack1/2`-t NE `PlayOneShotPitched()`-al, hanem `_catAttackSrc.clip = ...; _catAttackSrc.Play();`
+- [ ] `ChickenDeath()` elején: `if (_catAttackSrc != null) _catAttackSrc.Stop();` — a csirke eltűnésével egy pillanatban vágja el
+
+**2. Purring — loopolt, pontos időzítéssel:**
+- [ ] `ChickenDeath()` vége (közvetlenül `Destroy(chicken.go)` után): `StartPurring()`
+- [ ] `StartPurring()`: `_audioSrc.clip = sfxCatPurr; _audioSrc.loop = true; _audioSrc.Play();`
+- [ ] `CatRunAway()` sprint fázis elején (ahol `PlayAnim(cat, CAT_RUN_FAST)`): `StopPurring()`
+- [ ] `StopPurring()`: `_audioSrc.Stop(); _audioSrc.loop = false;`
+
+**Időzítési diagram:**
 ```
-P0-01 → P0-02 → P0-03 → P0-04
-                       → P0-06 → P1-01 → P1-02 → P1-04
-                       → P0-08 → P1-03 → P1-05 → P2-01 → P2-02
-         P0-01 → P0-05 ↗                        ↘ P2-03
-         P0-01 → P0-09 → P1-04                  P2-04 → P2-05
-                       → P1-03
-                P0-08 + P0-09 → P0-10 → P1-05
+[3 attack hits] → Destroy(chicken.go)
+                      ├─ _catAttackSrc.Stop()       ← hang vágva a csirke tűnésével
+                      └─ _audioSrc: sfxCatPurr loop ← purring azonnal indul
+[cat sits] → [rolls] → [gets up] → [sprints]
+                                         └─ _audioSrc.Stop() ← purring vége
 ```
+X idő után éleznie kell a kaszát
+
