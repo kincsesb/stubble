@@ -380,7 +380,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
                 var chk = runChickens[0];
                 PlayOneShotPitched(sfxChickenRunning, Random.Range(0.95f, 1.05f), 1.2f,
                                    chk.go != null ? chk.go.transform.position : (Vector3?)null,
-                                   spatialBlend: 0.4f, maxDist: 40f);
+                                   spatialBlend: 1f, maxDist: 40f, minDist: 1f);
                 _chkRunSfxTimer = sfxChickenRunning.length * 0.85f;
             }
         }
@@ -778,7 +778,8 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     }
 
     void PlayOneShotPitched(AudioClip clip, float pitch = 1f, float vol = 1f,
-                             Vector3? worldPos = null, float spatialBlend = 0f, float maxDist = 20f)
+                             Vector3? worldPos = null, float spatialBlend = 0f,
+                             float maxDist = 20f, float minDist = 1f)
     {
         if (clip == null) return;
         var go  = new GameObject("_SFX");
@@ -788,6 +789,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         src.pitch            = pitch;
         src.volume           = sfxVolume * vol * 6f;
         src.spatialBlend     = spatialBlend;
+        src.minDistance      = minDist;
         src.maxDistance      = maxDist;
         src.rolloffMode      = AudioRolloffMode.Linear;
         src.Play();

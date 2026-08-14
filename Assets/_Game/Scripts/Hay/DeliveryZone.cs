@@ -12,7 +12,7 @@ namespace Fields.Hay
     public class DeliveryZone : MonoBehaviour
     {
         [Tooltip("Price per bale (overridden by BalerManager hay value if set)")]
-        public int pricePerBale = 50;
+        public int pricePerBale = 10;
 
         [Header("Ring visual")]
         [Tooltip("Leave 0 to auto-detect from trigger collider.")]

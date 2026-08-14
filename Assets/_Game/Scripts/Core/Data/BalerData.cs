@@ -12,7 +12,7 @@ namespace Fields.Core.Data
         public float[] compressionSpeedLevels = { 1f, 1.2f, 1.45f, 1.75f };
         public int[] carryCapacityLevels = { 1, 2, 2, 3 };
         [Tooltip("Hay units required to form one bale")]
-        public int[] densityLevels = { 180, 165, 150, 135 };
+        public int[] densityLevels = { 540, 495, 450, 405 };
 
         [Header("Economy")]
         public int purchaseCost;

@@ -45,7 +45,7 @@ namespace Fields.Core
         [Tooltip("Radius around the player to collect hay units from the accumulation grid")]
         public float balingRadius = 12f;
         [Tooltip("Minimum accumulated hay units needed to start baling")]
-        public float balingThreshold = 180f;
+        public float balingThreshold = 540f;
         [Tooltip("Seconds of holding E to produce a bale")]
         public float balingDuration = 2.5f;
         [Tooltip("SquareBale prefab spawned when baling completes (no round baler)")]

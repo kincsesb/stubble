@@ -19,7 +19,7 @@ MonoBehaviour:
   - 1.45
   - 1.75
   carryCapacityLevels: 01000000020000000200000003000000
-  densityLevels: 3c00000037000000320000002d000000
+  densityLevels: 1c020000ef010000c201000095010000
   purchaseCost: 0
   upgradeCosts: c8000000f4010000b0040000
   mass: 80

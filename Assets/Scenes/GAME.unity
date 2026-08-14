@@ -90785,7 +90785,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Economy.SaleStand
   shop: {fileID: 804405252}
-  hayUnitValue: 2
+  hayUnitValue: 0.4
   parcelMultiplier: 1
 --- !u!65 &1318166628
 BoxCollider:
@@ -128099,7 +128099,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69a81b0687f114b70991a004690c275d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Hay.DeliveryZone
-  pricePerBale: 50
+  pricePerBale: 10
   ringRadius: 0
   ringMaterial: {fileID: 0}
   ringColorA: {r: 1, g: 0.8, b: 0.05, a: 0.65}

@@ -19,7 +19,7 @@ namespace Fields.Economy
 
         [Header("Economy")]
         [Tooltip("Base $ value per hay unit")]
-        public float hayUnitValue = 2f;
+        public float hayUnitValue = 0.4f;
         [Tooltip("Parcel quality multiplier (set per stand in Inspector)")]
         public float parcelMultiplier = 1f;
 
