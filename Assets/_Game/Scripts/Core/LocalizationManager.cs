@@ -183,11 +183,21 @@ namespace Fields.Core
             { "endscreen.continue", "Continue" },
 
             // Final end screen (all 4 parcels done)
-            { "end.title",    "All Fields Cleared!" },
-            { "end.earnings", "Total earnings: ${0}" },
-            { "end.time",     "Time: {0:00}:{1:00}" },
-            { "end.playagain","Play Again" },
-            { "end.quit",     "Quit" },
+            { "end.title",             "All Fields Cleared!" },
+            { "end.title.nuclear",     "☢ Nuclear Ending" },
+            { "end.earnings",          "Total earnings: ${0}" },
+            { "end.time",              "Time: {0:00}:{1:00}" },
+            { "end.playagain",         "Play Again" },
+            { "end.quit",              "Quit" },
+            { "end.stat.time",         "⏱ {0}" },
+            { "end.stat.money",        "💰 {0}" },
+            { "end.stat.area",         "🌿 {0} m²" },
+            { "end.graph.header",      "CUT AREA OVER TIME" },
+            { "end.graph.yaxis",       "m²" },
+            { "end.graph.xaxis",       "Time (min)" },
+            { "end.ach.header",        "ACHIEVEMENTS THIS SESSION" },
+            { "end.ach.empty",         "No achievements unlocked this session." },
+            { "end.button.mainmenu",   "Main Menu" },
 
             // Hints (max 5 per spec §8.11)
             { "hint.0", "Hold primary to use your tool." },

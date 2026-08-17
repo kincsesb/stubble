@@ -74,7 +74,11 @@ namespace Fields.UI
                 playAgainButton.onClick.RemoveAllListeners();
                 playAgainButton.onClick.AddListener(GoToMainMenu);
                 var btnLabel = playAgainButton.GetComponentInChildren<TextMeshProUGUI>();
-                if (btnLabel != null) btnLabel.text = "Main Menu";
+                if (btnLabel != null)
+                {
+                    var loc2 = LocalizationManager.Instance;
+                    btnLabel.text = loc2 != null ? loc2.Get("end.button.mainmenu") : "Main Menu";
+                }
             }
             if (quitButton != null)
                 quitButton.gameObject.SetActive(false);
@@ -117,7 +121,7 @@ namespace Fields.UI
             if (titleText != null)
             {
                 titleText.text = PendingEndingType == EndingType.Nuclear
-                    ? (loc != null ? loc.Get("end.title.nuclear", "☢ Nuclear Ending") : "☢ Nuclear Ending")
+                    ? (loc != null ? loc.Get("end.title.nuclear") : "☢ Nuclear Ending")
                     : (loc != null ? loc.Get("end.title") : "All Fields Cleared!");
             }
 
@@ -145,14 +149,18 @@ namespace Fields.UI
         {
             string timeStr  = $"{mins:00}:{secs:00}";
             string moneyStr = loc != null ? loc.FormatMoney(money) : $"${money}";
-            string areaStr  = $"{cutM2:N0} m²";
+            string areaStr  = $"{cutM2:N0}";
+
+            string timeFmt  = loc != null ? loc.Get("end.stat.time",  timeStr)  : "⏱ " + timeStr;
+            string moneyFmt = loc != null ? loc.Get("end.stat.money", moneyStr) : "💰 " + moneyStr;
+            string areaFmt  = loc != null ? loc.Get("end.stat.area",  areaStr)  : "🌿 " + areaStr + " m²";
 
             float yMin = 0.76f, yMax = 0.86f;
 
             // Three equal-width columns
-            AddStatCell(parent, "StatTime",  "⏱ " + timeStr,   0.03f, yMin, 0.35f, yMax);
-            AddStatCell(parent, "StatMoney", "💰 " + moneyStr,  0.36f, yMin, 0.64f, yMax);
-            AddStatCell(parent, "StatGrass", "🌿 " + areaStr,   0.65f, yMin, 0.97f, yMax);
+            AddStatCell(parent, "StatTime",  timeFmt,  0.03f, yMin, 0.35f, yMax);
+            AddStatCell(parent, "StatMoney", moneyFmt, 0.36f, yMin, 0.64f, yMax);
+            AddStatCell(parent, "StatGrass", areaFmt,  0.65f, yMin, 0.97f, yMax);
 
             // Hide old text refs if they're wired (they'd overlap)
             HideIfNotNull(totalEarningsText?.gameObject);
@@ -194,7 +202,8 @@ namespace Fields.UI
             _dynamicChildren.Add(headerGO);
             SetAnchors(headerGO.GetComponent<RectTransform>(), 0.03f, 0.70f, 0.97f, 0.75f);
             var hTmp = headerGO.AddComponent<TextMeshProUGUI>();
-            hTmp.text      = "CUT AREA OVER TIME";
+            var locG = LocalizationManager.Instance;
+            hTmp.text      = locG != null ? locG.Get("end.graph.header") : "CUT AREA OVER TIME";
             hTmp.fontSize  = 16;
             hTmp.fontStyle = FontStyles.Bold;
             hTmp.color     = new Color(0.85f, 0.85f, 0.85f);
@@ -214,7 +223,8 @@ namespace Fields.UI
             var yrt = yLabelGO.GetComponent<RectTransform>();
             SetAnchors(yrt, 0.0f, 0.42f, 0.04f, 0.69f);
             var yTmp = yLabelGO.AddComponent<TextMeshProUGUI>();
-            yTmp.text      = "m²";
+            var locY = LocalizationManager.Instance;
+            yTmp.text      = locY != null ? locY.Get("end.graph.yaxis") : "m²";
             yTmp.fontSize  = 12;
             yTmp.color     = new Color(0.7f, 0.7f, 0.7f);
             yTmp.alignment = TextAlignmentOptions.Center;
@@ -224,7 +234,8 @@ namespace Fields.UI
             _dynamicChildren.Add(xLabelGO);
             SetAnchors(xLabelGO.GetComponent<RectTransform>(), 0.03f, 0.39f, 0.97f, 0.43f);
             var xTmp = xLabelGO.AddComponent<TextMeshProUGUI>();
-            xTmp.text      = "Time (min)";
+            var locX = LocalizationManager.Instance;
+            xTmp.text      = locX != null ? locX.Get("end.graph.xaxis") : "Time (min)";
             xTmp.fontSize  = 12;
             xTmp.color     = new Color(0.7f, 0.7f, 0.7f);
             xTmp.alignment = TextAlignmentOptions.Right;
@@ -342,7 +353,8 @@ namespace Fields.UI
             var headerGO = CreateRectChild(achGO.transform, "AchHeader");
             SetAnchors(headerGO.GetComponent<RectTransform>(), 0f, 0.78f, 1f, 1f);
             var hTmp = headerGO.AddComponent<TextMeshProUGUI>();
-            hTmp.text      = "ACHIEVEMENTS THIS SESSION";
+            var locA = LocalizationManager.Instance;
+            hTmp.text      = locA != null ? locA.Get("end.ach.header") : "ACHIEVEMENTS THIS SESSION";
             hTmp.fontSize  = 16;
             hTmp.fontStyle = FontStyles.Bold;
             hTmp.color     = new Color(0.9f, 0.8f, 0.2f);
@@ -355,7 +367,9 @@ namespace Fields.UI
             var achs = sm?.SessionAchievements;
             if (achs == null || achs.Count == 0)
             {
-                listTmp.text = "<color=#888888>No achievements unlocked this session.</color>";
+                var locEmpty = LocalizationManager.Instance;
+                string emptyMsg = locEmpty != null ? locEmpty.Get("end.ach.empty") : "No achievements unlocked this session.";
+                listTmp.text = $"<color=#888888>{emptyMsg}</color>";
             }
             else
             {

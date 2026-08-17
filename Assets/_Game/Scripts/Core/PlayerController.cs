@@ -119,6 +119,9 @@ namespace Fields.Core
         Fields.Hay.RoundBale _nearestBale;
         Fields.Hay.RoundBale _pushingBale;
 
+        // Square bale outline highlight
+        Fields.Hay.SquareBale _highlightedSquareBale;
+
         // When true, HandleMovement/Bob/FOV are suppressed (e.g. riding mower)
         public bool IsMounted { get; set; }
 
@@ -149,6 +152,7 @@ namespace Fields.Core
         {
             HandleLook();
             ScanNearestBale();
+            ScanNearestSquareBale();
             HandleMovement();
             HandleRoundBalePush();
             HandleBob();
@@ -457,6 +461,44 @@ namespace Fields.Core
         {
             Vector3 delta = new Vector3(worldPos.x - transform.position.x, 0f, worldPos.z - transform.position.z);
             _cc.Move(delta);
+        }
+
+        // ------------------------------------------------------------------ //
+        // Square bale outline highlight
+        // ------------------------------------------------------------------ //
+
+        void ScanNearestSquareBale()
+        {
+            Fields.Hay.SquareBale nearest = null;
+
+            if (!InputLocked && !IsMounted && CarriedBaleCount < 3)
+            {
+                var origin  = cameraRoot != null ? cameraRoot.position : transform.position + Vector3.up * 1.6f;
+                var forward = cameraRoot != null ? cameraRoot.forward  : transform.forward;
+
+                // Eye-level raycast
+                if (Physics.Raycast(origin, forward, out RaycastHit hit, 4f))
+                    nearest = hit.collider.GetComponentInParent<Fields.Hay.SquareBale>();
+
+                // Ground proximity sphere (bales at feet)
+                if (nearest == null)
+                {
+                    var groundFront = transform.position + forward * 2f + Vector3.up * 0.5f;
+                    float closestSq = float.MaxValue;
+                    foreach (var col in Physics.OverlapSphere(groundFront, 1.5f))
+                    {
+                        var sb = col.GetComponentInParent<Fields.Hay.SquareBale>();
+                        if (sb == null || sb.IsCarried) continue;
+                        float dSq = (sb.transform.position - transform.position).sqrMagnitude;
+                        if (dSq < closestSq) { closestSq = dSq; nearest = sb; }
+                    }
+                }
+            }
+
+            if (nearest == _highlightedSquareBale) return;
+            _highlightedSquareBale?.SetHighlighted(false);
+            _highlightedSquareBale = nearest;
+            _highlightedSquareBale?.SetHighlighted(true);
         }
 
         // ------------------------------------------------------------------ //

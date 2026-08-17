@@ -288,8 +288,6 @@ namespace Fields.Core
 
             yield return new WaitForSecondsRealtime(1.5f);
 
-            yield return StartCoroutine(ShowLoopTitleCard());
-
             WorldBootstrap.Instance?.ResetAllParcels();
             SaveSystem.Instance?.SaveGame();
 

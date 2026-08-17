@@ -43,7 +43,51 @@ namespace Fields.Hay
         Rigidbody _rb;
         bool _isCarried;
 
-        void Awake() => _rb = GetComponent<Rigidbody>();
+        // ── Outline (highlight nearest interactable bale) ───────────────── //
+        GameObject   _outlineGO;
+        static Material _outlineMat;
+
+        void Awake()
+        {
+            _rb = GetComponent<Rigidbody>();
+            BuildOutline();
+        }
+
+        void BuildOutline()
+        {
+            var visual = transform.Find("Visual");
+            var mf = visual != null ? visual.GetComponent<MeshFilter>() : GetComponentInChildren<MeshFilter>();
+            if (mf == null || mf.sharedMesh == null) return;
+
+            _outlineGO = new GameObject("BaleOutline");
+            _outlineGO.transform.SetParent(transform, worldPositionStays: false);
+            _outlineGO.transform.localScale = Vector3.one * 1.07f;
+
+            var mfOut = _outlineGO.AddComponent<MeshFilter>();
+            mfOut.sharedMesh = mf.sharedMesh;
+
+            var mrOut = _outlineGO.AddComponent<MeshRenderer>();
+            if (_outlineMat == null)
+            {
+                _outlineMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"))
+                {
+                    name = "BaleOutline_Mat"
+                };
+                _outlineMat.SetColor("_BaseColor", new Color(1f, 0.85f, 0f, 1f));
+                // Front-face culling renders only back faces → cheap outline
+                _outlineMat.SetFloat("_Cull", 1f);
+            }
+            mrOut.sharedMaterial = _outlineMat;
+            mrOut.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mrOut.receiveShadows = false;
+            _outlineGO.SetActive(false);
+        }
+
+        public void SetHighlighted(bool on)
+        {
+            if (_outlineGO != null)
+                _outlineGO.SetActive(on && !_isCarried);
+        }
 
         // ------------------------------------------------------------------ //
         // IPickupable
