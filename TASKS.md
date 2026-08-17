@@ -379,7 +379,7 @@ Az összes achievement a meglévő `SteamManager.UnlockAchievement(string id)` A
 ---
 
 ### V7-00 | Bála Outline — Sárga highlight interaktálható bálákhoz
-**Status:** ⏳ PENDING
+**Status:** ✅ KÉSZ
 
 - [ ] Az interaktálható bálán sárga outline jelenik meg, ha a játékos közel van (felvehető / eladható távolság)
 - [ ] `SquareBale.cs` + `RoundBale.cs`: `OnTriggerEnter/Exit` a player közelségi colliderrel → renderer outline material swap
@@ -617,7 +617,5 @@ A WC-n ülés bónusza (+10%) és a macska WC-s bónusza (+20%) egymásra rakód
 - Jobb betűtípus kiválasztása.
 - Kínai, Japán karakter készlet nem jelenik meg.
 - Imagek generálása a shop-hoz, journalhöz mindenhez. Egységes prompt sítlus megalkotása.
-- Bála készítés után ha a cursort ráirányítja a bálára a bálának legyen egy sárga outline.
 - Hover kialakítása a kattintandó elemekre. (Outline használataNagy)
-
 ---
