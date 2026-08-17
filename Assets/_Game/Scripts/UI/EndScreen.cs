@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using Fields.Core;
 using Fields.Economy;
+using Mirror;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,208 +10,462 @@ using UnityEngine.UI;
 namespace Fields.UI
 {
     /// <summary>
-    /// Shown when the whole field is cleared.
-    /// Displays final stats + a snarky localized comment.
-    /// Set PendingEndingType before activating so BuildComment picks the right branch.
-    ///
-    /// After a Nuclear ending the save is already deleted before this screen opens,
-    /// so the main menu will show only New Game (no Continue).
+    /// End-game stats panel shown after nuclear or peaceful completion.
+    /// Builds its content entirely at runtime so no prefab changes are needed:
+    ///   • Stats row   — time, money, cut area
+    ///   • Line graph  — time (X) vs cut area (Y) per player, drawn to Texture2D
+    ///   • Legend      — player colour + Steam name
+    ///   • Achievements list
+    ///   • Play Again / Quit buttons
     /// </summary>
     public class EndScreen : MonoBehaviour
     {
         public enum EndingType { Peaceful, Loop, Nuclear }
         public static EndingType PendingEndingType = EndingType.Peaceful;
 
-        [Header("Required text fields")]
+        // ── Inspector refs (scene-placed elements reused / repositioned) ─── //
+        [Header("Required scene refs")]
+        public TextMeshProUGUI titleText;
+        public Button          playAgainButton;
+        public Button          quitButton;
+
+        [Header("Optional legacy refs (unused when building dynamic UI)")]
         public TextMeshProUGUI totalEarningsText;
         public TextMeshProUGUI timePlayedText;
-        public TextMeshProUGUI titleText;
-
-        [Header("Stats content (assign ScrollView Content RectTransform)")]
-        [Tooltip("StatsRenderer fills this with per-player sections. Works in singleplayer and co-op.")]
-        public RectTransform statsContent;
-
-        [Header("Optional legacy stat fields")]
-        [Tooltip("e.g. 'Grass cut: 4 200 m2'")]
         public TextMeshProUGUI grassCutText;
-
-        [Tooltip("e.g. 'Bales: 38'")]
         public TextMeshProUGUI balesMadeText;
-
-        [Tooltip("e.g. 'Swings: 1 450'")]
         public TextMeshProUGUI totalSwingsText;
-
-        [Tooltip("e.g. 'Distance: 12.4 km'")]
         public TextMeshProUGUI distanceTravelledText;
-
-        [Tooltip("Optional: assign a TMP text field to show the end-of-game comment.")]
         public TextMeshProUGUI commentText;
+        public RectTransform   statsContent;
 
-        [Header("Buttons")]
-        public Button playAgainButton;
-        public Button quitButton;
+        // ── Graph visual settings ─────────────────────────────────────────── //
+        [Header("Graph")]
+        public int   graphTexWidth  = 512;
+        public int   graphTexHeight = 200;
 
-        static float _gameStartTime;
+        // ── Colours per player index ──────────────────────────────────────── //
+        static readonly Color[] PlayerColors =
+        {
+            new Color(0.2f, 0.8f, 1.0f),   // cyan
+            new Color(1.0f, 0.55f, 0.1f),  // orange
+            new Color(0.3f, 1.0f, 0.4f),   // green
+            new Color(1.0f, 0.3f, 0.9f),   // magenta
+        };
 
-        // gridCellSize default from GameConfig — used to convert cut cells to m².
         const float CELL_SIZE_M = 0.4f;
 
+        static float _gameStartTime;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void RecordStartTime() => _gameStartTime = Time.realtimeSinceStartup;
+
+        // ── Runtime ───────────────────────────────────────────────────────── //
+        readonly List<GameObject> _dynamicChildren = new List<GameObject>();
 
         void OnEnable()
         {
             Time.timeScale = 0f;
-
-            var loc = LocalizationManager.Instance;
-            var cur = CurrencyManager.Instance;
-            var ss  = SessionState.Instance;
-
-            int   money   = cur  != null ? cur.Money : 0;
-            float elapsed = Time.realtimeSinceStartup - _gameStartTime;
-            int   mins    = Mathf.FloorToInt(elapsed / 60f);
-            int   secs    = Mathf.FloorToInt(elapsed % 60f);
-
-            // ── Collect per-player stats ──────────────────────────────────
-            long  totalBales    = 0;
-            long  totalSwings   = 0;
-            long  totalCutCells = 0;
-            double totalDistM   = 0;
-
-            if (ss != null)
-            {
-                foreach (var p in ss.Players)
-                {
-                    if (p == null) continue;
-                    totalBales    += p.SquareBalesMade + p.RoundBalesMade;
-                    totalSwings   += p.TotalSwings;
-                    totalCutCells += p.AreaCutCells;
-                    totalDistM    += p.DistanceTravelledM;
-                }
-            }
-
-            float cutAreaM2   = totalCutCells * CELL_SIZE_M * CELL_SIZE_M;
-            float distKm      = (float)(totalDistM / 1000.0);
-
-            // ── Per-player stats (StatsRenderer) ─────────────────────────
-            StatsRenderer.Build(statsContent);
-
-            // ── Required fields ───────────────────────────────────────────
-            if (totalEarningsText != null)
-                totalEarningsText.text = loc != null
-                    ? loc.Get("end.earnings", loc.ToLocal(money))
-                    : $"Total earnings: ${money}";
-
-            if (timePlayedText != null)
-                timePlayedText.text = loc != null
-                    ? loc.Get("end.time", mins, secs)
-                    : $"Time: {mins:00}:{secs:00}";
-
-            if (titleText != null)
-                titleText.text = loc != null
-                    ? loc.Get("end.title")
-                    : "All Fields Cleared!";
-
-            // ── Optional stat fields ──────────────────────────────────────
-            if (grassCutText != null)
-                grassCutText.text = loc != null
-                    ? loc.Get("end.grass_cut", cutAreaM2)
-                    : $"Grass cut: {cutAreaM2:N0} m²";
-
-            if (balesMadeText != null)
-                balesMadeText.text = loc != null
-                    ? loc.Get("end.bales", totalBales)
-                    : $"Bales: {totalBales}";
-
-            if (totalSwingsText != null)
-                totalSwingsText.text = loc != null
-                    ? loc.Get("end.swings", totalSwings)
-                    : $"Swings: {totalSwings}";
-
-            if (distanceTravelledText != null)
-                distanceTravelledText.text = loc != null
-                    ? loc.Get("end.distance", distKm)
-                    : $"Distance: {distKm:F1} km";
-
-            if (commentText != null)
-                commentText.text = BuildComment(loc, elapsed, money,
-                    (int)totalBales, (int)totalSwings, mins, secs);
-
-            // Speed-run achievement
-            if (elapsed < SteamManager.Thresholds.SPEEDRUN_SECONDS)
-                SteamManager.Instance?.UnlockAchievement(SteamManager.Achievements.SPEED_RUN);
-
-            SetButtonLabel(playAgainButton, "end.playagain", "Play Again");
-            SetButtonLabel(quitButton,      "end.quit",      "Quit");
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible   = true;
+            BuildDynamicUI();
 
             if (playAgainButton != null)
-                playAgainButton.onClick.AddListener(PlayAgain);
-            if (quitButton != null)
-                quitButton.onClick.AddListener(Quit);
-        }
-
-        static string BuildComment(
-            LocalizationManager loc, float elapsed, int money,
-            int totalBales, int totalSwings, int mins, int secs)
-        {
-            if (loc == null) return string.Empty;
-
-            if (PendingEndingType == EndingType.Nuclear)
             {
-                int hours = Mathf.FloorToInt(elapsed / 3600f);
-                return loc.Get("end.comment.nuclear", hours);
+                playAgainButton.onClick.RemoveAllListeners();
+                playAgainButton.onClick.AddListener(GoToMainMenu);
+                var btnLabel = playAgainButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (btnLabel != null) btnLabel.text = "Main Menu";
             }
-
-            if (elapsed < 20f * 60f)
-                return loc.Get("end.comment.speedrun", mins, secs);
-
-            if (elapsed > 65f * 60f)
-                return loc.Get("end.comment.veteran", mins);
-
-            if (totalBales >= 100)
-                return loc.Get("end.comment.hundredbales", totalBales);
-
-            if (money >= 10000)
-                return loc.Get("end.comment.rich", loc.ToLocal(money));
-
-            if (totalSwings > 0 && money > 2000 && (float)money / totalSwings > 20f)
-                return loc.Get("end.comment.efficient");
-
-            int pool = 6;
-            int pick = Mathf.Abs((totalBales * 7 + mins * 13 + money) % pool);
-            return loc.Get($"end.comment.{pick}");
+            if (quitButton != null)
+                quitButton.gameObject.SetActive(false);
         }
 
         void OnDisable()
         {
             Time.timeScale = 1f;
+            foreach (var go in _dynamicChildren)
+                if (go != null) Destroy(go);
+            _dynamicChildren.Clear();
         }
 
-        static void SetButtonLabel(Button btn, string key, string fallback)
+        // ======================================================================
+        // UI construction
+        // ======================================================================
+
+        void BuildDynamicUI()
         {
-            if (btn == null) return;
-            var tmp = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            if (tmp == null) return;
-            tmp.text = LocalizationManager.Instance != null
-                ? LocalizationManager.Instance.Get(key)
-                : fallback;
+            var ss  = SessionState.Instance;
+            var loc = LocalizationManager.Instance;
+            var cur = CurrencyManager.Instance;
+            var sm  = SteamManager.Instance;
+
+            // ── Raw values ────────────────────────────────────────────────── //
+            float elapsed  = Time.realtimeSinceStartup - _gameStartTime;
+            int   mins     = Mathf.FloorToInt(elapsed / 60f);
+            int   secs     = Mathf.FloorToInt(elapsed % 60f);
+            int   money    = cur  != null ? cur.Money : 0;
+            int   players  = ss   != null ? ss.PlayerCount : 1;
+
+            long  totalCut  = 0;
+            if (ss != null)
+                foreach (var p in ss.Players)
+                    if (p != null) totalCut += p.AreaCutCells;
+            float cutM2 = totalCut * CELL_SIZE_M * CELL_SIZE_M;
+
+            // ── Title ─────────────────────────────────────────────────────── //
+            MoveAnchor(titleText?.rectTransform, 0.03f, 0.88f, 0.97f, 0.97f);
+            if (titleText != null)
+            {
+                titleText.text = PendingEndingType == EndingType.Nuclear
+                    ? (loc != null ? loc.Get("end.title.nuclear", "☢ Nuclear Ending") : "☢ Nuclear Ending")
+                    : (loc != null ? loc.Get("end.title") : "All Fields Cleared!");
+            }
+
+            // ── Find the panel to host dynamic elements ───────────────────── //
+            Transform panel = transform; // EndScreen_Canvas itself
+            if (transform.childCount > 0) panel = transform.GetChild(0); // EndPanel
+
+            // ── Stats row (time | money | grass) ─────────────────────────── //
+            AddStatsRow(panel, mins, secs, money, cutM2, loc);
+
+            // ── Graph + Legend ────────────────────────────────────────────── //
+            AddGraph(panel, players, ss);
+            AddLegend(panel, players, sm);
+
+            // ── Achievements ──────────────────────────────────────────────── //
+            AddAchievements(panel, sm);
+
+            // ── Reposition single button to bottom centre ─────────────────── //
+            MoveAnchor(playAgainButton?.GetComponent<RectTransform>(), 0.25f, 0.04f, 0.75f, 0.13f);
         }
 
-        void PlayAgain()
+        // ── Stats row ─────────────────────────────────────────────────────── //
+
+        void AddStatsRow(Transform parent, int mins, int secs, int money, float cutM2, LocalizationManager loc)
+        {
+            string timeStr  = $"{mins:00}:{secs:00}";
+            string moneyStr = loc != null ? loc.FormatMoney(money) : $"${money}";
+            string areaStr  = $"{cutM2:N0} m²";
+
+            float yMin = 0.76f, yMax = 0.86f;
+
+            // Three equal-width columns
+            AddStatCell(parent, "StatTime",  "⏱ " + timeStr,   0.03f, yMin, 0.35f, yMax);
+            AddStatCell(parent, "StatMoney", "💰 " + moneyStr,  0.36f, yMin, 0.64f, yMax);
+            AddStatCell(parent, "StatGrass", "🌿 " + areaStr,   0.65f, yMin, 0.97f, yMax);
+
+            // Hide old text refs if they're wired (they'd overlap)
+            HideIfNotNull(totalEarningsText?.gameObject);
+            HideIfNotNull(timePlayedText?.gameObject);
+            HideIfNotNull(grassCutText?.gameObject);
+            HideIfNotNull(balesMadeText?.gameObject);
+            HideIfNotNull(totalSwingsText?.gameObject);
+            HideIfNotNull(distanceTravelledText?.gameObject);
+            HideIfNotNull(commentText?.gameObject);
+        }
+
+        void AddStatCell(Transform parent, string goName, string text, float xMin, float yMin, float xMax, float yMax)
+        {
+            var go = CreateRectChild(parent, goName);
+            _dynamicChildren.Add(go);
+            SetAnchors(go.GetComponent<RectTransform>(), xMin, yMin, xMax, yMax);
+
+            var img = go.AddComponent<RawImage>();
+            img.color = new Color(0f, 0f, 0f, 0.35f);
+
+            var textGO = CreateRectChild(go.transform, "Label");
+            SetAnchors(textGO.GetComponent<RectTransform>(), 0.05f, 0.1f, 0.95f, 0.9f);
+            var tmp = textGO.AddComponent<TextMeshProUGUI>();
+            tmp.text      = text;
+            tmp.fontSize  = 22;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.color     = Color.white;
+        }
+
+        // ── Graph ─────────────────────────────────────────────────────────── //
+
+        void AddGraph(Transform parent, int playerCount, SessionState ss)
+        {
+            var tracker = PlayerGraphTracker.Instance;
+            if (tracker == null) return;
+
+            // ── Header ────────────────────────────────────────────────────── //
+            var headerGO = CreateRectChild(parent, "GraphHeader");
+            _dynamicChildren.Add(headerGO);
+            SetAnchors(headerGO.GetComponent<RectTransform>(), 0.03f, 0.70f, 0.97f, 0.75f);
+            var hTmp = headerGO.AddComponent<TextMeshProUGUI>();
+            hTmp.text      = "CUT AREA OVER TIME";
+            hTmp.fontSize  = 16;
+            hTmp.fontStyle = FontStyles.Bold;
+            hTmp.color     = new Color(0.85f, 0.85f, 0.85f);
+            hTmp.alignment = TextAlignmentOptions.Left;
+
+            // ── Graph image ───────────────────────────────────────────────── //
+            var graphGO = CreateRectChild(parent, "GraphImage");
+            _dynamicChildren.Add(graphGO);
+            SetAnchors(graphGO.GetComponent<RectTransform>(), 0.03f, 0.42f, 0.97f, 0.69f);
+
+            var raw = graphGO.AddComponent<RawImage>();
+            raw.texture = DrawGraph(tracker, playerCount, ss);
+
+            // Y-axis label
+            var yLabelGO = CreateRectChild(parent, "GraphYLabel");
+            _dynamicChildren.Add(yLabelGO);
+            var yrt = yLabelGO.GetComponent<RectTransform>();
+            SetAnchors(yrt, 0.0f, 0.42f, 0.04f, 0.69f);
+            var yTmp = yLabelGO.AddComponent<TextMeshProUGUI>();
+            yTmp.text      = "m²";
+            yTmp.fontSize  = 12;
+            yTmp.color     = new Color(0.7f, 0.7f, 0.7f);
+            yTmp.alignment = TextAlignmentOptions.Center;
+
+            // X-axis label
+            var xLabelGO = CreateRectChild(parent, "GraphXLabel");
+            _dynamicChildren.Add(xLabelGO);
+            SetAnchors(xLabelGO.GetComponent<RectTransform>(), 0.03f, 0.39f, 0.97f, 0.43f);
+            var xTmp = xLabelGO.AddComponent<TextMeshProUGUI>();
+            xTmp.text      = "Time (min)";
+            xTmp.fontSize  = 12;
+            xTmp.color     = new Color(0.7f, 0.7f, 0.7f);
+            xTmp.alignment = TextAlignmentOptions.Right;
+        }
+
+        Texture2D DrawGraph(PlayerGraphTracker tracker, int playerCount, SessionState ss)
+        {
+            int w = graphTexWidth, h = graphTexHeight;
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+
+            // Background
+            Color bg = new Color(0.08f, 0.08f, 0.12f, 1f);
+            var pixels = new Color[w * h];
+            for (int i = 0; i < pixels.Length; i++) pixels[i] = bg;
+
+            // Axis lines
+            Color axisCol = new Color(0.4f, 0.4f, 0.4f, 1f);
+            int padL = 35, padB = 20, padR = 10, padT = 10;
+            DrawHLine(pixels, w, padB, padL, w - padR, axisCol);
+            DrawVLine(pixels, w, padL, padB, h - padT, axisCol);
+
+            // Find global max values for scaling
+            float maxTime = 1f, maxArea = 1f;
+            for (int pi = 0; pi < playerCount; pi++)
+            {
+                var samples = tracker.GetSamples(pi);
+                foreach (var s in samples)
+                {
+                    if (s.TimeSec > maxTime) maxTime = s.TimeSec;
+                    if (s.AreaM2  > maxArea) maxArea  = s.AreaM2;
+                }
+            }
+
+            // Grid lines (light)
+            Color gridCol = new Color(0.2f, 0.2f, 0.25f, 1f);
+            for (int g = 1; g <= 4; g++)
+            {
+                int gy = padB + Mathf.RoundToInt((h - padT - padB) * g / 4f);
+                int gx = padL + Mathf.RoundToInt((w - padR - padL) * g / 4f);
+                DrawHLine(pixels, w, gy, padL, w - padR, gridCol);
+                DrawVLine(pixels, w, gx, padB, h - padT, gridCol);
+            }
+
+            // Plot per-player lines
+            for (int pi = 0; pi < playerCount; pi++)
+            {
+                var samples = tracker.GetSamples(pi);
+                if (samples.Length < 2) continue;
+                Color lineCol = PlayerColors[pi % PlayerColors.Length];
+
+                for (int si = 1; si < samples.Length; si++)
+                {
+                    float x0 = Remap(samples[si-1].TimeSec, 0, maxTime, padL, w - padR);
+                    float y0 = Remap(samples[si-1].AreaM2,  0, maxArea, padB, h - padT);
+                    float x1 = Remap(samples[si].TimeSec,   0, maxTime, padL, w - padR);
+                    float y1 = Remap(samples[si].AreaM2,    0, maxArea, padB, h - padT);
+                    DrawLine(pixels, w, h, Mathf.RoundToInt(x0), Mathf.RoundToInt(y0),
+                                          Mathf.RoundToInt(x1), Mathf.RoundToInt(y1), lineCol);
+                }
+            }
+
+            // Y-axis tick labels (0, max/2, max)
+            // (left as overlay TextMeshPro for now — pure texture labels are complex)
+
+            tex.SetPixels(pixels);
+            tex.Apply();
+            tex.filterMode = FilterMode.Bilinear;
+            return tex;
+        }
+
+        // ── Legend ────────────────────────────────────────────────────────── //
+
+        void AddLegend(Transform parent, int playerCount, SteamManager sm)
+        {
+            var legendGO = CreateRectChild(parent, "Legend");
+            _dynamicChildren.Add(legendGO);
+            SetAnchors(legendGO.GetComponent<RectTransform>(), 0.03f, 0.36f, 0.97f, 0.41f);
+
+            float colWidth = 1f / Mathf.Max(1, playerCount);
+            for (int pi = 0; pi < playerCount; pi++)
+            {
+                string name = pi == 0
+                    ? (sm != null ? sm.LocalPlayerName : "Player 1")
+                    : $"Player {pi + 1}";
+                Color col = PlayerColors[pi % PlayerColors.Length];
+                float xMin = pi * colWidth + 0.01f;
+                float xMax = (pi + 1) * colWidth - 0.01f;
+
+                var entryGO = CreateRectChild(legendGO.transform, $"LegendEntry{pi}");
+                SetAnchors(entryGO.GetComponent<RectTransform>(), xMin, 0f, xMax, 1f);
+
+                var swatch = CreateRectChild(entryGO.transform, "Swatch");
+                SetAnchors(swatch.GetComponent<RectTransform>(), 0f, 0.2f, 0.12f, 0.8f);
+                var swatchImg = swatch.AddComponent<RawImage>();
+                swatchImg.color = col;
+
+                var labelGO = CreateRectChild(entryGO.transform, "Label");
+                SetAnchors(labelGO.GetComponent<RectTransform>(), 0.14f, 0f, 1f, 1f);
+                var tmp = labelGO.AddComponent<TextMeshProUGUI>();
+                tmp.text      = name;
+                tmp.fontSize  = 15;
+                tmp.color     = col;
+                tmp.alignment = TextAlignmentOptions.Left;
+            }
+        }
+
+        // ── Achievements ──────────────────────────────────────────────────── //
+
+        void AddAchievements(Transform parent, SteamManager sm)
+        {
+            var achGO = CreateRectChild(parent, "Achievements");
+            _dynamicChildren.Add(achGO);
+            SetAnchors(achGO.GetComponent<RectTransform>(), 0.03f, 0.15f, 0.97f, 0.35f);
+
+            var headerGO = CreateRectChild(achGO.transform, "AchHeader");
+            SetAnchors(headerGO.GetComponent<RectTransform>(), 0f, 0.78f, 1f, 1f);
+            var hTmp = headerGO.AddComponent<TextMeshProUGUI>();
+            hTmp.text      = "ACHIEVEMENTS THIS SESSION";
+            hTmp.fontSize  = 16;
+            hTmp.fontStyle = FontStyles.Bold;
+            hTmp.color     = new Color(0.9f, 0.8f, 0.2f);
+            hTmp.alignment = TextAlignmentOptions.Left;
+
+            var listGO = CreateRectChild(achGO.transform, "AchList");
+            SetAnchors(listGO.GetComponent<RectTransform>(), 0f, 0f, 1f, 0.75f);
+            var listTmp = listGO.AddComponent<TextMeshProUGUI>();
+
+            var achs = sm?.SessionAchievements;
+            if (achs == null || achs.Count == 0)
+            {
+                listTmp.text = "<color=#888888>No achievements unlocked this session.</color>";
+            }
+            else
+            {
+                var sb = new System.Text.StringBuilder();
+                foreach (var id in achs)
+                    sb.Append("• ").Append(FriendlyAchName(id)).Append("  ");
+                listTmp.text = sb.ToString();
+            }
+            listTmp.fontSize        = 14;
+            listTmp.color           = new Color(0.9f, 0.9f, 0.7f);
+            listTmp.enableWordWrapping = true;
+            listTmp.alignment       = TextAlignmentOptions.TopLeft;
+        }
+
+        static string FriendlyAchName(string id)
+        {
+            // Strip ACH_ prefix and titlecase
+            string s = id.StartsWith("ACH_") ? id.Substring(4) : id;
+            return System.Globalization.CultureInfo.CurrentCulture.TextInfo
+                       .ToTitleCase(s.Replace('_', ' ').ToLower());
+        }
+
+        // ======================================================================
+        // Helpers — UI construction
+        // ======================================================================
+
+        static GameObject CreateRectChild(Transform parent, string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.AddComponent<RectTransform>();
+            return go;
+        }
+
+        static void SetAnchors(RectTransform rt, float xMin, float yMin, float xMax, float yMax)
+        {
+            rt.anchorMin  = new Vector2(xMin, yMin);
+            rt.anchorMax  = new Vector2(xMax, yMax);
+            rt.offsetMin  = Vector2.zero;
+            rt.offsetMax  = Vector2.zero;
+        }
+
+        static void MoveAnchor(RectTransform rt, float xMin, float yMin, float xMax, float yMax)
+        {
+            if (rt == null) return;
+            SetAnchors(rt, xMin, yMin, xMax, yMax);
+        }
+
+        static void HideIfNotNull(GameObject go)
+        {
+            if (go != null) go.SetActive(false);
+        }
+
+        // ======================================================================
+        // Helpers — Texture2D graph drawing
+        // ======================================================================
+
+        static void DrawHLine(Color[] pixels, int w, int y, int x0, int x1, Color col)
+        {
+            if (y < 0 || y >= pixels.Length / w) return;
+            for (int x = Mathf.Max(0, x0); x <= Mathf.Min(w - 1, x1); x++)
+                pixels[y * w + x] = col;
+        }
+
+        static void DrawVLine(Color[] pixels, int w, int x, int y0, int y1, Color col)
+        {
+            int h = pixels.Length / w;
+            for (int y = Mathf.Max(0, y0); y <= Mathf.Min(h - 1, y1); y++)
+                pixels[y * w + x] = col;
+        }
+
+        static void DrawLine(Color[] pixels, int w, int h, int x0, int y0, int x1, int y1, Color col)
+        {
+            int dx = Mathf.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+            int dy = Mathf.Abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+            int err = dx - dy;
+            while (true)
+            {
+                if (x0 >= 0 && x0 < w && y0 >= 0 && y0 < h)
+                {
+                    pixels[y0 * w + x0] = col;
+                    // 2px thick
+                    if (x0 + 1 < w) pixels[y0 * w + x0 + 1] = col;
+                    if (y0 + 1 < h) pixels[(y0 + 1) * w + x0] = col;
+                }
+                if (x0 == x1 && y0 == y1) break;
+                int e2 = 2 * err;
+                if (e2 > -dy) { err -= dy; x0 += sx; }
+                if (e2 <  dx) { err += dx; y0 += sy; }
+            }
+        }
+
+        static float Remap(float val, float fromMin, float fromMax, float toMin, float toMax)
+        {
+            if (Mathf.Approximately(fromMax, fromMin)) return toMin;
+            return toMin + (val - fromMin) / (fromMax - fromMin) * (toMax - toMin);
+        }
+
+        // ======================================================================
+        // Button actions
+        // ======================================================================
+
+        void GoToMainMenu()
         {
             Time.timeScale = 1f;
-            // Reload scene → WorldBootstrap shows the main menu.
-            // For nuclear ending the save was already deleted, so Continue won't appear.
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
-
-        void Quit()
-        {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
+            string sceneName = SceneManager.GetActiveScene().name;
+            if (NetworkManager.singleton != null)
+                NetworkManager.singleton.ServerChangeScene(sceneName);
+            else
+                SceneManager.LoadScene(sceneName);
         }
     }
 }
