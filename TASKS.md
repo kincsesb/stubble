@@ -381,10 +381,7 @@ Az összes achievement a meglévő `SteamManager.UnlockAchievement(string id)` A
 ### V7-00 | Bála Outline — Sárga highlight interaktálható bálákhoz
 **Status:** ✅ KÉSZ
 
-- [ ] Az interaktálható bálán sárga outline jelenik meg, ha a játékos közel van (felvehető / eladható távolság)
-- [ ] `SquareBale.cs` + `RoundBale.cs`: `OnTriggerEnter/Exit` a player közelségi colliderrel → renderer outline material swap
-- [ ] Outline csak a legközelebbi bálán legyen aktív egyszerre (ne minden bálán egyszerre)
-- [ ] Co-op: lokálisan számított, nincs hálózati szinkron szükség
+Inverted-hull sárga outline (URP Unlit, front-cull, 1.07× scale) a legközelebbi felvehető square bálán. `PlayerController.ScanNearestSquareBale()` kezeli a raycast + proximity detektálást, `SquareBale.SetHighlighted()` kapcsolja. Co-op: lokális, nincs szinkron.
 
 ---
 
@@ -609,13 +606,20 @@ A WC-n ülés bónusza (+10%) és a macska WC-s bónusza (+20%) egymásra rakód
 - `ACH_SURROUNDED` — **"Surrounded"** — 20+ csirke van egyszerre a mezőn
 - `ACH_WALK_AWAY` — **"Just Walk Away"** — 30 csirke jelenlétében fejezted be a mezőt
 
----                                    └─ _audioSrc.Stop() ← purring vége
-```
-- Currency Image
-- Összeszedni hogy milyen komponensek vannak és hozzájuk generálni képet illetve wireframe-t.
-- Tipp az első indításkor, hogyan kell jtászani mi a game loop, panel screenshotok stb.
-- Jobb betűtípus kiválasztása.
-- Kínai, Japán karakter készlet nem jelenik meg.
-- Imagek generálása a shop-hoz, journalhöz mindenhez. Egységes prompt sítlus megalkotása.
-- Hover kialakítása a kattintandó elemekre. (Outline használataNagy)
+---
+
+## Apró TODO-k & Polish
+
+| Feladat | Státusz |
+|---------|---------|
+| UI komponens lista + image prompt stílus megalkotása | ✅ KÉSZ — `Assets/_Game/UI_COMPONENTS.md` |
+| Kínai, Japán karakter készlet nem jelenik meg | ✅ KÉSZ — Arial Unicode MS TMP fallback font |
+| Egységes image prompt stílus shop-hoz, journalhoz | ✅ KÉSZ — `UI_COMPONENTS.md` tartalmazza |
+| Hover állapot minden interaktálható UI elemre | ✅ KÉSZ — `UIButtonHoverStyle.cs`, 39 gomb frissítve |
+| EndScreen szövegek language file-ba | ✅ KÉSZ — `end.*` kulcsok a `LocalizationManager`-ben |
+| Loop ending szöveg (Mezők frissültek) eltávolítva | ✅ KÉSZ — `ShowLoopTitleCard()` hívás törölve |
+| Currency Image — pénznem ikon a HUD-ba | ⏳ PENDING |
+| Tutorial tipp az első indításkor (game loop magyarázat) | ⏳ PENDING |
+| Jobb betűtípus kiválasztása (fő UI font) | ⏳ PENDING |
+
 ---
