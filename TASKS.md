@@ -100,49 +100,6 @@
 
 ---
 
-### V5-03 | Befejező Cinematic — Gyors befejezés (<3 óra)
-**Status:** ⏳ PENDING
-
-**Feltétel:** Az utolsó fűszál levágásakor, ha a játékidő < 3 óra
-
-**Szekvencia:**
-- [ ] Input lock (0.5s fade-out)
-- [ ] Cinemachine kamera lassan hátrafordul és a lekaszált mezőre néz (wide shot)
-- [ ] 2 másodperces csend + természet hangok felerősödnek
-- [ ] **Grass regrowth "bump" effekt:** az egész mező fűje egyszerre visszanő — egy hullámszerű animáció (GrassBlade vertex shader: `_GrowthT` 0→1 over 2s, Easing: easeOutBack "bump")
-- [ ] A visszanövés csúcsán, képernyő közepén alul megjelenik a szöveg: **"Oh shit, here we go again..."** — GTA San Andreas referencia, halvány fehér, kis betűméret, 2.5s után kifakul
-- [ ] Fade to black → EndScreen megjelenik
-- [ ] Achievement: `ACH_SPEED_COMPLETE` — "Kész időben"
-
-**Implementáció:**
-- [ ] `WorldBootstrap.cs`: `OnGameComplete(float elapsedSeconds)` → elágazás < / > 10800s
-- [ ] `GrassBlade.shader`: `_GrowthT` uniform hozzáadása, visszanövő animáció kulcsframe
-- [ ] `CinematicDirector.cs`: új script, timeline/coroutine alapú szekvencia vezérlő
-
----
-
-### V5-04 | Befejező Cinematic — Lassú befejezés (>3 óra)
-**Status:** ⏳ PENDING
-
-**Feltétel:** Az utolsó fűszál levágásakor, ha a játékidő ≥ 3 óra
-
-**Szekvencia:**
-- [ ] Input lock
-- [ ] Cinemachine kamera lassan a **szélmalom irányába** fordul és közelít
-- [ ] Hangeffekt: távolból repülő repülőgép zúgása erősödik
-- [ ] **Repülő megjelenik** az égen (egyszerű mesh + contrail particle), áthúz a mező felett
-- [ ] **Atombomba leesik** a repülőből (mesh + füst trail)
-- [ ] Robbanás: screen shake, flash, particle explosion, drámai hang
-- [ ] Fade to black → EndScreen "You took too long." szöveggel
-- [ ] Achievement: `ACH_TOO_LONG` — "Farmolás: Végleges megoldás"
-
-**Implementáció:**
-- [ ] `CinematicDirector.cs`: külön coroutine branch a > 3h véghez
-- [ ] Repülő prefab (egyszerű low-poly), bomb prefab, robbanás particle system
-- [ ] `EndScreen.cs`: alternatív szöveg ha `tooLong == true`
-
----
-
 ## PHASE 6 — Vicces Achievementek & Easter Eggek
 
 > Alacsony implementációs cost, magas viral potenciál.
@@ -329,24 +286,6 @@ Az összes achievement a meglévő `SteamManager.UnlockAchievement(string id)` A
 
 ---
 
-### V6-03 | Easter Egg — Bála GPS hang
-**Status:** ⏳ PENDING
-
-**Mit csinál:** Ha egy kerek bála 3+ másodpercig folyamatosan a Sale Standtól *távolodó* irányba gurul, egy GPS hang szólal meg: *"Please make a U-turn when possible."*
-
-**"Rossz irány" definíciója:**
-- `Vector3.Dot(bale.velocity.normalized, directionToSaleStand) < -0.5f` — azaz a bála mozgásvektora több mint 120 fokkal eltér a stand irányától
-- A check csak akkor fut, ha a bála sebessége `> 1.5 m/s` (lassú kúszásnál ne triggerelje)
-
-**Implementáció:**
-- [ ] `RoundBale.cs`: `_wrongDirTimer` float — minden frame-ben inkrementál ha feltétel teljesül, resetel ha nem
-- [ ] `_wrongDirTimer >= 3f` → `AudioSource.PlayOneShot(sfxGpsUturn)` — egy dedikált AudioClip slot az Inspectorban
-- [ ] Cooldown: 60s a következő GPS hívásig (ne ismételje végtelenszer ha a bála lejtőn van)
-- [ ] A hang 2D (spatialBlend = 0) — mintha a farmernek van GPS-e a zsebében
-- [ ] Egyszerre csak 1 aktív GPS hang (ha több bála gurul rossz irányba, nem rakódnak egymásra)
-
----
-
 ### V6-04 | Easter Egg — "Certified Fresh Hay" eladási kommentek
 **Status:** ⏳ PENDING
 
@@ -419,46 +358,6 @@ Az összes achievement a meglévő `SteamManager.UnlockAchievement(string id)` A
 9. UI számok snapping — mindig animálva
 10. Tutorial popup-özón — max 5 egysoros hint
 11. Unicode szimbólumok (★☆✓) ShopUI-ban — LiberationSans SDF nem támogatja
-
----
-
-## Nuclear Ending — Nyitott hibák & TODO
-
-### NUK-01 | Bomba nem látható a kamera számára
-**Status:** ⏳ PENDING
-- A bomba spawn-olódik de a kamera nem követi megfelelően (pitch nem vált le elég gyorsan)
-- A távoli nézet miatt a blure-özés következtében látszik a bomba más logika kell mint a repülőre.
-- (külön kamera használata a bombára.)
-- `TrackWithPlayerCamera` pitch-tracking lassú (`playerTrackSpeed = 3.5f`) a gyorsan eső bombához képest
-- Fix: külön, gyorsabb track speed a bomb fázishoz, vagy külön coroutine
-
-### NUK-02 | Bare hand nem aktiválódik (Nuclear ending)
-**Status:** ⏳ PENDING
-- `EquipBareHand()` csak a Loop endingben van meghívva, a Nuclear sequence-ből hiányzik
-- Fix: `pc.GetComponentInChildren<ToolHolder>()?.EquipBareHand()` hozzáadása a `NuclearSequence()` elejéhez
-
-### NUK-03 | EndScreen nem töltődik be a Nuclear ending után
-**Status:** ⏳ PENDING
-- A `endScreenRoot.SetActive(true)` sor elérésére valami megakadályozza a coroutine-t
-- Valószínű ok: kivétel valahol a szekvenciában (feedbackNuclearBlast / AnimateNuclearVolume / SpawnNukeLight)
-- Fix: try-catch / Debug.LogError hozzáadása a sequence kulcslépéseihez, vagy nullable safety
-
-### NUK-04 | Repülő hangja a játék indulásától hallható
-**Status:** ⏳ PENDING
-- Az `airplaneAudioSource` valószínűleg `Play On Awake = true` az Inspectorban, ezért a game startkor azonnal szól
-- Fix: `airplaneAudioSource.Stop()` hívás az `EndingOrchestrator.Awake()` / `Start()`-ban, vagy `Play On Awake` kikapcsolása a Inspectorban az AudioSource komponensen
-
-### NUK-05 | Play Again → nem úgy néz ki mint egy New Game
-**Status:** ⏳ PENDING
-- `EndScreen.PlayAgain()` csak újratölti a scenet, de a `WorldBootstrap.PendingFreshStart = true` nincs beállítva
-- Így a főmenű jelenik meg (nem a játék) és esetleg Continue is látszik
-- Fix: `WorldBootstrap.PendingFreshStart = true` + `SaveSystem.DeleteSave()` beállítása `PlayAgain()`-ben, Mirror scene change API használata
-
-### NUK-06 | Óriási villám / lightning flash a bomba becsapódásakor
-**Status:** ⏳ PENDING
-- A becsapódáskor nincs drámai fényhatás (csak a `SpawnNukeLight` pontfénye)
-- Kell: pillanatnyi teljes fehér screen flash (pl. `Image` alpha 0→1→0 kb. 3 frame alatt), + nagyon magas `nukeFlashIntensity` (`~15000`) + esetleg `HDR Bloom` spike
-- Fix: külön `FlashScreen()` coroutine ami egy UI Image-et villant fehérre, + a `nukeFlashIntensity` értékét drasztikusan emelni (jelenlegi 15000 de lehet nem elég nagy a Bloom threshold miatt)
 
 ---
 
@@ -710,34 +609,15 @@ A WC-n ülés bónusza (+10%) és a macska WC-s bónusza (+20%) egymásra rakód
 - `ACH_SURROUNDED` — **"Surrounded"** — 20+ csirke van egyszerre a mezőn
 - `ACH_WALK_AWAY` — **"Just Walk Away"** — 30 csirke jelenlétében fejezted be a mezőt
 
+---                                    └─ _audioSrc.Stop() ← purring vége
+```
+- Currency Image
+- Összeszedni hogy milyen komponensek vannak és hozzájuk generálni képet illetve wireframe-t.
+- Tipp az első indításkor, hogyan kell jtászani mi a game loop, panel screenshotok stb.
+- Jobb betűtípus kiválasztása.
+- Kínai, Japán karakter készlet nem jelenik meg.
+- Imagek generálása a shop-hoz, journalhöz mindenhez. Egységes prompt sítlus megalkotása.
+- Bála készítés után ha a cursort ráirányítja a bálára a bálának legyen egy sárga outline.
+- Hover kialakítása a kattintandó elemekre. (Outline használataNagy)
+
 ---
-
-### FIX-CHASE-01 | Cat Attack Audio — Vágás + Purr Indítás
-**Status:** ✅ KÉSZ
-
-**Probléma:**
-A macska támadáshangjai (`sfxCatAttack1` / `sfxCatAttack2`) jelenleg `PlayOneShotPitched()`-al játszódnak, amit nem lehet megállítani. A csirke eltűnésekor (`Destroy(chicken.go)`) ezért a hang tovább megy egy félmondaton belül, holott a csirke már nincs. Utána a purring sem indul el automatikusan — csak `PlayOneShot`-ként volt bekötve a korábbi fázis-váltásoknál.
-
-**Javítás:**
-
-**1. Cat attack SFX — legyen stoppable:**
-- [ ] `FarmAnimalChaseSystem`: új `AudioSource _catAttackSrc` mező (a többi mellett)
-- [ ] `PlayCapture()` attack loop-ban: `sfxCatAttack1/2`-t NE `PlayOneShotPitched()`-al, hanem `_catAttackSrc.clip = ...; _catAttackSrc.Play();`
-- [ ] `ChickenDeath()` elején: `if (_catAttackSrc != null) _catAttackSrc.Stop();` — a csirke eltűnésével egy pillanatban vágja el
-
-**2. Purring — loopolt, pontos időzítéssel:**
-- [ ] `ChickenDeath()` vége (közvetlenül `Destroy(chicken.go)` után): `StartPurring()`
-- [ ] `StartPurring()`: `_audioSrc.clip = sfxCatPurr; _audioSrc.loop = true; _audioSrc.Play();`
-- [ ] `CatRunAway()` sprint fázis elején (ahol `PlayAnim(cat, CAT_RUN_FAST)`): `StopPurring()`
-- [ ] `StopPurring()`: `_audioSrc.Stop(); _audioSrc.loop = false;`
-
-**Időzítési diagram:**
-```
-[3 attack hits] → Destroy(chicken.go)
-                      ├─ _catAttackSrc.Stop()       ← hang vágva a csirke tűnésével
-                      └─ _audioSrc: sfxCatPurr loop ← purring azonnal indul
-[cat sits] → [rolls] → [gets up] → [sprints]
-                                         └─ _audioSrc.Stop() ← purring vége
-```
-X idő után éleznie kell a kaszát
-

@@ -1,5 +1,6 @@
 using System.Collections;
 using Fields.Grass;
+using Fields.Hay;
 using Fields.Save;
 using Fields.Settings;
 using Fields.Tools;
@@ -9,6 +10,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Fields.Core
@@ -112,12 +114,18 @@ namespace Fields.Core
         [Header("Timing")]
         public float playerTurnDuration  = 2.0f;
         public float airplaneTravelTime  = 9.0f;
-        public float bombDropDuration    = 1.8f;
+        public float bombDropDuration    = 4.0f;
         public float postBlastHold       = 2.5f;
         public float fadeOutDuration     = 1.5f;
 
         [Tooltip("Slerp speed for player body/pitch tracking during the cinematic.")]
         public float playerTrackSpeed    = 3.5f;
+
+        [Tooltip("Time.timeScale applied the moment the nuke VFX plays (0.7 = 30% slowdown). Restored before fade-out.")]
+        public float nuclearSlowMoScale  = 0.7f;
+
+        [Tooltip("Additional simulationSpeed multiplier on the nuke VFX particle system (0.3 = 70% further slowdown on top of timeScale).")]
+        public float nuclearVfxSimSpeed  = 0.3f;
 
         // ── Nuclear Camera ────────────────────────────────────────────────── //
 
@@ -130,6 +138,15 @@ namespace Fields.Core
 
         [Tooltip("Seconds to reach each FOV target.")]
         public float fovZoomDuration = 2.0f;
+
+        [Tooltip("World-space offset of the dedicated bomb camera from the bomb position. Keep Y=0 for a perfectly horizontal side view.")]
+        public Vector3 bombCamOffset = new Vector3(10f, 0f, 0f);
+
+        [Tooltip("Seconds before the bomb hits terrain to cut back to the player camera (so the explosion is seen from the player's perspective).")]
+        public float preImpactCamRestoreTime = 1.5f;
+
+        [Tooltip("Downward pitch in degrees applied to the player camera the moment it cuts back from the bomb cam (so the player looks toward the impact).")]
+        public float preImpactCamPitchDown = 25f;
 
         // ── Nuclear Shockwave ─────────────────────────────────────────────── //
 
@@ -164,6 +181,12 @@ namespace Fields.Core
 
         public Color nukeLightColor      = new Color(1f, 0.6f, 0.1f);
         public float nukePostDecayTime   = 4.0f;
+
+        [Header("Blinding Flash")]
+        [Tooltip("Seconds the screen stays fully white before it begins fading.")]
+        public float flashHoldDuration   = 0.08f;
+        [Tooltip("Seconds for the white screen to fade completely to clear.")]
+        public float flashFadeDuration   = 1.8f;
 
         // ── Runtime ───────────────────────────────────────────────────────── //
 
@@ -203,8 +226,7 @@ namespace Fields.Core
 
             if (!theatrical)
             {
-                EndScreen.PendingEndingType = EndScreen.EndingType.Peaceful;
-                if (endScreenRoot != null) endScreenRoot.SetActive(true);
+                StartCoroutine(PeacefulReloadSequence());
                 return;
             }
 
@@ -212,6 +234,17 @@ namespace Fields.Core
                 StartCoroutine(SpeedRunLoopSequence());
             else
                 StartCoroutine(NuclearSequence());
+        }
+
+        // ======================================================================
+        // Peaceful Reload Sequence  (theatrical OFF)
+        // ======================================================================
+
+        IEnumerator PeacefulReloadSequence()
+        {
+            SetPlayerInput(false);
+            yield return StartCoroutine(FadeToBlack(fadeOutDuration));
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
         // ======================================================================
@@ -235,13 +268,22 @@ namespace Fields.Core
             yield return new WaitForSecondsRealtime(0.5f);
 
             // BUMP — theatrical wave pop-in: grass ripples outward from field center
+            // Disable Flash feedbacks for the loop ending — only the bump/shake is wanted here.
+            var flashFeedbacks = new System.Collections.Generic.List<MMF_Feedback>();
+            if (feedbackGrassReturn != null)
+                foreach (var fb in feedbackGrassReturn.FeedbacksList)
+                    if (fb is MMF_Flash) { flashFeedbacks.Add(fb); fb.Active = false; }
             feedbackGrassReturn?.PlayFeedbacks();
+            foreach (var fb in flashFeedbacks) fb.Active = true;
             Vector3 center = GetFieldCenter();
             foreach (var gf in grassFields)
             {
                 if (gf == null) continue;
                 gf.ResetGrass();
                 gf.GetComponent<GrassChunkManager>()?.AnimatePopInWave(center);
+                // Clear accumulated hay and destroy any uncollected hay piles so the player
+                // must cut the regrown grass before baling again.
+                gf.GetComponent<HayAccumulationSystem>()?.ResetWithPiles();
             }
 
             yield return new WaitForSecondsRealtime(1.5f);
@@ -266,9 +308,13 @@ namespace Fields.Core
 
             // Suppress PlayerController's own FOV/bob logic during the cinematic
             var pc = PlayerController.Instance;
-            if (pc != null) pc.IsMounted = true;
+            if (pc != null)
+            {
+                pc.IsMounted = true;
+                pc.GetComponentInChildren<ToolHolder>()?.EquipBareHand();
+            }
 
-            feedbackCinematicIn?.PlayFeedbacks();
+            try { feedbackCinematicIn?.PlayFeedbacks(); } catch (System.Exception e) { Debug.LogWarning($"[Ending] feedbackCinematicIn failed: {e.Message}"); }
             yield return StartCoroutine(AnimateLetterbox(enter: true));
 
             // Initial turn: face the airplane
@@ -286,7 +332,7 @@ namespace Fields.Core
                 airplaneAudioSource.Play();
             }
 
-            feedbackNuclearBuild?.PlayFeedbacks();
+            try { feedbackNuclearBuild?.PlayFeedbacks(); } catch (System.Exception e) { Debug.LogWarning($"[Ending] feedbackNuclearBuild failed: {e.Message}"); }
 
             // Compute and store travel direction for ContinueAirplane
             Vector3 bombPos = bombTarget != null ? bombTarget.position : Vector3.zero;
@@ -310,38 +356,50 @@ namespace Fields.Core
             yield return StartCoroutine(MoveAirplane(bombPos, airplaneTravelTime));
             StopCoroutine(planeTrack);
 
-            // Spawn bomb at airplane's current position
+            // Spawn bomb nose-down (-90° on X = tip pointing toward ground)
             GameObject bomb = null;
             if (nuclearBombPrefab != null && airplaneTransform != null)
-                bomb = Instantiate(nuclearBombPrefab, airplaneTransform.position, Quaternion.identity);
+                bomb = Instantiate(nuclearBombPrefab, airplaneTransform.position, Quaternion.Euler(-90f, 0f, 0f));
 
             // Airplane keeps flying forward (fire-and-forget)
             StartCoroutine(ContinueAirplane(airplaneSpeed, airplaneTravelTime * 0.5f));
 
-            // Zoom in more + track the falling bomb
-            StartCoroutine(AnimateFOV(fovBomb, 0.4f));
-            Coroutine bombTrack = null;
-            if (bomb != null)
-                bombTrack = StartCoroutine(TrackWithPlayerCamera(bomb.transform));
-
-            // Drop bomb straight down to terrain
+            // Switch to a dedicated bomb-follow camera for the drop
             Vector3 dropOrigin = bomb != null ? bomb.transform.position : bombPos;
             Vector3 impactPos  = ComputeGroundPosition(dropOrigin);
 
+            if (bomb != null)
+                StartCoroutine(RunBombCamera(bomb, bombDropDuration));
+
+            // Slow-motion begins the moment the bomb starts falling
+            Time.timeScale = nuclearSlowMoScale;
+
+            // Drop bomb straight down to terrain (uses unscaledDeltaTime — unaffected by timeScale)
             if (bomb != null)
                 yield return StartCoroutine(DropBombDown(bomb, impactPos));
             else
                 yield return new WaitForSecondsRealtime(bombDropDuration);
 
-            if (bombTrack != null) StopCoroutine(bombTrack);
-
             // EXPLOSION ─────────────────────────────────────────────────────
-            if (airplaneAudioSource != null) airplaneAudioSource.Stop();
+            if (airplaneAudioSource != null) { airplaneAudioSource.Stop(); airplaneAudioSource.loop = false; }
 
             if (explosionAudioSource != null && nuclearBombClip != null)
                 explosionAudioSource.PlayOneShot(nuclearBombClip, 1f);
 
-            // VFX is placed in the scene — move it to impact and play
+            if (bomb != null) Destroy(bomb);
+
+            try { feedbackNuclearBlast?.PlayFeedbacks(); } catch (System.Exception e) { Debug.LogWarning($"[Ending] feedbackNuclearBlast failed: {e.Message}"); }
+            StartCoroutine(AnimateNuclearVolume());
+            StartCoroutine(SpawnNukeLight(impactPos));
+
+            if (shockwavePrefab != null)
+                StartCoroutine(SpawnShockwave(impactPos));
+
+            // Óriási vakító villám a kamera irányába — azonnali fehér-out, ELŐSZÖR sül el
+            StartCoroutine(SpawnBlindingFlash());
+            yield return new WaitForSecondsRealtime(flashHoldDuration);
+
+            // VFX a villám halvány mögül bontakozik ki — sokkal lassabb szimuláció
             if (vfxNuke != null)
             {
                 vfxNuke.gameObject.SetActive(true);
@@ -349,30 +407,44 @@ namespace Fields.Core
                 vfxNuke.Stop(true);
                 vfxNuke.Clear(true);
                 vfxNuke.Play(true);
+                var vfxMain = vfxNuke.main;
+                vfxMain.simulationSpeed = nuclearVfxSimSpeed;
             }
-
-            if (bomb != null) Destroy(bomb);
-
-            feedbackNuclearBlast?.PlayFeedbacks();
-            StartCoroutine(AnimateNuclearVolume());
-            StartCoroutine(SpawnNukeLight(impactPos));
-
-            if (shockwavePrefab != null)
-                StartCoroutine(SpawnShockwave(impactPos));
 
             yield return new WaitForSecondsRealtime(postBlastHold);
 
-            feedbackNuclearSettle?.PlayFeedbacks();
+            try { feedbackNuclearSettle?.PlayFeedbacks(); } catch (System.Exception e) { Debug.LogWarning($"[Ending] feedbackNuclearSettle failed: {e.Message}"); }
             SteamManager.Instance?.UnlockAchievement(SteamManager.Achievements.THE_HARD_WAY);
 
-            yield return new WaitForSecondsRealtime(1.5f);
+            yield return new WaitForSecondsRealtime(1.0f);
 
-            // Delete save so the main menu shows only New Game (no Continue) after this ending
-            SaveSystem.Instance?.DeleteSave();
+            // Restore normal time before fade-out
+            Time.timeScale = 1f;
+
+            // Stop all ending audio before scene reload to prevent stale playback
+            if (airplaneAudioSource  != null) { airplaneAudioSource.Stop();  airplaneAudioSource.loop  = false; airplaneAudioSource.clip  = null; }
+            if (explosionAudioSource != null) { explosionAudioSource.Stop(); explosionAudioSource.loop = false; }
 
             yield return StartCoroutine(FadeToBlack(fadeOutDuration));
 
+            // Hide letterbox bars instantly (we're on black — no pop visible)
+            if (letterboxTop    != null) letterboxTop.anchoredPosition    = new Vector2(0f,  letterboxHeight);
+            if (letterboxBottom != null) letterboxBottom.anchoredPosition = new Vector2(0f, -letterboxHeight);
+
+            // Wait for any in-flight background save before wiping
+            if (SaveSystem.Instance != null)
+                while (SaveSystem.Instance.IsSaveInFlight)
+                    yield return null;
+
+            // Wipe all save data so PlayAgain() reloads to a fresh game (no Continue button)
+            SaveSystem.Instance?.DeleteSave();
+            SaveSystem.Instance?.DeleteBackup();
+            SteamManager.Instance?.CloudSave(string.Empty);
+
+            // Show journal over the black screen, then fade in to reveal it
+            EndScreen.PendingEndingType = EndScreen.EndingType.Nuclear;
             if (endScreenRoot != null) endScreenRoot.SetActive(true);
+            yield return StartCoroutine(FadeFromBlack(0.5f));
         }
 
         // ======================================================================
@@ -489,7 +561,11 @@ namespace Fields.Core
             if (bomb == null) yield break;
 
             var rb = bomb.GetComponent<Rigidbody>();
-            if (rb != null) rb.isKinematic = true;
+            if (rb != null)
+            {
+                rb.isKinematic    = true;
+                rb.interpolation  = RigidbodyInterpolation.None; // prevent visual jitter when setting transform.position directly
+            }
 
             Vector3 start   = bomb.transform.position;
             float   elapsed = 0f;
@@ -601,6 +677,30 @@ namespace Fields.Core
                 yield return null;
             }
             loopTitleCard.gameObject.SetActive(false);
+        }
+
+        // ======================================================================
+        // Fade from black — reveals whatever is on screen below the overlay
+        // ======================================================================
+
+        IEnumerator FadeFromBlack(float duration)
+        {
+            if (_fadeImage == null) yield break;
+
+            _fadeImage.gameObject.SetActive(true);
+            _fadeImage.color = Color.black;
+
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float a = 1f - Mathf.Clamp01(elapsed / duration);
+                _fadeImage.color = new Color(0f, 0f, 0f, a);
+                yield return null;
+            }
+
+            _fadeImage.color = Color.clear;
+            _fadeImage.gameObject.SetActive(false);
         }
 
         // ======================================================================
@@ -721,6 +821,106 @@ namespace Fields.Core
             }
 
             Destroy(sw);
+        }
+
+        // ======================================================================
+        // Bomb-follow camera — cuts to a dedicated camera during the drop,
+        // then restores the main camera after the explosion hold.
+        // ======================================================================
+
+        IEnumerator RunBombCamera(GameObject bomb, float dropDuration)
+        {
+            var mainCam = Camera.main;
+            var pc      = PlayerController.Instance;
+
+            // Save exact player camera state before switching to bomb cam
+            Quaternion savedBodyRot = pc != null ? pc.transform.rotation : Quaternion.identity;
+            Quaternion savedCamRot  = pc?.cameraRoot != null ? pc.cameraRoot.localRotation : Quaternion.identity;
+            Debug.Log($"[BombCamera] START — mainCam={(mainCam != null ? mainCam.name : "NULL")} | " +
+                      $"savedBodyRot={savedBodyRot.eulerAngles} | savedCamRot={savedCamRot.eulerAngles}");
+
+            var go  = new GameObject("BombDropCamera");
+            var cam = go.AddComponent<Camera>();
+
+            if (mainCam != null)
+            {
+                cam.clearFlags      = mainCam.clearFlags;
+                cam.backgroundColor = mainCam.backgroundColor;
+                cam.cullingMask     = mainCam.cullingMask;
+                cam.nearClipPlane   = mainCam.nearClipPlane;
+                cam.farClipPlane    = mainCam.farClipPlane;
+                cam.depth           = mainCam.depth + 2;
+            }
+            cam.fieldOfView = fovBomb;
+
+            var urpData = cam.GetUniversalAdditionalCameraData();
+            if (urpData != null) urpData.renderPostProcessing = true;
+
+            if (mainCam != null) mainCam.enabled = false;
+
+            // Side offset perpendicular to the airplane's travel direction (always a true side-view)
+            Vector3 sideDir = _airplaneTravelDir.sqrMagnitude > 0.001f
+                ? Vector3.Cross(_airplaneTravelDir, Vector3.up).normalized
+                : Vector3.right;
+            Vector3 relativeOffset = sideDir * bombCamOffset.magnitude;
+
+            // Follow the bomb until preImpactCamRestoreTime seconds before it hits terrain
+            float followDuration = Mathf.Max(0f, dropDuration - preImpactCamRestoreTime);
+            float elapsed = 0f;
+            while (bomb != null && elapsed < followDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                go.transform.position = bomb.transform.position + relativeOffset;
+                Vector3 towardBomb = bomb.transform.position - go.transform.position;
+                towardBomb.y = 0f;
+                if (towardBomb.sqrMagnitude > 0.01f)
+                    go.transform.rotation = Quaternion.LookRotation(towardBomb.normalized);
+                yield return null;
+            }
+
+            // Restore player camera to the exact state it was in before the bomb cam
+            if (mainCam != null) mainCam.enabled = true;
+            if (pc != null) pc.transform.rotation = savedBodyRot;
+            if (pc?.cameraRoot != null) pc.cameraRoot.localRotation = savedCamRot;
+            Debug.Log($"[BombCamera] mainCam restored — bodyRot={savedBodyRot.eulerAngles} camRot={savedCamRot.eulerAngles}");
+            Destroy(go);
+        }
+
+        // ======================================================================
+        // Blinding screen flash — instantaneous white-out that fades to clear.
+        // ======================================================================
+
+        IEnumerator SpawnBlindingFlash()
+        {
+            var go     = new GameObject("NukeBlindingFlash");
+            go.transform.SetParent(transform, false);
+            var canvas = go.AddComponent<Canvas>();
+            canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 999;
+            go.AddComponent<CanvasScaler>();
+
+            var imgGO = new GameObject("FlashImage");
+            imgGO.transform.SetParent(go.transform, false);
+            var rt = imgGO.AddComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            var img = imgGO.AddComponent<Image>();
+            img.color         = Color.white;
+            img.raycastTarget = false;
+
+            yield return new WaitForSecondsRealtime(flashHoldDuration);
+
+            float elapsed = 0f;
+            while (elapsed < flashFadeDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float a = 1f - Mathf.SmoothStep(0f, 1f, elapsed / flashFadeDuration);
+                img.color = new Color(1f, 1f, 1f, a);
+                yield return null;
+            }
+
+            Destroy(go);
         }
 
         // ======================================================================
