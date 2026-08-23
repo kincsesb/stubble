@@ -46,12 +46,14 @@ namespace Fields.UI
 
         void ClickConfirm()
         {
+            Fields.Audio.UISoundManager.Click();
             UIManager.Instance?.Pop();
             _onConfirm?.Invoke();
         }
 
         void ClickCancel()
         {
+            Fields.Audio.UISoundManager.Click();
             UIManager.Instance?.Pop();
             _onCancel?.Invoke();
         }

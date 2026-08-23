@@ -12,12 +12,12 @@ namespace Fields.UI
     {
         [Tooltip("Leave at 0,0,0,0 to use the project defaults below.")]
         public Color normalColor      = new Color(1.00f, 1.00f, 1.00f, 1.00f);
-        public Color highlightedColor = new Color(0.85f, 0.95f, 1.00f, 1.00f);
-        public Color pressedColor     = new Color(0.65f, 0.75f, 0.90f, 1.00f);
-        public Color selectedColor    = new Color(0.85f, 0.95f, 1.00f, 1.00f);
+        public Color highlightedColor = new Color(1.00f, 1.00f, 1.00f, 1.00f);
+        public Color pressedColor     = new Color(0.80f, 0.90f, 1.00f, 1.00f);
+        public Color selectedColor    = new Color(1.00f, 1.00f, 1.00f, 1.00f);
         public Color disabledColor    = new Color(0.50f, 0.50f, 0.50f, 0.50f);
-        public float colorMultiplier  = 1f;
-        public float fadeDuration     = 0.1f;
+        public float colorMultiplier  = 3f;
+        public float fadeDuration     = 0.12f;
 
         void Start() => ApplyToAll();
 
@@ -44,12 +44,12 @@ namespace Fields.UI
         public static readonly ColorBlock DefaultBlock = new ColorBlock
         {
             normalColor      = new Color(1.00f, 1.00f, 1.00f, 1.00f),
-            highlightedColor = new Color(0.85f, 0.95f, 1.00f, 1.00f),
-            pressedColor     = new Color(0.65f, 0.75f, 0.90f, 1.00f),
-            selectedColor    = new Color(0.85f, 0.95f, 1.00f, 1.00f),
+            highlightedColor = new Color(1.00f, 1.00f, 1.00f, 1.00f),
+            pressedColor     = new Color(0.80f, 0.90f, 1.00f, 1.00f),
+            selectedColor    = new Color(1.00f, 1.00f, 1.00f, 1.00f),
             disabledColor    = new Color(0.50f, 0.50f, 0.50f, 0.50f),
-            colorMultiplier  = 1f,
-            fadeDuration     = 0.1f,
+            colorMultiplier  = 3f,
+            fadeDuration     = 0.12f,
         };
 
         public static void ApplyToButton(Button btn) => ApplyToButton(btn, DefaultBlock);

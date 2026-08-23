@@ -24,7 +24,7 @@ namespace Fields.UI
         protected override void Awake()
         {
             base.Awake();
-            if (backButton) backButton.onClick.AddListener(() => UIManager.Instance?.Pop());
+            if (backButton) backButton.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); UIManager.Instance?.Pop(); });
         }
 
         protected override void OnScreenPushed()

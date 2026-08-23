@@ -109,22 +109,25 @@ namespace Fields.UI
         // Button handlers
         // ------------------------------------------------------------------ //
 
-        void ClickResume() => UIManager.Instance?.PopAll();
+        void ClickResume() { Fields.Audio.UISoundManager.Click(); UIManager.Instance?.PopAll(); }
 
         void OnJournal()
         {
+            Fields.Audio.UISoundManager.Click();
             if (journalScreen != null)
                 UIManager.Instance?.Push(journalScreen);
         }
 
         void OnSettings()
         {
+            Fields.Audio.UISoundManager.Click();
             if (settingsScreen != null)
                 UIManager.Instance?.Push(settingsScreen);
         }
 
         void OnQuit()
         {
+            Fields.Audio.UISoundManager.Click();
             bool mp   = SessionState.Instance != null && SessionState.Instance.IsMultiplayer;
             bool host = !mp; // single-player is always "host"
 

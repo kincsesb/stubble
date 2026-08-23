@@ -230,14 +230,14 @@ namespace Fields.UI
 
             // Close
             if (closeButton != null)
-                closeButton.onClick.AddListener(() => UIManager.Instance?.Pop());
+                closeButton.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); UIManager.Instance?.Pop(); });
 
             // Tabs
             for (int i = 0; i < tabButtons.Length; i++)
             {
                 if (tabButtons[i] == null) continue;
                 int idx = i;
-                tabButtons[i].onClick.AddListener(() => SelectTab(idx));
+                tabButtons[i].onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); SelectTab(idx); });
             }
 
             // Display
@@ -269,11 +269,11 @@ namespace Fields.UI
             if (invertYToggle        != null) invertYToggle.onValueChanged.AddListener(v => SettingsManager.Instance?.SetInvertY(v));
             if (gamepadSensSlider    != null) gamepadSensSlider.onValueChanged.AddListener(v => SettingsManager.Instance?.SetGamepadSens(v));
             if (gamepadDeadzoneSlider != null) gamepadDeadzoneSlider.onValueChanged.AddListener(v => SettingsManager.Instance?.SetGamepadDeadzone(v));
-            if (toolHoldButton       != null) toolHoldButton.onClick.AddListener(() => { SettingsManager.Instance?.SetToolUseHold(true);  UpdateToolUseButtons(true);  });
-            if (toolToggleButton     != null) toolToggleButton.onClick.AddListener(() => { SettingsManager.Instance?.SetToolUseHold(false); UpdateToolUseButtons(false); });
-            if (sprintHoldButton     != null) sprintHoldButton.onClick.AddListener(() => { SettingsManager.Instance?.SetSprintHold(true);  UpdateSprintButtons(true);  });
-            if (sprintToggleButton   != null) sprintToggleButton.onClick.AddListener(() => { SettingsManager.Instance?.SetSprintHold(false); UpdateSprintButtons(false); });
-            if (resetRebindsButton   != null) resetRebindsButton.onClick.AddListener(() => SettingsManager.Instance?.ResetRebinds());
+            if (toolHoldButton       != null) toolHoldButton.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); SettingsManager.Instance?.SetToolUseHold(true);  UpdateToolUseButtons(true);  });
+            if (toolToggleButton     != null) toolToggleButton.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); SettingsManager.Instance?.SetToolUseHold(false); UpdateToolUseButtons(false); });
+            if (sprintHoldButton     != null) sprintHoldButton.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); SettingsManager.Instance?.SetSprintHold(true);  UpdateSprintButtons(true);  });
+            if (sprintToggleButton   != null) sprintToggleButton.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); SettingsManager.Instance?.SetSprintHold(false); UpdateSprintButtons(false); });
+            if (resetRebindsButton   != null) resetRebindsButton.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); SettingsManager.Instance?.ResetRebinds(); });
 
             // Accessibility
             if (headBobToggle      != null) headBobToggle.onValueChanged.AddListener(v => SettingsManager.Instance?.SetHeadBob(v));
@@ -297,6 +297,7 @@ namespace Fields.UI
                 if (languageButtons[i] != null)
                     languageButtons[i].onClick.AddListener(() =>
                     {
+                        Fields.Audio.UISoundManager.Click();
                         SettingsManager.Instance?.SetLanguage(LANG_CODES[idx]);
                         SetActiveButton(languageButtons, idx);
                     });
@@ -340,7 +341,7 @@ namespace Fields.UI
             {
                 if (buttons[i] == null) continue;
                 int idx = i;
-                buttons[i].onClick.AddListener(() => callback(idx));
+                buttons[i].onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); callback(idx); });
             }
         }
 

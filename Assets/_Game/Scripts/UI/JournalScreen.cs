@@ -95,9 +95,9 @@ namespace Fields.UI
         // Tab selection
         // ------------------------------------------------------------------ //
 
-        public void ClickTab(int index) => SelectTab(index);
+        public void ClickTab(int index) { Fields.Audio.UISoundManager.Click(); SelectTab(index); }
 
-        public void Close() => UIManager.Instance?.Pop();
+        public void Close() { Fields.Audio.UISoundManager.Click(); UIManager.Instance?.Pop(); }
 
         void SelectTab(int index)
         {

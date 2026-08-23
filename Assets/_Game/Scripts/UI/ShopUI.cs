@@ -62,10 +62,10 @@ namespace Fields.UI
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
 
-            if (tabTools)    tabTools.onClick.AddListener(() => ShowTab(0));
-            if (tabUpgrades) tabUpgrades.onClick.AddListener(() => ShowTab(1));
+            if (tabTools)    tabTools.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); ShowTab(0); });
+            if (tabUpgrades) tabUpgrades.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); ShowTab(1); });
             if (tabUnlocks)  tabUnlocks.gameObject.SetActive(false);
-            if (closeButton) closeButton.onClick.AddListener(Close);
+            if (closeButton) closeButton.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); Close(); });
             if (shopPanel)       shopPanel.SetActive(false);
             if (dimmerOverlay)
             {
@@ -250,6 +250,7 @@ namespace Fields.UI
                     int idx = i;
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                     {
+                        Fields.Audio.UISoundManager.Click();
                         if (_toolMgr.TryPurchase(idx)) ShowTab(0);
                     });
                 }
@@ -269,6 +270,7 @@ namespace Fields.UI
                 if (!owned)
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                     {
+                        Fields.Audio.UISoundManager.Click();
                         if (bm.TryPurchaseRoundBaler()) ShowTab(0);
                     });
             }
@@ -298,6 +300,7 @@ namespace Fields.UI
                 int idx = i;
                 row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                 {
+                    Fields.Audio.UISoundManager.Click();
                     if (_toolMgr.TryUpgrade(idx)) ShowTab(1);
                 });
             }
@@ -316,7 +319,7 @@ namespace Fields.UI
                     int cost = Fields.Economy.BalerManager.BalerUpgradeCosts[bl];
                     string detail = $"{Stars(bl)}  Lv{bl}→{bl + 1}  {Fmt(cost)}";
                     var row = AddRow(L("shop.baler"), detail, L("shop.upgrade", M(cost)), cost);
-                    row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { if (bm.TryUpgradeBaler()) ShowTab(1); });
+                    row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); if (bm.TryUpgradeBaler()) ShowTab(1); });
                 }
                 else AddRow(L("shop.baler"), $"{Stars(3)}  {L("shop.maxlevel")}", string.Empty, -1);
 
@@ -329,7 +332,7 @@ namespace Fields.UI
                     int cost = Fields.Economy.BalerManager.HayValueCosts[hvl];
                     string detail = $"{Stars(hvl)}  ×{nextMult:0.00}  {Fmt(cost)}";
                     var row = AddRow(L("shop.hayvalue"), detail, L("shop.upgrade", M(cost)), cost);
-                    row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { if (bm.TryUpgradeHayValue()) ShowTab(1); });
+                    row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); if (bm.TryUpgradeHayValue()) ShowTab(1); });
                 }
                 else AddRow(L("shop.hayvalue"), $"{Stars(3)}  {L("shop.maxlevel")}", string.Empty, -1);
             }

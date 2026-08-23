@@ -1,3 +1,4 @@
+using System.Collections;
 using Fields.Economy;
 using Fields.Save;
 using Fields.UI;
@@ -58,7 +59,39 @@ namespace Fields.Core
         void Start()
         {
             bool loaded = saveSystem != null && saveSystem.LoadGame();
-            if (!loaded) Debug.Log("[WorldBootstrap] No save found — fresh game.");
+
+            // Stale post-ending save: all parcels 100% cut means the game was already completed.
+            // The nuclear sequence should have deleted this save but may have failed (crash, Steam sync lag, etc.).
+            // Wipe it here so the main menu shows fresh grass and the nuclear sequence can't auto-fire.
+            if (loaded && saveSystem != null)
+            {
+                bool allComplete = true;
+                foreach (var gf in saveSystem.grassFields)
+                    if (gf == null || gf.GetCompletionPercent() < 99.9f) { allComplete = false; break; }
+                if (allComplete)
+                {
+                    Debug.Log("[WorldBootstrap] Post-ending save detected — wiping and resetting to fresh game.");
+                    saveSystem.DeleteSave();
+                    saveSystem.DeleteBackup();
+                    foreach (var gf in saveSystem.grassFields)
+                        gf?.ResetGrass();
+                    StartCoroutine(ResetGrassNextFrame());
+                    loaded = false;
+                }
+            }
+
+            if (!loaded)
+            {
+                Debug.Log("[WorldBootstrap] No save found — fresh game.");
+                if (saveSystem != null)
+                    foreach (var gf in saveSystem.grassFields)
+                        gf?.ResetGrass();
+
+                // One-frame delayed reset: GrassChunkManager.Start() and GrassField.Start()
+                // may run in any order; this guarantees the GPU mask is rebuilt after all
+                // MonoBehaviour Start() calls have completed.
+                StartCoroutine(ResetGrassNextFrame());
+            }
 
             foreach (var p in parcels)
             {
@@ -85,9 +118,25 @@ namespace Fields.Core
                 }
                 else
                 {
-                    UIManager.Instance?.Push(mainMenuScreen);
+                    // Wait one frame so UIManager.OnSceneLoaded (which clears the stack)
+                    // fires before we push. This is reliable across Unity versions and builds.
+                    StartCoroutine(ShowMainMenuNextFrame());
                 }
             }
+        }
+
+        IEnumerator ShowMainMenuNextFrame()
+        {
+            yield return null;
+            UIManager.Instance?.Push(mainMenuScreen);
+        }
+
+        IEnumerator ResetGrassNextFrame()
+        {
+            yield return null;
+            if (saveSystem != null)
+                foreach (var gf in saveSystem.grassFields)
+                    gf?.ResetGrass();
         }
 
         void OnDestroy()

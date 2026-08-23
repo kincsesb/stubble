@@ -69,13 +69,13 @@ namespace Fields.UI
 
         void ClickContinue()
         {
-            // WorldBootstrap already called LoadGame() — the world state is restored.
-            // Do NOT reset session state here; stats were loaded from save.
+            Fields.Audio.UISoundManager.Click();
             StartGame(freshStart: false);
         }
 
         void ClickNewGame()
         {
+            Fields.Audio.UISoundManager.Click();
             if (SaveSystem.HasSave)
             {
                 var loc = Fields.Core.LocalizationManager.Instance;
@@ -115,24 +115,28 @@ namespace Fields.UI
 
         void ClickCoop()
         {
+            Fields.Audio.UISoundManager.Click();
             if (coopScreen != null)
                 UIManager.Instance?.Push(coopScreen);
         }
 
         void ClickSettings()
         {
+            Fields.Audio.UISoundManager.Click();
             if (settingsScreen != null)
                 UIManager.Instance?.Push(settingsScreen);
         }
 
         void ClickCredits()
         {
+            Fields.Audio.UISoundManager.Click();
             if (creditsScreen != null)
                 UIManager.Instance?.Push(creditsScreen);
         }
 
         void ClickQuit()
         {
+            Fields.Audio.UISoundManager.Click();
             var loc = Fields.Core.LocalizationManager.Instance;
             confirmModal?.Show(
                 header:    loc != null ? loc.Get("menu.quit.header") : "Quit",
@@ -151,7 +155,17 @@ namespace Fields.UI
         public void StartGame(bool freshStart = false)
         {
             if (freshStart)
+            {
                 Fields.Core.SessionState.Instance?.StartSinglePlayer();
+
+                // Reset grass directly so a fresh start is always clean,
+                // even if the scene wasn't reloaded (e.g. EndScreen was dismissed
+                // without triggering GoToMainMenu → SceneManager.LoadScene).
+                var wb = Fields.Core.WorldBootstrap.Instance;
+                if (wb?.saveSystem != null)
+                    foreach (var gf in wb.saveSystem.grassFields)
+                        gf?.ResetGrass();
+            }
             Fields.Core.RecordsManager.Instance?.ResetSessionState();
             if (menuCameraRoot) menuCameraRoot.SetActive(false);
             if (playerRoot)     playerRoot.SetActive(true);
