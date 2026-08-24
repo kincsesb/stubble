@@ -76,6 +76,9 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         public string playingAnim = "";
     }
 
+    /// <summary>Persisted across scenes. Set by SaveSystem.ApplySaveData(); true means chicken is gone permanently.</summary>
+    public static bool ChickenWasEaten;
+
     readonly List<Animal> _all = new();
     float _elapsed;
     int   _phase = -1;
@@ -104,8 +107,12 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
         var chicken = FindAnimatedRoot("Chicken");
         var cat     = FindAnimatedRoot("CartoonCat_c3");
-        if (chicken != null) AddAnimal(chicken, true,  playSpawn: false);
-        if (cat     != null) AddAnimal(cat,     false, playSpawn: false);
+        if (chicken != null)
+        {
+            if (ChickenWasEaten) Destroy(chicken); // eaten in a previous session — don't revive
+            else AddAnimal(chicken, true, playSpawn: false);
+        }
+        if (cat != null) AddAnimal(cat, false, playSpawn: false);
         SpreadAngles();
         TriggerPhase(0);
         SetupAudio();
@@ -595,6 +602,9 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         EmitCaptureDust(chicken.go.transform.position, big: true);
         EmitCaptureDust(chicken.go.transform.position + Vector3.up * 0.4f, big: true);
         Destroy(chicken.go);
+
+        ChickenWasEaten = true;
+        Fields.Save.SaveSystem.Instance?.SaveGame();
 
         StartPurring();
     }

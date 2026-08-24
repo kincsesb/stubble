@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Fields.Core.Data;
 using Fields.Grass;
 using UnityEngine;
@@ -22,6 +23,7 @@ namespace Fields.Hay
         float[,] _hayGrid;
         int _collCols;
         int _collRows;
+        readonly List<GameObject> _spawnedPiles = new List<GameObject>();
 
         public event Action<Vector3, float> OnHayPileSpawned; // worldPos, leftover
 
@@ -85,7 +87,8 @@ namespace Fields.Hay
 
             if (hayPilePrefab != null)
             {
-                Instantiate(hayPilePrefab, cellCenter, Quaternion.identity);
+                var pile = Instantiate(hayPilePrefab, cellCenter, Quaternion.identity);
+                _spawnedPiles.Add(pile);
                 OnHayPileSpawned?.Invoke(cellCenter, leftover);
                 Fields.Core.GameEvents.FireHayPileSpawned(_grassField.parcelIndex, cellCenter);
             }
@@ -105,6 +108,21 @@ namespace Fields.Hay
             for (int r = 0; r < _collRows; r++)
                 for (int c = 0; c < _collCols; c++)
                     _hayGrid[c, r] = 0f;
+        }
+
+        /// <summary>
+        /// Clears accumulated hay AND destroys all spawned but uncollected hay piles.
+        /// Called on loop ending so the player must re-cut the regrown grass before baling.
+        /// </summary>
+        public void ResetWithPiles()
+        {
+            ResetHay();
+            for (int i = _spawnedPiles.Count - 1; i >= 0; i--)
+            {
+                if (_spawnedPiles[i] != null)
+                    Destroy(_spawnedPiles[i]);
+            }
+            _spawnedPiles.Clear();
         }
 
         /// <summary>
@@ -152,7 +170,7 @@ namespace Fields.Hay
         }
 
         /// <summary>Returns the hay accumulation grid for saving (value = unit count in each cell).</summary>
-        public float[,] GetHayGrid() => (float[,])_hayGrid.Clone();
+        public float[,] GetHayGrid() => _hayGrid != null ? (float[,])_hayGrid.Clone() : new float[0, 0];
 
         /// <summary>Restores hay grid from save data.</summary>
         public void LoadHayGrid(float[,] saved)

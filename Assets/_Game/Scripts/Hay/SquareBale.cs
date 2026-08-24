@@ -59,8 +59,11 @@ namespace Fields.Hay
             var mf = visual != null ? visual.GetComponent<MeshFilter>() : GetComponentInChildren<MeshFilter>();
             if (mf == null || mf.sharedMesh == null) return;
 
+            var outlineParent = visual != null ? visual.transform : transform;
             _outlineGO = new GameObject("BaleOutline");
-            _outlineGO.transform.SetParent(transform, worldPositionStays: false);
+            _outlineGO.transform.SetParent(outlineParent, worldPositionStays: false);
+            _outlineGO.transform.localPosition = Vector3.zero;
+            _outlineGO.transform.localRotation = Quaternion.identity;
             _outlineGO.transform.localScale = Vector3.one * 1.07f;
 
             var mfOut = _outlineGO.AddComponent<MeshFilter>();

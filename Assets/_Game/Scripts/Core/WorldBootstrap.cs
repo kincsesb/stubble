@@ -100,6 +100,19 @@ namespace Fields.Core
                 p.OnPlayerEntered   += OnPlayerEnteredParcel;
             }
 
+            // Populate AreaTotalCells from GrassFields (needed for journal remaining-area display)
+            var sessionState = SessionState.Instance;
+            if (sessionState != null && saveSystem != null)
+            {
+                for (int i = 0; i < saveSystem.grassFields.Length && i < 4; i++)
+                {
+                    var gf = saveSystem.grassFields[i];
+                    var pd = sessionState.GetParcel(i);
+                    if (gf != null && pd != null)
+                        pd.AreaTotalCells = gf.TotalGrassCells;
+                }
+            }
+
             if (endScreenRoot != null) endScreenRoot.SetActive(false);
 
             // Default active field = first parcel (parcel 0 is always unlocked)

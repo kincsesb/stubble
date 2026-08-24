@@ -156,6 +156,8 @@ namespace Fields.UI
         {
             if (freshStart)
             {
+                Fields.Core.PlayerController.PendingSpawnPosition = null;
+                FarmAnimalChaseSystem.ChickenWasEaten = false;
                 Fields.Core.SessionState.Instance?.StartSinglePlayer();
 
                 // Reset grass directly so a fresh start is always clean,
@@ -165,6 +167,21 @@ namespace Fields.UI
                 if (wb?.saveSystem != null)
                     foreach (var gf in wb.saveSystem.grassFields)
                         gf?.ResetGrass();
+            }
+            else
+            {
+                // Apply saved spawn position before enabling the player root
+                var pending = Fields.Core.PlayerController.PendingSpawnPosition;
+                if (pending.HasValue)
+                {
+                    var pc = Fields.Core.PlayerController.Instance;
+                    if (pc != null)
+                    {
+                        pc.transform.position = pending.Value;
+                        pc.SetYaw(Fields.Core.PlayerController.PendingSpawnRotY);
+                    }
+                    Fields.Core.PlayerController.PendingSpawnPosition = null;
+                }
             }
             Fields.Core.RecordsManager.Instance?.ResetSessionState();
             if (menuCameraRoot) menuCameraRoot.SetActive(false);

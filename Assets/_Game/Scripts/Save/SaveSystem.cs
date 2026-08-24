@@ -51,6 +51,12 @@ namespace Fields.Save
         volatile bool _saveInFlight;
         volatile bool _saveJustCompleted;
 
+        // Set by DeleteSave() — blocks all further writes so OnApplicationQuit
+        // can't recreate the file after a nuclear ending wipe.
+        bool _saveDeleted;
+
+        public bool IsSaveInFlight => _saveInFlight;
+
         /// <summary>Fired on the main thread when an autosave completes.</summary>
         public static event Action OnSaveCompleted;
 
@@ -69,7 +75,7 @@ namespace Fields.Save
             HookAutosaveEvents();
         }
 
-        void OnApplicationQuit() => SaveGame();
+        void OnApplicationQuit() { if (!_saveDeleted) SaveGame(); }
 
         void Update()
         {
@@ -108,7 +114,7 @@ namespace Fields.Save
         /// </summary>
         public void SaveGame()
         {
-            if (_saveInFlight) return;
+            if (_saveInFlight || _saveDeleted) return;
 
             SaveData data     = BuildSaveData(); // must run on main thread
             string savePath   = SavePath();       // cache paths on main thread — persistentDataPath is main-thread-only
@@ -169,7 +175,15 @@ namespace Fields.Save
 
         public void DeleteSave()
         {
+            _saveDeleted = true;
             string path = SavePath();
+            if (File.Exists(path)) File.Delete(path);
+        }
+
+        /// <summary>Deletes the rolling backup file. Call alongside DeleteSave() for a full wipe.</summary>
+        public void DeleteBackup()
+        {
+            string path = BackupPath();
             if (File.Exists(path)) File.Delete(path);
         }
 
@@ -199,6 +213,20 @@ namespace Fields.Save
                 roundBalerOwned    = bm != null && bm.GetRoundBalerOwned(),
                 balerUpgradeLevels = bm != null ? bm.GetLevels() : new int[3],
             };
+
+            // ── World events ─────────────────────────────────────────────── //
+            data.catAteChicken = FarmAnimalChaseSystem.ChickenWasEaten;
+
+            // ── Player position ───────────────────────────────────────────── //
+            var pc = Fields.Core.PlayerController.Instance;
+            if (pc != null)
+            {
+                data.hasSavedPosition = true;
+                data.playerPosX = pc.transform.position.x;
+                data.playerPosY = pc.transform.position.y;
+                data.playerPosZ = pc.transform.position.z;
+                data.playerRotY = pc.transform.eulerAngles.y;
+            }
 
             // ── Fields: cut grid + hay grid ──────────────────────────────── //
             data.fields = new FieldSaveData[grassFields.Length];
@@ -336,6 +364,18 @@ namespace Fields.Save
 
         void ApplySaveData(SaveData data)
         {
+            FarmAnimalChaseSystem.ChickenWasEaten = data.catAteChicken;
+
+            if (data.hasSavedPosition)
+            {
+                Fields.Core.PlayerController.PendingSpawnPosition = new Vector3(data.playerPosX, data.playerPosY, data.playerPosZ);
+                Fields.Core.PlayerController.PendingSpawnRotY     = data.playerRotY;
+            }
+            else
+            {
+                Fields.Core.PlayerController.PendingSpawnPosition = null;
+            }
+
             CurrencyManager.Instance?.SetMoney(data.money);
             ToolUnlockManager.Instance?.LoadState(data.toolsOwned, data.toolUpgradeLevels);
             ParcelManager.Instance?.LoadState(data.parcelsUnlocked);

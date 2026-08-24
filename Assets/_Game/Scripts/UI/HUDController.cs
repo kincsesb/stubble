@@ -216,7 +216,10 @@ namespace Fields.UI
             bgRT.anchorMax = new Vector2(0.5f, 1f);
             bgRT.anchoredPosition = new Vector2(0f, -36f);
             bgRT.sizeDelta = new Vector2(340f, 22f);
-            bgGO.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.4f);
+            var bgImg = bgGO.GetComponent<Image>();
+            var barSprite = Fields.UI.UITheme.Instance?.progressBarBg;
+            if (barSprite != null) { bgImg.sprite = barSprite; bgImg.type = Image.Type.Sliced; bgImg.fillCenter = true; bgImg.color = Color.white; }
+            else { bgImg.color = new Color(0f, 0f, 0f, 0.4f); }
 
             var fgGO = new GameObject("GrassCutFill", typeof(RectTransform), typeof(Image));
             fgGO.transform.SetParent(bgGO.transform, false);
@@ -522,6 +525,24 @@ namespace Fields.UI
                 : $"$ {m}";
         }
 
+        float GetAggregateCompletion()
+        {
+            var wb = Fields.Core.WorldBootstrap.Instance;
+            var fields = wb?.saveSystem?.grassFields;
+            if (fields != null)
+            {
+                long totalCells = 0, totalCut = 0;
+                foreach (var gf in fields)
+                {
+                    if (gf == null) continue;
+                    totalCells += gf.TotalGrassCells;
+                    totalCut   += gf.CutCount;
+                }
+                if (totalCells > 0) return (float)totalCut / totalCells * 100f;
+            }
+            return activeGrassField != null ? activeGrassField.GetCompletionPercent() : 0f;
+        }
+
         void UpdateCompletion()
         {
             if (!IsGameActive)
@@ -529,9 +550,8 @@ namespace Fields.UI
                 if (grassCutBar != null) grassCutBar.gameObject.SetActive(false);
                 return;
             }
-            if (activeGrassField == null) return;
             if (grassCutBar != null) grassCutBar.gameObject.SetActive(true);
-            float pct = activeGrassField.GetCompletionPercent();
+            float pct = GetAggregateCompletion();
 
             // Grass cut progress bar
             if (grassCutBar != null)
@@ -600,8 +620,8 @@ namespace Fields.UI
                 float t = _moneyPunchTimer / MONEY_PUNCH_DURATION;
                 float scale = 1f + Mathf.Sin(t * Mathf.PI) * 0.45f;
                 moneyText.transform.localScale = Vector3.one * scale;
-                // Flash green on earn: bright green → white settle
-                moneyText.color = Color.Lerp(Color.white, new Color(0.25f, 1f, 0.45f), t);
+                // Flash gold on earn then settle back to white
+                moneyText.color = Color.Lerp(Color.white, new Color(0.72f, 0.55f, 0.18f), t);
             }
             else
             {
@@ -799,10 +819,10 @@ namespace Fields.UI
             {
                 t += Time.unscaledDeltaTime;
                 float n = t / life;
-                // Flash white on spawn then shift to green
+                // Flash white on spawn then shift to rustic gold
                 Color baseColor = n < 0.1f
-                    ? Color.Lerp(Color.white, new Color(0.3f, 1f, 0.45f), n / 0.1f)
-                    : new Color(0.3f, 1f, 0.45f);
+                    ? Color.Lerp(Color.white, new Color(0.88f, 0.62f, 0.12f), n / 0.1f)
+                    : new Color(0.88f, 0.62f, 0.12f);
                 float alpha = n < 0.15f
                     ? n / 0.15f
                     : 1f - Mathf.Pow((n - 0.15f) / 0.85f, 1.5f);

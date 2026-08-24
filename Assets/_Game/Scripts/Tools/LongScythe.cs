@@ -1,5 +1,6 @@
 using Fields.Grass;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Fields.Tools
 {
@@ -47,6 +48,7 @@ namespace Fields.Tools
         float _wear;
         bool _warnedDull;
         float _sharpenHoldTimer;
+        bool _isSharpeningActive;
         ParticleSystem _sparklePS;
 
         // Public API for HUD
@@ -64,16 +66,22 @@ namespace Fields.Tools
             _warnedDull = _wear >= 0.8f;
         }
 
+        public override void OnUnequip()
+        {
+            if (_isSharpeningActive)
+            {
+                _isSharpeningActive = false;
+                _sharpenHoldTimer = 0f;
+                if (_owner != null) _owner.InputLocked = false;
+            }
+            base.OnUnequip();
+        }
+
         // ------------------------------------------------------------------ //
 
-        void Update()
+        protected override void OnUpdate()
         {
-            if (!_isEquipped) return;
-
-            bool rDown = Input.GetKey(KeyCode.R);
-            bool canSharpen = _wear > 0.05f && _phase == SwingPhase.Idle;
-
-            if (rDown && canSharpen)
+            if (_isSharpeningActive)
             {
                 _sharpenHoldTimer += Time.deltaTime;
                 float pct = Mathf.Clamp01(_sharpenHoldTimer / sharpenDuration);
@@ -82,15 +90,24 @@ namespace Fields.Tools
 
                 if (_sharpenHoldTimer >= sharpenDuration)
                 {
+                    _isSharpeningActive = false;
                     _sharpenHoldTimer = 0f;
                     SetWear(0f);
                     _sparklePS?.Play();
                     Fields.UI.HUDController.Instance?.ShowToolTip("Kasza megélesítve!", 2.5f);
+                    if (_owner != null) _owner.InputLocked = false;
                 }
+                return;
             }
-            else if (_sharpenHoldTimer > 0f)
+
+            bool rPressed = Keyboard.current?.rKey.wasPressedThisFrame ?? false;
+            bool canSharpen = _wear > 0.05f && _phase == SwingPhase.Idle;
+
+            if (rPressed && canSharpen)
             {
+                _isSharpeningActive = true;
                 _sharpenHoldTimer = 0f;
+                if (_owner != null) _owner.InputLocked = true;
             }
         }
 
@@ -102,6 +119,7 @@ namespace Fields.Tools
             go.transform.localRotation = Quaternion.identity;
 
             _sparklePS = go.AddComponent<ParticleSystem>();
+            _sparklePS.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = _sparklePS.main;
             main.playOnAwake = false;
@@ -138,6 +156,7 @@ namespace Fields.Tools
 
         GrassField _targetField;
         Vector3 _prevSweepTip;
+        int _preSweepCutCount;
 
         // Higher upgrade level reduces wear: level 0 = full, level 3 = 30%
         float EffectiveWearPerSwing =>
@@ -146,6 +165,7 @@ namespace Fields.Tools
         protected override void OnSweepBegin()
         {
             _prevSweepTip = CalcFanTip(0f);
+            _preSweepCutCount = 0;
 
             float staminaCost = 5f * Mathf.Lerp(1f, wornStaminaMultiplier, _wear);
             TryConsumeStamina(staminaCost);
@@ -164,7 +184,12 @@ namespace Fields.Tools
             float sweepT = Mathf.Clamp01((rawTimer - WINDUP_END) / (SWEEP_END - WINDUP_END));
             Vector3 tip = CalcFanTip(sweepT);
 
-            if (_targetField == null) _targetField = FindNearestField(tip);
+            if (_targetField == null)
+            {
+                _targetField = FindNearestField(tip);
+                if (_targetField != null)
+                    _preSweepCutCount = _targetField.CutCount; // snapshot before first cut this sweep
+            }
             if (_targetField != null)
             {
                 float effectiveRadius = cutRadius * CurrentPower * Mathf.Lerp(1f, wornRadiusFraction, _wear);
@@ -174,7 +199,14 @@ namespace Fields.Tools
             _prevSweepTip = tip;
         }
 
-        protected override void OnSweepEnd() => _targetField = null;
+        protected override void OnSweepEnd()
+        {
+            // Stop swing sound early if the sweep hit no uncut cells
+            bool cutAnything = _targetField != null && _targetField.CutCount > _preSweepCutCount;
+            if (!cutAnything)
+                Fields.Audio.ToolAudioManager.Instance?.StopSwing();
+            _targetField = null;
+        }
 
         public override string ToolTip => "Hosszú kasza  —  LMB: ívelt kaszálás · Stamina szükséges";
 

@@ -54,7 +54,7 @@ namespace Fields.UI
                                : L("journal.sec.player",     $"Player {i + 1}"))
                     : L("journal.sec.your_stats", "Your Stats");
 
-                AddHeader(container, header, isLocal ? new Color(0.4f, 0.85f, 0.5f) : new Color(0.5f, 0.75f, 0.95f));
+                AddHeader(container, header, isLocal ? new Color(0.32f, 0.47f, 0.25f) : new Color(0.25f, 0.40f, 0.60f));
 
                 AddRow(container,
                     L("journal.label.areacut",     "Grass cut"),
@@ -133,7 +133,7 @@ namespace Fields.UI
             tmp.text      = title.ToUpper();
             tmp.fontSize  = 11;
             tmp.fontStyle = FontStyles.Bold;
-            tmp.color     = color ?? new Color(0.4f, 0.85f, 0.5f);
+            tmp.color     = color ?? new Color(0.32f, 0.47f, 0.25f);  // olive green
             tmp.alignment = TextAlignmentOptions.BottomLeft;
         }
 
@@ -152,8 +152,8 @@ namespace Fields.UI
             hlg.padding              = new RectOffset(4, 4, 2, 2);
             hlg.childForceExpandWidth = true;
 
-            MakeTMP(row.transform, label, TextAlignmentOptions.Left,  new Color(0.72f, 0.72f, 0.72f), 13);
-            MakeTMP(row.transform, value, TextAlignmentOptions.Right, Color.white, 13);
+            MakeTMP(row.transform, label, TextAlignmentOptions.Left,  new Color(0.40f, 0.32f, 0.22f), 13);  // medium ink
+            MakeTMP(row.transform, value, TextAlignmentOptions.Right, new Color(0.18f, 0.12f, 0.08f), 13);  // dark ink
         }
 
         static void AddDiv(Transform parent)
@@ -166,7 +166,7 @@ namespace Fields.UI
 
             // Thin horizontal line
             var img = go.AddComponent<Image>();
-            img.color = new Color(1f, 1f, 1f, 0.08f);
+            img.color = new Color(0.55f, 0.42f, 0.28f, 0.30f);  // warm brown divider
         }
 
         static void MakeTMP(Transform parent, string text, TextAlignmentOptions align, Color color, float size)

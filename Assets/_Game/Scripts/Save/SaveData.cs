@@ -45,6 +45,14 @@ namespace Fields.Save
         // ── World objects ──────────────────────────────────────────────────────
         public BaleSaveData[] bales = new BaleSaveData[0];
 
+        // ── World events ───────────────────────────────────────────────────────
+        public bool catAteChicken;
+
+        // ── Player spawn position ──────────────────────────────────────────────
+        public bool  hasSavedPosition;
+        public float playerPosX, playerPosY, playerPosZ;
+        public float playerRotY;
+
         // ── Statistics (new in v2) ─────────────────────────────────────────────
         public PlayerSaveStats[] playerStats = new PlayerSaveStats[0];
         public ParcelSaveStats[] parcelStats = new ParcelSaveStats[0];

@@ -61,7 +61,10 @@ namespace Fields.Tools
             TickSwing();
             TickAnimation();
             RegenStamina();
+            OnUpdate();
         }
+
+        protected virtual void OnUpdate() { }
 
         // ------------------------------------------------------------------ //
         // Input

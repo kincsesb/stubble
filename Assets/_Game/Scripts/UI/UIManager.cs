@@ -27,6 +27,10 @@ namespace Fields.UI
     {
         public static UIManager Instance { get; private set; }
 
+        [Header("Theme")]
+        [Tooltip("Assign the UITheme ScriptableObject here so UITheme.Instance is available at runtime.")]
+        public UITheme theme;
+
         [Header("Pause")]
         [Tooltip("Assign PauseScreen here. UIManager opens it when Esc/Start is pressed with no UI open.")]
         public PauseScreen pauseScreen;

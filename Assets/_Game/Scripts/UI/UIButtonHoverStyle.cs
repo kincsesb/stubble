@@ -12,11 +12,11 @@ namespace Fields.UI
     {
         [Tooltip("Leave at 0,0,0,0 to use the project defaults below.")]
         public Color normalColor      = new Color(1.00f, 1.00f, 1.00f, 1.00f);
-        public Color highlightedColor = new Color(1.00f, 1.00f, 1.00f, 1.00f);
-        public Color pressedColor     = new Color(0.80f, 0.90f, 1.00f, 1.00f);
+        public Color highlightedColor = new Color(0.88f, 0.95f, 0.72f, 1.00f);  // sage green hover
+        public Color pressedColor     = new Color(0.68f, 0.78f, 0.50f, 1.00f);  // darker sage pressed
         public Color selectedColor    = new Color(1.00f, 1.00f, 1.00f, 1.00f);
-        public Color disabledColor    = new Color(0.50f, 0.50f, 0.50f, 0.50f);
-        public float colorMultiplier  = 3f;
+        public Color disabledColor    = new Color(0.65f, 0.60f, 0.52f, 0.55f);  // muted taupe
+        public float colorMultiplier  = 1f;
         public float fadeDuration     = 0.12f;
 
         void Start() => ApplyToAll();
@@ -44,11 +44,11 @@ namespace Fields.UI
         public static readonly ColorBlock DefaultBlock = new ColorBlock
         {
             normalColor      = new Color(1.00f, 1.00f, 1.00f, 1.00f),
-            highlightedColor = new Color(1.00f, 1.00f, 1.00f, 1.00f),
-            pressedColor     = new Color(0.80f, 0.90f, 1.00f, 1.00f),
+            highlightedColor = new Color(0.88f, 0.95f, 0.72f, 1.00f),  // sage green hover
+            pressedColor     = new Color(0.68f, 0.78f, 0.50f, 1.00f),  // darker sage pressed
             selectedColor    = new Color(1.00f, 1.00f, 1.00f, 1.00f),
-            disabledColor    = new Color(0.50f, 0.50f, 0.50f, 0.50f),
-            colorMultiplier  = 3f,
+            disabledColor    = new Color(0.65f, 0.60f, 0.52f, 0.55f),  // muted taupe
+            colorMultiplier  = 1f,
             fadeDuration     = 0.12f,
         };
 

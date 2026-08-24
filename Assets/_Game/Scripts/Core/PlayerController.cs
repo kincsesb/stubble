@@ -128,6 +128,12 @@ namespace Fields.Core
         // When true, all player input is blocked (shop open, etc.)
         public bool InputLocked { get; set; }
 
+        // Set by SaveSystem.ApplySaveData() so StartGame(freshStart:false) can teleport to saved pos
+        public static Vector3? PendingSpawnPosition { get; set; }
+        public static float    PendingSpawnRotY     { get; set; }
+
+        public void SetYaw(float yaw) { _yaw = yaw; }
+
         // ------------------------------------------------------------------ //
 
         void Awake()
@@ -545,33 +551,38 @@ namespace Fields.Core
             bool wasReady = _balingReady;
             _balingReady = hayNearby >= balingThreshold;
 
-            // When readiness is lost, require a new E press next time
-            if (wasReady && !_balingReady) _balingRequiresFreshPress = true;
-
-            bool canBale = _interactHeld && _balingReady && !_balingRequiresFreshPress && IsLookingDown;
-            if (canBale)
+            // When readiness is lost, cancel active baling and require new E press
+            if (wasReady && !_balingReady)
             {
-                if (!_balingActive)
+                _balingRequiresFreshPress = true;
+                if (_balingActive)
                 {
-                    _balingActive = true;
-                    _lookLocked  = true;
-                    _lockedYaw   = _yaw;
-                    _lockedPitch = _pitch;
-                    // Lock cursor so it doesn't show during the baling hold
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
-                    // Auto-switch to barehand so tools don't fire during baling
-                    _toolHolder?.EquipBareHand();
+                    _balingActive = false;
+                    _balingTimer  = 0f;
+                    _lookLocked   = false;
                 }
+                return;
+            }
+
+            // Start baling on single E press — no need to hold
+            if (!_balingActive && _interactHeld && _balingReady && !_balingRequiresFreshPress && IsLookingDown)
+            {
+                _balingActive = true;
+                _balingTimer  = 0f;
+                _lookLocked   = true;
+                _lockedYaw    = _yaw;
+                _lockedPitch  = _pitch;
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible   = false;
+                _toolHolder?.EquipBareHand();
+            }
+
+            // Once started, runs to completion regardless of E being held
+            if (_balingActive)
+            {
                 _balingTimer += Time.deltaTime;
                 if (_balingTimer >= Mathf.Max(0.5f, balingDuration))
                     CompleteBaling();
-            }
-            else
-            {
-                _balingTimer = 0f;
-                if (_balingActive) _lookLocked = false;
-                _balingActive = false;
             }
         }
 
@@ -590,7 +601,9 @@ namespace Fields.Core
 
         void CompleteBaling()
         {
-            _balingTimer = 0f;
+            _balingActive = false;
+            _lookLocked   = false;
+            _balingTimer  = 0f;
             _balingRequiresFreshPress = true; // must re-press E for next bale
             Fields.Audio.ToolAudioManager.Instance?.StopBaler();
             Fields.UI.HUDController.Instance?.TriggerBalingFlash();
@@ -628,7 +641,7 @@ namespace Fields.Core
         // Positive pitch = looking down (camera pitched below horizon)
         public bool IsLookingDown => _pitch > 30f;
 
-        public bool IsBaling => _interactHeld && _balingReady && !_balingRequiresFreshPress && IsLookingDown;
+        public bool IsBaling => _balingActive;
         public float BalingProgress => balingDuration > 0f ? Mathf.Clamp01(_balingTimer / balingDuration) : 0f;
         public bool BalingReady => _balingReady && IsLookingDown;
 

@@ -72,9 +72,10 @@ namespace Fields.UI
             SetText(parcelNameText,    name);
             SetText(completionPctText, $"{completionPct:F1}%");
             SetText(areaCutText,       $"{areaCut * CELL_AREA_M2:F0} m²");
-            SetText(areaRemainingText, $"{(areaTotal - areaCut) * CELL_AREA_M2:F0} m²");
-            SetText(haySpawnedText,    $"{haySpawned}");
-            SetText(hayCollectedText,  $"{hayCollected}");
+            long remaining = areaTotal > 0 ? areaTotal - areaCut : 0;
+            SetText(areaRemainingText, $"{remaining * CELL_AREA_M2:F0} m²");
+            if (haySpawnedText   != null) haySpawnedText.gameObject.SetActive(false);
+            if (hayCollectedText != null) hayCollectedText.gameObject.SetActive(false);
             if (hayInFieldText != null)
             {
                 hayInFieldText.text  = hayInField > 0 ? $"{hayInField}" : L("parcel.hay_clear");
@@ -133,9 +134,9 @@ namespace Fields.UI
             SetText(areaCutText,       $"{cut * CELL_AREA_M2:F0} m²");
             SetText(areaRemainingText, $"{remaining * CELL_AREA_M2:F0} m²");
 
-            // Hay
-            SetText(haySpawnedText,   $"{parcel.HayPilesSpawned}");
-            SetText(hayCollectedText, $"{parcel.HayPilesCollected}");
+            // Hay — spawned/collected counts hidden per spec; only in-field count shown
+            if (haySpawnedText   != null) haySpawnedText.gameObject.SetActive(false);
+            if (hayCollectedText != null) hayCollectedText.gameObject.SetActive(false);
 
             long inField = parcel.HayPilesInField;
             if (hayInFieldText != null)

@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed063462de60848199a7abb47be3ff35, type: 3}
+  m_Name: UITheme
+  m_EditorClassIdentifier: Assembly-CSharp::Fields.UI.UITheme
+  buttonWide: {fileID: 21300000, guid: e227e0d5aac8c42ddad2bbd188b8a54c, type: 3}
+  buttonSquare: {fileID: 21300000, guid: 9f0a35724398447f896c3173c75d611f, type: 3}
+  buttonCircle: {fileID: 21300000, guid: 62af7013b122746a48bd31f957cd0a72, type: 3}
+  panelBg: {fileID: 21300000, guid: d250cf71435494fc69d6a855ca8a84a8, type: 3}
+  bookBg: {fileID: 21300000, guid: 85dea3695c5f64f458a88762fa6e6276, type: 3}
+  notebookBg: {fileID: 21300000, guid: 064560126ffea451da38969ca8945bc8, type: 3}
+  tagLabel: {fileID: 21300000, guid: cc066ea7a61d24cee88095be861c08c2, type: 3}
+  tabActive: {fileID: 21300000, guid: 42502fd6409c442e89016c05f9d27131, type: 3}
+  tabInactive: {fileID: 21300000, guid: 19b655dae0e624f0f99a5898979c594f, type: 3}
+  progressBarBg: {fileID: 21300000, guid: 4e4189ce967a944deacb4d39d2436602, type: 3}
+  progressBarRope: {fileID: 21300000, guid: 2751f21b1a46f42cabc76704968ceab8, type: 3}
+  scrollbarTrack: {fileID: 21300000, guid: 28b740341f1ca48468bfe811a92383a3, type: 3}
+  scrollbarThumb: {fileID: 21300000, guid: e503544cd32e94cc6989cac4c1d4aa36, type: 3}
+  fontDisplay: {fileID: 11400000, guid: 8caa0610d04c04a5a817f2b9e0a6612d, type: 2}
+  fontBody: {fileID: 11400000, guid: e63e9374f98274045aa6a9b1062faa74, type: 2}
+  fontHandwritten: {fileID: 11400000, guid: 27e81b6f66bca4ca899650a82bdf4a7b, type: 2}
+  inkDark: {r: 0.18, g: 0.12, b: 0.08, a: 1}
+  inkMedium: {r: 0.4, g: 0.32, b: 0.22, a: 1}
+  parchment: {r: 0.94, g: 0.88, b: 0.76, a: 1}
+  parchmentDark: {r: 0.78, g: 0.68, b: 0.52, a: 1}
+  accentGreen: {r: 0.32, g: 0.47, b: 0.25, a: 1}
+  accentGold: {r: 0.72, g: 0.55, b: 0.18, a: 1}
+  accentRed: {r: 0.62, g: 0.22, b: 0.15, a: 1}
+  ropeColor: {r: 0.72, g: 0.58, b: 0.32, a: 1}

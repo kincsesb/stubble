@@ -179,7 +179,7 @@ namespace Fields.UI
             SetAnchors(go.GetComponent<RectTransform>(), xMin, yMin, xMax, yMax);
 
             var img = go.AddComponent<RawImage>();
-            img.color = new Color(0f, 0f, 0f, 0.35f);
+            img.color = new Color(0.85f, 0.78f, 0.65f, 0.75f);  // semi-transparent parchment
 
             var textGO = CreateRectChild(go.transform, "Label");
             SetAnchors(textGO.GetComponent<RectTransform>(), 0.05f, 0.1f, 0.95f, 0.9f);
@@ -187,7 +187,7 @@ namespace Fields.UI
             tmp.text      = text;
             tmp.fontSize  = 22;
             tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color     = Color.white;
+            tmp.color     = new Color(0.18f, 0.12f, 0.08f, 1f);  // dark ink
         }
 
         // ── Graph ─────────────────────────────────────────────────────────── //
@@ -206,7 +206,7 @@ namespace Fields.UI
             hTmp.text      = locG != null ? locG.Get("end.graph.header") : "CUT AREA OVER TIME";
             hTmp.fontSize  = 16;
             hTmp.fontStyle = FontStyles.Bold;
-            hTmp.color     = new Color(0.85f, 0.85f, 0.85f);
+            hTmp.color     = new Color(0.30f, 0.22f, 0.14f);  // dark ink
             hTmp.alignment = TextAlignmentOptions.Left;
 
             // ── Graph image ───────────────────────────────────────────────── //
@@ -226,9 +226,8 @@ namespace Fields.UI
             var locY = LocalizationManager.Instance;
             yTmp.text      = locY != null ? locY.Get("end.graph.yaxis") : "m²";
             yTmp.fontSize  = 12;
-            yTmp.color     = new Color(0.7f, 0.7f, 0.7f);
+            yTmp.color     = new Color(0.42f, 0.32f, 0.20f);  // medium ink
             yTmp.alignment = TextAlignmentOptions.Center;
-
             // X-axis label
             var xLabelGO = CreateRectChild(parent, "GraphXLabel");
             _dynamicChildren.Add(xLabelGO);
@@ -237,7 +236,7 @@ namespace Fields.UI
             var locX = LocalizationManager.Instance;
             xTmp.text      = locX != null ? locX.Get("end.graph.xaxis") : "Time (min)";
             xTmp.fontSize  = 12;
-            xTmp.color     = new Color(0.7f, 0.7f, 0.7f);
+            xTmp.color     = new Color(0.42f, 0.32f, 0.20f);  // medium ink
             xTmp.alignment = TextAlignmentOptions.Right;
         }
 
@@ -246,13 +245,13 @@ namespace Fields.UI
             int w = graphTexWidth, h = graphTexHeight;
             var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
 
-            // Background
-            Color bg = new Color(0.08f, 0.08f, 0.12f, 1f);
+            // Background — aged parchment
+            Color bg = new Color(0.91f, 0.84f, 0.70f, 1f);
             var pixels = new Color[w * h];
             for (int i = 0; i < pixels.Length; i++) pixels[i] = bg;
 
             // Axis lines
-            Color axisCol = new Color(0.4f, 0.4f, 0.4f, 1f);
+            Color axisCol = new Color(0.28f, 0.20f, 0.12f, 1f);  // dark ink
             int padL = 35, padB = 20, padR = 10, padT = 10;
             DrawHLine(pixels, w, padB, padL, w - padR, axisCol);
             DrawVLine(pixels, w, padL, padB, h - padT, axisCol);
@@ -269,8 +268,8 @@ namespace Fields.UI
                 }
             }
 
-            // Grid lines (light)
-            Color gridCol = new Color(0.2f, 0.2f, 0.25f, 1f);
+            // Grid lines (light parchment grain)
+            Color gridCol = new Color(0.78f, 0.70f, 0.56f, 1f);
             for (int g = 1; g <= 4; g++)
             {
                 int gy = padB + Mathf.RoundToInt((h - padT - padB) * g / 4f);
@@ -357,7 +356,7 @@ namespace Fields.UI
             hTmp.text      = locA != null ? locA.Get("end.ach.header") : "ACHIEVEMENTS THIS SESSION";
             hTmp.fontSize  = 16;
             hTmp.fontStyle = FontStyles.Bold;
-            hTmp.color     = new Color(0.9f, 0.8f, 0.2f);
+            hTmp.color     = new Color(0.58f, 0.40f, 0.10f);  // rustic gold
             hTmp.alignment = TextAlignmentOptions.Left;
 
             var listGO = CreateRectChild(achGO.transform, "AchList");
@@ -369,7 +368,7 @@ namespace Fields.UI
             {
                 var locEmpty = LocalizationManager.Instance;
                 string emptyMsg = locEmpty != null ? locEmpty.Get("end.ach.empty") : "No achievements unlocked this session.";
-                listTmp.text = $"<color=#888888>{emptyMsg}</color>";
+                listTmp.text = $"<color=#6B5840>{emptyMsg}</color>";
             }
             else
             {
@@ -379,7 +378,7 @@ namespace Fields.UI
                 listTmp.text = sb.ToString();
             }
             listTmp.fontSize        = 14;
-            listTmp.color           = new Color(0.9f, 0.9f, 0.7f);
+            listTmp.color           = new Color(0.18f, 0.12f, 0.08f);  // dark ink
             listTmp.enableWordWrapping = true;
             listTmp.alignment       = TextAlignmentOptions.TopLeft;
         }

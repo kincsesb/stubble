@@ -154,13 +154,10 @@ namespace Fields.UI
                 totalTime         += p.TimeSpentSeconds;
             }
 
-            // Completion: authoritative from active GrassField
-            float completionPct = 0f;
-            var activeField = Fields.UI.HUDController.Instance?.activeGrassField;
-            if (activeField != null)
-                completionPct = activeField.GetCompletionPercent();
-            else if (totalAreaTotal > 0)
-                completionPct = (float)totalAreaCut / totalAreaTotal * 100f;
+            // Completion: aggregate across all active grass fields
+            float completionPct = totalAreaTotal > 0
+                ? (float)totalAreaCut / totalAreaTotal * 100f
+                : 0f;
 
             string name = LocalizationManager.Instance != null
                 ? LocalizationManager.Instance.Get("journal.all_fields")

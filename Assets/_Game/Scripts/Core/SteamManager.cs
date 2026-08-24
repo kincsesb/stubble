@@ -5,6 +5,7 @@ using Steamworks;
 #endif
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Fields.Save;
 
@@ -18,6 +19,21 @@ namespace Fields.Core
     public class SteamManager : MonoBehaviour
     {
         public static SteamManager Instance { get; private set; }
+
+        /// <summary>Achievement IDs unlocked during the current play session. Cleared on scene reload.</summary>
+        public List<string> SessionAchievements { get; } = new List<string>();
+
+        /// <summary>Returns the local Steam player's display name, or a fallback.</summary>
+        public string LocalPlayerName
+        {
+            get
+            {
+#if STEAMWORKS_NET
+                if (_steamInitialised) return SteamFriends.GetPersonaName();
+#endif
+                return "Player 1";
+            }
+        }
 
         // Achievement string IDs — must match Steamworks partner dashboard exactly.
         // Client to provide final list; placeholders below.
@@ -137,6 +153,8 @@ namespace Fields.Core
         /// <summary>Unlocks a Steam achievement. Safe to call before Steam is ready — silently ignored.</summary>
         public void UnlockAchievement(string achievementId, bool triggerFeel = true)
         {
+            if (!SessionAchievements.Contains(achievementId))
+                SessionAchievements.Add(achievementId);
 #if STEAMWORKS_NET
             if (!_steamInitialised) return;
             SteamUserStats.SetAchievement(achievementId);
@@ -148,13 +166,20 @@ namespace Fields.Core
                 Fields.Feel.GameFeelController.Instance?.TriggerAchievementFeel();
         }
 
-        /// <summary>Upload save data to Steam Cloud. Overwrites previous slot.</summary>
+        /// <summary>Upload save data to Steam Cloud. Overwrites previous slot. Pass empty/null to delete the cloud file.</summary>
         public void CloudSave(string json)
         {
 #if STEAMWORKS_NET
             if (!_steamInitialised) return;
+            const string FILE = "save_slot0.json";
+            if (string.IsNullOrEmpty(json))
+            {
+                if (SteamRemoteStorage.FileExists(FILE))
+                    SteamRemoteStorage.FileDelete(FILE);
+                return;
+            }
             byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
-            SteamRemoteStorage.FileWrite("save_slot0.json", bytes, bytes.Length);
+            SteamRemoteStorage.FileWrite(FILE, bytes, bytes.Length);
 #endif
         }
 

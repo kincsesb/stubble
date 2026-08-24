@@ -63,6 +63,8 @@ namespace Fields.Tools
 
         public void OnToolSelect(InputValue value)
         {
+            var player = Fields.Core.PlayerController.Instance;
+            if (player != null && player.InputLocked) return;
             // Numeric keys 1-5 send 1.0–5.0 as float
             int slot = Mathf.RoundToInt(value.Get<float>()) - 1;
             if (slot >= 0 && slot < tools.Count) EquipSlot(slot);

@@ -205,6 +205,8 @@ namespace Fields.Grass
 
         public int GridCols => _gridCols;
         public int GridRows => _gridRows;
+        public int TotalGrassCells => _totalCells;
+        public int CutCount => _cutCount;
 
         /// <summary>Converts a grid cell to world-space centre position.</summary>
         public Vector3 CellToWorld(int col, int row) => GridToWorld(col, row);

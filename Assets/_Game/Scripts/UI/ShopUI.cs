@@ -44,16 +44,18 @@ namespace Fields.UI
         CurrencyManager _currency;
         int _activeTab;
 
-        static readonly Color COL_BG_ROW    = new Color(0.10f, 0.12f, 0.16f, 0.95f);
-        static readonly Color COL_BG_HEADER = new Color(0.06f, 0.08f, 0.12f, 1.00f);
-        static readonly Color COL_BTN_BUY   = new Color(0.18f, 0.60f, 0.25f, 1.00f);
-        static readonly Color COL_BTN_GREY  = new Color(0.35f, 0.35f, 0.35f, 1.00f);
-        static readonly Color COL_TEXT_MAIN = Color.white;
-        static readonly Color COL_TEXT_SUB  = new Color(0.75f, 0.75f, 0.75f);
-        static readonly Color COL_MONEY     = new Color(1.00f, 0.85f, 0.20f);
-        static readonly Color COL_OWNED     = new Color(0.40f, 0.90f, 0.45f);
-        static readonly Color COL_TAB_ON    = new Color(0.22f, 0.55f, 0.28f);
-        static readonly Color COL_TAB_OFF   = new Color(0.16f, 0.16f, 0.20f);
+        // Rustic farm palette — warm parchment + olive + ink
+        static readonly Color COL_BG_ROW    = new Color(0.94f, 0.88f, 0.76f, 0.97f);  // parchment
+        static readonly Color COL_BG_HEADER = new Color(0.70f, 0.60f, 0.45f, 1.00f);  // dark parchment
+        static readonly Color COL_BTN_BUY   = new Color(0.32f, 0.47f, 0.25f, 1.00f);  // olive green
+        static readonly Color COL_BTN_GREY  = new Color(0.58f, 0.52f, 0.42f, 1.00f);  // muted taupe
+        static readonly Color COL_BTN_TEXT  = new Color(0.95f, 0.90f, 0.80f, 1.00f);  // off-white on buttons
+        static readonly Color COL_TEXT_MAIN = new Color(0.18f, 0.12f, 0.08f, 1.00f);  // dark ink
+        static readonly Color COL_TEXT_SUB  = new Color(0.40f, 0.32f, 0.22f, 1.00f);  // medium ink
+        static readonly Color COL_MONEY     = new Color(0.55f, 0.38f, 0.08f, 1.00f);  // warm gold-brown
+        static readonly Color COL_OWNED     = new Color(0.25f, 0.48f, 0.18f, 1.00f);  // dark olive
+        static readonly Color COL_TAB_ON    = new Color(0.32f, 0.47f, 0.25f, 1.00f);  // olive green
+        static readonly Color COL_TAB_OFF   = new Color(0.62f, 0.55f, 0.44f, 1.00f);  // muted parchment-brown
 
         // ------------------------------------------------------------------ //
 
@@ -194,7 +196,7 @@ namespace Fields.UI
             MakeTMPChild("Text", container.transform, 0, 20, COL_MONEY, TextAlignmentOptions.Right, stretchFill: true);
             var texts = container.GetComponentsInChildren<TextMeshProUGUI>();
             if (texts.Length > 0)
-                texts[0].text = L("shop.balance", M(money));
+                texts[0].text = L("shop.balance", Fmt(money));
         }
 
         // ------------------------------------------------------------------ //
@@ -242,7 +244,7 @@ namespace Fields.UI
                 string detail = owned
                     ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] {L("shop.owned")}</color>"
                     : Fmt(price);
-                string btnLabel = owned ? string.Empty : L("shop.buy", M(price));
+                string btnLabel = owned ? string.Empty : L("shop.buy", Fmt(price));
 
                 var row = AddRow(L(ToolLocKey(data.toolType)), detail, btnLabel, owned ? -1 : price);
                 if (!owned)
@@ -266,7 +268,7 @@ namespace Fields.UI
                 string detail = owned
                     ? $"<color=#{ColorUtility.ToHtmlStringRGB(COL_OWNED)}>[OK] {L("shop.owned")}</color>"
                     : Fmt(price);
-                var row = AddRow(L("shop.roundbaler"), detail, owned ? string.Empty : L("shop.buy", M(price)), owned ? -1 : price);
+                var row = AddRow(L("shop.roundbaler"), detail, owned ? string.Empty : L("shop.buy", Fmt(price)), owned ? -1 : price);
                 if (!owned)
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                     {
@@ -296,7 +298,7 @@ namespace Fields.UI
                 int price    = data.upgradeCosts[level];
                 int nextLevel = level + 1;
                 string detail = $"{stars}  {L("shop.upgrade.stats", level, level + 1, data.speedLevels[nextLevel], data.powerLevels[nextLevel], M(price))}";
-                var row = AddRow($"{L(ToolLocKey(data.toolType))}  {stars}", detail, L("shop.upgrade", M(price)), price);
+                var row = AddRow($"{L(ToolLocKey(data.toolType))}  {stars}", detail, L("shop.upgrade", Fmt(price)), price);
                 int idx = i;
                 row.GetComponentInChildren<Button>()?.onClick.AddListener(() =>
                 {
@@ -318,7 +320,7 @@ namespace Fields.UI
                 {
                     int cost = Fields.Economy.BalerManager.BalerUpgradeCosts[bl];
                     string detail = $"{Stars(bl)}  Lv{bl}→{bl + 1}  {Fmt(cost)}";
-                    var row = AddRow(L("shop.baler"), detail, L("shop.upgrade", M(cost)), cost);
+                    var row = AddRow(L("shop.baler"), detail, L("shop.upgrade", Fmt(cost)), cost);
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); if (bm.TryUpgradeBaler()) ShowTab(1); });
                 }
                 else AddRow(L("shop.baler"), $"{Stars(3)}  {L("shop.maxlevel")}", string.Empty, -1);
@@ -331,7 +333,7 @@ namespace Fields.UI
                     float nextMult = Fields.Economy.BalerManager.HayValueMultipliers[hvl + 1];
                     int cost = Fields.Economy.BalerManager.HayValueCosts[hvl];
                     string detail = $"{Stars(hvl)}  ×{nextMult:0.00}  {Fmt(cost)}";
-                    var row = AddRow(L("shop.hayvalue"), detail, L("shop.upgrade", M(cost)), cost);
+                    var row = AddRow(L("shop.hayvalue"), detail, L("shop.upgrade", Fmt(cost)), cost);
                     row.GetComponentInChildren<Button>()?.onClick.AddListener(() => { Fields.Audio.UISoundManager.Click(); if (bm.TryUpgradeHayValue()) ShowTab(1); });
                 }
                 else AddRow(L("shop.hayvalue"), $"{Stars(3)}  {L("shop.maxlevel")}", string.Empty, -1);
@@ -382,8 +384,8 @@ namespace Fields.UI
             var container = new GameObject("Sep_" + title, typeof(RectTransform), typeof(Image));
             container.transform.SetParent(contentParent, false);
             container.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 28);
-            container.GetComponent<Image>().color = new Color(0.08f, 0.10f, 0.14f, 1f);
-            MakeTMPChild("Text", container.transform, 0, 15, new Color(0.6f, 0.6f, 0.6f),
+            container.GetComponent<Image>().color = new Color(0.70f, 0.60f, 0.45f, 1.00f);
+            MakeTMPChild("Text", container.transform, 0, 15, new Color(0.94f, 0.88f, 0.76f),
                 TextAlignmentOptions.Center, stretchFill: true);
             var texts = container.GetComponentsInChildren<TextMeshProUGUI>();
             if (texts.Length > 0) texts[0].text = $"— {title} —";
@@ -398,7 +400,7 @@ namespace Fields.UI
             tmp.text = message;
             tmp.fontSize = 16;
             tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color = new Color(0.6f, 0.6f, 0.6f);
+            tmp.color = COL_TEXT_SUB;
         }
 
         GameObject BuildDefaultRow()
@@ -427,8 +429,13 @@ namespace Fields.UI
             var btnGO = new GameObject("Btn", typeof(RectTransform), typeof(Image), typeof(Button));
             btnGO.transform.SetParent(row.transform, false);
             btnGO.GetComponent<RectTransform>().sizeDelta = new Vector2(130, 0);
-            btnGO.GetComponent<Image>().color = COL_BTN_BUY;
-            MakeTMPChild("BtnText", btnGO.transform, 130, 17, COL_TEXT_MAIN, TextAlignmentOptions.Center);
+            var btnImg = btnGO.GetComponent<Image>();
+            btnImg.color = COL_BTN_BUY;
+            var tagSprite = UITheme.Instance?.tagLabel;
+            if (tagSprite != null) { btnImg.sprite = tagSprite; btnImg.type = Image.Type.Sliced; }
+            MakeTMPChild("BtnText", btnGO.transform, 130, 17, COL_BTN_TEXT, TextAlignmentOptions.Center);
+            btnGO.AddComponent<Fields.UI.UIHoverScale>();
+            Fields.UI.UIButtonHoverStyle.ApplyToButton(btnGO.GetComponent<Button>());
 
             return row;
         }
