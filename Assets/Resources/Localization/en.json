@@ -1027,6 +1027,102 @@
     {
       "key": "currency.rate",
       "value": "1"
+    },
+    {
+      "key": "hud.wear.label",
+      "value": "Scythe  {0}%"
+    },
+    {
+      "key": "hud.computer",
+      "value": "[E]  Use Computer"
+    },
+    {
+      "key": "hud.throw_or_drop",
+      "value": "[LMB] Throw  [G] Drop"
+    },
+    {
+      "key": "tool.barehand.tooltip",
+      "value": "Empty hand  —  Pick up bales [E] · Drop [G]"
+    },
+    {
+      "key": "tool.longscythe.tooltip",
+      "value": "Long Scythe  —  LMB: sweep arc · Stamina required"
+    },
+    {
+      "key": "tool.stringtrimmer.tooltip",
+      "value": "String Trimmer  —  Hold LMB · Slows in thick grass"
+    },
+    {
+      "key": "tool.pushmower.tooltip",
+      "value": "Push Mower  —  LMB: engine · Wide cut, slower in deep grass"
+    },
+    {
+      "key": "tool.rideon.tooltip",
+      "value": "Ride-On Mower  —  WASD: drive · Cuts automatically while moving"
+    },
+    {
+      "key": "scythe.tooltip.dull",
+      "value": "Blade is dull!  Hold [R] to sharpen."
+    },
+    {
+      "key": "scythe.tooltip.sharpening",
+      "value": "Sharpening...  {0}%"
+    },
+    {
+      "key": "scythe.tooltip.done",
+      "value": "Blade sharpened!"
+    },
+    {
+      "key": "whetstone.hint.noscythe",
+      "value": "[E]  Whetstone  (scythe required)"
+    },
+    {
+      "key": "whetstone.hint.sharp",
+      "value": "[E]  Scythe is sharp"
+    },
+    {
+      "key": "whetstone.hint.worn",
+      "value": "[E]  Sharpen scythe  —  {0}% worn"
+    },
+    {
+      "key": "whetstone.tooltip.noscythe",
+      "value": "Equip a scythe to sharpen it here."
+    },
+    {
+      "key": "whetstone.tooltip.sharp",
+      "value": "The blade is still sharp."
+    },
+    {
+      "key": "journal.sec.session",
+      "value": "Session"
+    },
+    {
+      "key": "journal.sec.player",
+      "value": "Player {0}"
+    },
+    {
+      "key": "journal.sec.player_you",
+      "value": "Player {0}  (You)"
+    },
+    {
+      "key": "journal.sec.your_stats",
+      "value": "Your Stats"
+    },
+    {
+      "key": "journal.label.bales",
+      "value": "Bales made"
+    },
+    {
+      "key": "journal.rec.sec.throw",
+      "value": "THROW RECORDS"
+    },
+    {
+      "key": "journal.rec.label.longestthrow",
+      "value": "Longest throw"
+    },
+    {
+      "key": "journal.rec.label.bestbale",
+      "value": "Best single bale"
     }
   ]
 }

@@ -1007,6 +1007,102 @@
     {
       "key": "currency.rate",
       "value": "7.2"
+    },
+    {
+      "key": "hud.wear.label",
+      "value": "镰刀  {0}%"
+    },
+    {
+      "key": "hud.computer",
+      "value": "[E]  使用电脑"
+    },
+    {
+      "key": "hud.throw_or_drop",
+      "value": "[LMB] 投掷  [G] 丢弃"
+    },
+    {
+      "key": "tool.barehand.tooltip",
+      "value": "空手  —  捡起草捆 [E] · 放下 [G]"
+    },
+    {
+      "key": "tool.longscythe.tooltip",
+      "value": "大镰刀  —  LMB: 弧形割草 · 需要体力"
+    },
+    {
+      "key": "tool.stringtrimmer.tooltip",
+      "value": "割草机  —  按住LMB · 在密草中速度降低"
+    },
+    {
+      "key": "tool.pushmower.tooltip",
+      "value": "手推割草机  —  LMB: 发动机 · 割草宽，深草中速度降低"
+    },
+    {
+      "key": "tool.rideon.tooltip",
+      "value": "骑乘割草机  —  WASD: 驾驶 · 行驶时自动割草"
+    },
+    {
+      "key": "scythe.tooltip.dull",
+      "value": "刀刃变钝！  按住 [R] 磨刀。"
+    },
+    {
+      "key": "scythe.tooltip.sharpening",
+      "value": "磨刀中...  {0}%"
+    },
+    {
+      "key": "scythe.tooltip.done",
+      "value": "刀刃已磨锋利！"
+    },
+    {
+      "key": "whetstone.hint.noscythe",
+      "value": "[E]  磨刀石  (需要镰刀)"
+    },
+    {
+      "key": "whetstone.hint.sharp",
+      "value": "[E]  镰刀仍锋利"
+    },
+    {
+      "key": "whetstone.hint.worn",
+      "value": "[E]  磨镰刀  —  已磨损 {0}%"
+    },
+    {
+      "key": "whetstone.tooltip.noscythe",
+      "value": "装备镰刀以在此磨刀。"
+    },
+    {
+      "key": "whetstone.tooltip.sharp",
+      "value": "刀刃仍然锋利。"
+    },
+    {
+      "key": "journal.sec.session",
+      "value": "本局"
+    },
+    {
+      "key": "journal.sec.player",
+      "value": "玩家 {0}"
+    },
+    {
+      "key": "journal.sec.player_you",
+      "value": "玩家 {0}  (你)"
+    },
+    {
+      "key": "journal.sec.your_stats",
+      "value": "你的统计"
+    },
+    {
+      "key": "journal.label.bales",
+      "value": "制作的草捆"
+    },
+    {
+      "key": "journal.rec.sec.throw",
+      "value": "投掷记录"
+    },
+    {
+      "key": "journal.rec.label.longestthrow",
+      "value": "最远投掷"
+    },
+    {
+      "key": "journal.rec.label.bestbale",
+      "value": "单个草捆最佳收益"
     }
   ]
 }

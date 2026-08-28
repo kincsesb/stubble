@@ -1007,6 +1007,102 @@
     {
       "key": "currency.rate",
       "value": "0.92"
+    },
+    {
+      "key": "hud.wear.label",
+      "value": "Guadaña  {0}%"
+    },
+    {
+      "key": "hud.computer",
+      "value": "[E]  Usar ordenador"
+    },
+    {
+      "key": "hud.throw_or_drop",
+      "value": "[LMB] Lanzar  [G] Soltar"
+    },
+    {
+      "key": "tool.barehand.tooltip",
+      "value": "Manos vacías  —  Recoger pacas [E] · Soltar [G]"
+    },
+    {
+      "key": "tool.longscythe.tooltip",
+      "value": "Guadaña larga  —  LMB: barrido · Se requiere stamina"
+    },
+    {
+      "key": "tool.stringtrimmer.tooltip",
+      "value": "Desbrozadora  —  Mantener LMB · Más lento en hierba densa"
+    },
+    {
+      "key": "tool.pushmower.tooltip",
+      "value": "Cortacésped manual  —  LMB: motor · Corte amplio, más lento en hierba alta"
+    },
+    {
+      "key": "tool.rideon.tooltip",
+      "value": "Cortacésped de asiento  —  WASD: conducir · Corta automáticamente al avanzar"
+    },
+    {
+      "key": "scythe.tooltip.dull",
+      "value": "¡Hoja embotada!  Mantén [R] para afilar."
+    },
+    {
+      "key": "scythe.tooltip.sharpening",
+      "value": "Afilando...  {0}%"
+    },
+    {
+      "key": "scythe.tooltip.done",
+      "value": "¡Hoja afilada!"
+    },
+    {
+      "key": "whetstone.hint.noscythe",
+      "value": "[E]  Piedra de afilar  (se requiere guadaña)"
+    },
+    {
+      "key": "whetstone.hint.sharp",
+      "value": "[E]  Guadaña está afilada"
+    },
+    {
+      "key": "whetstone.hint.worn",
+      "value": "[E]  Afilar guadaña  —  {0}% desgastada"
+    },
+    {
+      "key": "whetstone.tooltip.noscythe",
+      "value": "Equipa una guadaña para afilarla aquí."
+    },
+    {
+      "key": "whetstone.tooltip.sharp",
+      "value": "La hoja todavía está afilada."
+    },
+    {
+      "key": "journal.sec.session",
+      "value": "Sesión"
+    },
+    {
+      "key": "journal.sec.player",
+      "value": "Jugador {0}"
+    },
+    {
+      "key": "journal.sec.player_you",
+      "value": "Jugador {0}  (Tú)"
+    },
+    {
+      "key": "journal.sec.your_stats",
+      "value": "Tus estadísticas"
+    },
+    {
+      "key": "journal.label.bales",
+      "value": "Pacas hechas"
+    },
+    {
+      "key": "journal.rec.sec.throw",
+      "value": "RÉCORDS DE LANZAMIENTO"
+    },
+    {
+      "key": "journal.rec.label.longestthrow",
+      "value": "Lanzamiento más largo"
+    },
+    {
+      "key": "journal.rec.label.bestbale",
+      "value": "Mejor paca individual"
     }
   ]
 }

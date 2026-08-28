@@ -1031,6 +1031,102 @@
     {
       "key": "currency.rate",
       "value": "320"
+    },
+    {
+      "key": "hud.wear.label",
+      "value": "Kasza  {0}%"
+    },
+    {
+      "key": "hud.computer",
+      "value": "[E]  Számítógép használata"
+    },
+    {
+      "key": "hud.throw_or_drop",
+      "value": "[LMB] Dobj  [G] Ejt"
+    },
+    {
+      "key": "tool.barehand.tooltip",
+      "value": "Üres kéz  —  Bálák felvétele [E] · Lerakás [G]"
+    },
+    {
+      "key": "tool.longscythe.tooltip",
+      "value": "Hosszú kasza  —  LMB: ívelt kaszálás · Stamina szükséges"
+    },
+    {
+      "key": "tool.stringtrimmer.tooltip",
+      "value": "Fűkasza  —  Tartsd nyomva az LMB-t · Lassul vastag fűben"
+    },
+    {
+      "key": "tool.pushmower.tooltip",
+      "value": "Tolható fűnyíró  —  LMB: motor · Szélesebb sáv, lassabb mély fűben"
+    },
+    {
+      "key": "tool.rideon.tooltip",
+      "value": "Ülős fűnyíró  —  WASD: vezérlés · Automatikusan vág haladás közben"
+    },
+    {
+      "key": "scythe.tooltip.dull",
+      "value": "Kasza tompa!  Tartsd [R] az élezéshez."
+    },
+    {
+      "key": "scythe.tooltip.sharpening",
+      "value": "Élezés...  {0}%"
+    },
+    {
+      "key": "scythe.tooltip.done",
+      "value": "Kasza megélesítve!"
+    },
+    {
+      "key": "whetstone.hint.noscythe",
+      "value": "[E]  Fenőkő  (kasza szükséges)"
+    },
+    {
+      "key": "whetstone.hint.sharp",
+      "value": "[E]  Kasza éles"
+    },
+    {
+      "key": "whetstone.hint.worn",
+      "value": "[E]  Kasza élezése  —  {0}% kopott"
+    },
+    {
+      "key": "whetstone.tooltip.noscythe",
+      "value": "Csak kaszával élezheted."
+    },
+    {
+      "key": "whetstone.tooltip.sharp",
+      "value": "A kasza még éles."
+    },
+    {
+      "key": "journal.sec.session",
+      "value": "Munkamenet"
+    },
+    {
+      "key": "journal.sec.player",
+      "value": "{0}. játékos"
+    },
+    {
+      "key": "journal.sec.player_you",
+      "value": "{0}. játékos  (Te)"
+    },
+    {
+      "key": "journal.sec.your_stats",
+      "value": "Saját statisztikák"
+    },
+    {
+      "key": "journal.label.bales",
+      "value": "Készített bálák"
+    },
+    {
+      "key": "journal.rec.sec.throw",
+      "value": "DOBÁSI REKORDOK"
+    },
+    {
+      "key": "journal.rec.label.longestthrow",
+      "value": "Leghosszabb dobás"
+    },
+    {
+      "key": "journal.rec.label.bestbale",
+      "value": "Legjobb egy bálával"
     }
   ]
 }

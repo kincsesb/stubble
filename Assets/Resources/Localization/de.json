@@ -1007,6 +1007,102 @@
     {
       "key": "currency.rate",
       "value": "0.92"
+    },
+    {
+      "key": "hud.wear.label",
+      "value": "Sense  {0}%"
+    },
+    {
+      "key": "hud.computer",
+      "value": "[E]  Computer benutzen"
+    },
+    {
+      "key": "hud.throw_or_drop",
+      "value": "[LMB] Werfen  [G] Ablegen"
+    },
+    {
+      "key": "tool.barehand.tooltip",
+      "value": "Leere Hand  —  Ballen aufheben [E] · Ablegen [G]"
+    },
+    {
+      "key": "tool.longscythe.tooltip",
+      "value": "Große Sense  —  LMB: Bogenmahd · Ausdauer erforderlich"
+    },
+    {
+      "key": "tool.stringtrimmer.tooltip",
+      "value": "Freischneider  —  LMB gedrückt halten · Langsamer im dichten Gras"
+    },
+    {
+      "key": "tool.pushmower.tooltip",
+      "value": "Schubmäher  —  LMB: Motor · Breite Spur, langsamer im hohen Gras"
+    },
+    {
+      "key": "tool.rideon.tooltip",
+      "value": "Aufsitzmäher  —  WASD: Fahren · Mäht automatisch beim Fahren"
+    },
+    {
+      "key": "scythe.tooltip.dull",
+      "value": "Klinge stumpf!  [R] halten zum Schärfen."
+    },
+    {
+      "key": "scythe.tooltip.sharpening",
+      "value": "Schärfen...  {0}%"
+    },
+    {
+      "key": "scythe.tooltip.done",
+      "value": "Klinge geschärft!"
+    },
+    {
+      "key": "whetstone.hint.noscythe",
+      "value": "[E]  Schleifstein  (Sense erforderlich)"
+    },
+    {
+      "key": "whetstone.hint.sharp",
+      "value": "[E]  Sense ist scharf"
+    },
+    {
+      "key": "whetstone.hint.worn",
+      "value": "[E]  Sense schärfen  —  {0}% abgenutzt"
+    },
+    {
+      "key": "whetstone.tooltip.noscythe",
+      "value": "Rüste eine Sense aus, um sie hier zu schärfen."
+    },
+    {
+      "key": "whetstone.tooltip.sharp",
+      "value": "Die Klinge ist noch scharf."
+    },
+    {
+      "key": "journal.sec.session",
+      "value": "Sitzung"
+    },
+    {
+      "key": "journal.sec.player",
+      "value": "Spieler {0}"
+    },
+    {
+      "key": "journal.sec.player_you",
+      "value": "Spieler {0}  (Du)"
+    },
+    {
+      "key": "journal.sec.your_stats",
+      "value": "Deine Statistiken"
+    },
+    {
+      "key": "journal.label.bales",
+      "value": "Gemachte Ballen"
+    },
+    {
+      "key": "journal.rec.sec.throw",
+      "value": "WURF-REKORDE"
+    },
+    {
+      "key": "journal.rec.label.longestthrow",
+      "value": "Weitester Wurf"
+    },
+    {
+      "key": "journal.rec.label.bestbale",
+      "value": "Bester Einzelballen"
     }
   ]
 }

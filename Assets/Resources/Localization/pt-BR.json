@@ -1007,6 +1007,102 @@
     {
       "key": "currency.rate",
       "value": "5.7"
+    },
+    {
+      "key": "hud.wear.label",
+      "value": "Foice  {0}%"
+    },
+    {
+      "key": "hud.computer",
+      "value": "[E]  Usar computador"
+    },
+    {
+      "key": "hud.throw_or_drop",
+      "value": "[LMB] Arremessar  [G] Soltar"
+    },
+    {
+      "key": "tool.barehand.tooltip",
+      "value": "Mãos vazias  —  Pegar fardos [E] · Soltar [G]"
+    },
+    {
+      "key": "tool.longscythe.tooltip",
+      "value": "Foice grande  —  LMB: arco de corte · Requer resistência"
+    },
+    {
+      "key": "tool.stringtrimmer.tooltip",
+      "value": "Roçadeira  —  Segure LMB · Mais lento na grama densa"
+    },
+    {
+      "key": "tool.pushmower.tooltip",
+      "value": "Cortador de grama  —  LMB: motor · Corte largo, mais lento na grama alta"
+    },
+    {
+      "key": "tool.rideon.tooltip",
+      "value": "Cortador motorizado  —  WASD: dirigir · Corta automaticamente ao se mover"
+    },
+    {
+      "key": "scythe.tooltip.dull",
+      "value": "Lâmina cega!  Segure [R] para afiar."
+    },
+    {
+      "key": "scythe.tooltip.sharpening",
+      "value": "Afiando...  {0}%"
+    },
+    {
+      "key": "scythe.tooltip.done",
+      "value": "Lâmina afiada!"
+    },
+    {
+      "key": "whetstone.hint.noscythe",
+      "value": "[E]  Pedra de amolar  (requer foice)"
+    },
+    {
+      "key": "whetstone.hint.sharp",
+      "value": "[E]  Foice está afiada"
+    },
+    {
+      "key": "whetstone.hint.worn",
+      "value": "[E]  Afiar foice  —  {0}% desgastada"
+    },
+    {
+      "key": "whetstone.tooltip.noscythe",
+      "value": "Equipe uma foice para afiá-la aqui."
+    },
+    {
+      "key": "whetstone.tooltip.sharp",
+      "value": "A lâmina ainda está afiada."
+    },
+    {
+      "key": "journal.sec.session",
+      "value": "Sessão"
+    },
+    {
+      "key": "journal.sec.player",
+      "value": "Jogador {0}"
+    },
+    {
+      "key": "journal.sec.player_you",
+      "value": "Jogador {0}  (Você)"
+    },
+    {
+      "key": "journal.sec.your_stats",
+      "value": "Suas estatísticas"
+    },
+    {
+      "key": "journal.label.bales",
+      "value": "Fardos feitos"
+    },
+    {
+      "key": "journal.rec.sec.throw",
+      "value": "RECORDES DE ARREMESSO"
+    },
+    {
+      "key": "journal.rec.label.longestthrow",
+      "value": "Arremesso mais longo"
+    },
+    {
+      "key": "journal.rec.label.bestbale",
+      "value": "Melhor fardo individual"
     }
   ]
 }

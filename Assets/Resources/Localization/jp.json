@@ -1007,6 +1007,102 @@
     {
       "key": "currency.rate",
       "value": "150"
+    },
+    {
+      "key": "hud.wear.label",
+      "value": "鎌  {0}%"
+    },
+    {
+      "key": "hud.computer",
+      "value": "[E]  コンピューターを使う"
+    },
+    {
+      "key": "hud.throw_or_drop",
+      "value": "[LMB] 投げる  [G] 落とす"
+    },
+    {
+      "key": "tool.barehand.tooltip",
+      "value": "素手  —  草の俵を拾う [E] · 落とす [G]"
+    },
+    {
+      "key": "tool.longscythe.tooltip",
+      "value": "大鎌  —  LMB: 弧を描いて草刈り · スタミナ必要"
+    },
+    {
+      "key": "tool.stringtrimmer.tooltip",
+      "value": "草刈り機  —  LMBを長押し · 深い草では速度低下"
+    },
+    {
+      "key": "tool.pushmower.tooltip",
+      "value": "手押し芝刈り機  —  LMB: エンジン · 広い刈り幅、深い草では速度低下"
+    },
+    {
+      "key": "tool.rideon.tooltip",
+      "value": "乗用芝刈り機  —  WASD: 運転 · 走行中に自動で刈る"
+    },
+    {
+      "key": "scythe.tooltip.dull",
+      "value": "刃が鈍い！  [R]を押し続けて研ぐ。"
+    },
+    {
+      "key": "scythe.tooltip.sharpening",
+      "value": "研いでいます...  {0}%"
+    },
+    {
+      "key": "scythe.tooltip.done",
+      "value": "刃を研ぎました！"
+    },
+    {
+      "key": "whetstone.hint.noscythe",
+      "value": "[E]  砥石  (鎌が必要)"
+    },
+    {
+      "key": "whetstone.hint.sharp",
+      "value": "[E]  鎌は鋭い"
+    },
+    {
+      "key": "whetstone.hint.worn",
+      "value": "[E]  鎌を研ぐ  —  {0}%摩耗"
+    },
+    {
+      "key": "whetstone.tooltip.noscythe",
+      "value": "ここで研ぐには鎌を装備してください。"
+    },
+    {
+      "key": "whetstone.tooltip.sharp",
+      "value": "刃はまだ鋭い。"
+    },
+    {
+      "key": "journal.sec.session",
+      "value": "セッション"
+    },
+    {
+      "key": "journal.sec.player",
+      "value": "プレイヤー{0}"
+    },
+    {
+      "key": "journal.sec.player_you",
+      "value": "プレイヤー{0}  (あなた)"
+    },
+    {
+      "key": "journal.sec.your_stats",
+      "value": "あなたの統計"
+    },
+    {
+      "key": "journal.label.bales",
+      "value": "作った俵"
+    },
+    {
+      "key": "journal.rec.sec.throw",
+      "value": "投擲記録"
+    },
+    {
+      "key": "journal.rec.label.longestthrow",
+      "value": "最長投擲"
+    },
+    {
+      "key": "journal.rec.label.bestbale",
+      "value": "1俵の最高収益"
     }
   ]
 }

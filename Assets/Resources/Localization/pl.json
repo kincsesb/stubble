@@ -1007,6 +1007,102 @@
     {
       "key": "currency.rate",
       "value": "4.0"
+    },
+    {
+      "key": "hud.wear.label",
+      "value": "Kosa  {0}%"
+    },
+    {
+      "key": "hud.computer",
+      "value": "[E]  Użyj komputera"
+    },
+    {
+      "key": "hud.throw_or_drop",
+      "value": "[LMB] Rzuć  [G] Upuść"
+    },
+    {
+      "key": "tool.barehand.tooltip",
+      "value": "Puste ręce  —  Podnieś balę [E] · Połóż [G]"
+    },
+    {
+      "key": "tool.longscythe.tooltip",
+      "value": "Wielka kosa  —  LMB: zamach łukowy · Wymaga wytrzymałości"
+    },
+    {
+      "key": "tool.stringtrimmer.tooltip",
+      "value": "Kosiarka strumieniowa  —  Przytrzymaj LMB · Wolniej w gęstej trawie"
+    },
+    {
+      "key": "tool.pushmower.tooltip",
+      "value": "Kosiarka ręczna  —  LMB: silnik · Szersze koszenie, wolniej w wysokiej trawie"
+    },
+    {
+      "key": "tool.rideon.tooltip",
+      "value": "Kosiarka jeździecka  —  WASD: jazda · Automatycznie kosi podczas jazdy"
+    },
+    {
+      "key": "scythe.tooltip.dull",
+      "value": "Ostrze tępe!  Przytrzymaj [R], aby naostrzyć."
+    },
+    {
+      "key": "scythe.tooltip.sharpening",
+      "value": "Ostrzenie...  {0}%"
+    },
+    {
+      "key": "scythe.tooltip.done",
+      "value": "Ostrze naostrzone!"
+    },
+    {
+      "key": "whetstone.hint.noscythe",
+      "value": "[E]  Osełka  (potrzebna kosa)"
+    },
+    {
+      "key": "whetstone.hint.sharp",
+      "value": "[E]  Kosa jest ostra"
+    },
+    {
+      "key": "whetstone.hint.worn",
+      "value": "[E]  Naostrzenie kosy  —  {0}% zużyta"
+    },
+    {
+      "key": "whetstone.tooltip.noscythe",
+      "value": "Wyposażyj kosę, aby ją tu naostrzyć."
+    },
+    {
+      "key": "whetstone.tooltip.sharp",
+      "value": "Ostrze jest jeszcze ostre."
+    },
+    {
+      "key": "journal.sec.session",
+      "value": "Sesja"
+    },
+    {
+      "key": "journal.sec.player",
+      "value": "Gracz {0}"
+    },
+    {
+      "key": "journal.sec.player_you",
+      "value": "Gracz {0}  (Ty)"
+    },
+    {
+      "key": "journal.sec.your_stats",
+      "value": "Twoje statystyki"
+    },
+    {
+      "key": "journal.label.bales",
+      "value": "Zrobione bele"
+    },
+    {
+      "key": "journal.rec.sec.throw",
+      "value": "REKORDY RZUTÓW"
+    },
+    {
+      "key": "journal.rec.label.longestthrow",
+      "value": "Najdalszy rzut"
+    },
+    {
+      "key": "journal.rec.label.bestbale",
+      "value": "Najlepsza pojedyncza bela"
     }
   ]
 }

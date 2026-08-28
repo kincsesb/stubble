@@ -1007,6 +1007,102 @@
     {
       "key": "currency.rate",
       "value": "90"
+    },
+    {
+      "key": "hud.wear.label",
+      "value": "Коса  {0}%"
+    },
+    {
+      "key": "hud.computer",
+      "value": "[E]  Использовать компьютер"
+    },
+    {
+      "key": "hud.throw_or_drop",
+      "value": "[LMB] Бросить  [G] Выбросить"
+    },
+    {
+      "key": "tool.barehand.tooltip",
+      "value": "Пустые руки  —  Поднять тюк [E] · Бросить [G]"
+    },
+    {
+      "key": "tool.longscythe.tooltip",
+      "value": "Большая коса  —  LMB: дуговой взмах · Требует выносливости"
+    },
+    {
+      "key": "tool.stringtrimmer.tooltip",
+      "value": "Триммер  —  Удерживай LMB · Медленнее в густой траве"
+    },
+    {
+      "key": "tool.pushmower.tooltip",
+      "value": "Газонокосилка  —  LMB: двигатель · Широкая полоса, медленнее в высокой траве"
+    },
+    {
+      "key": "tool.rideon.tooltip",
+      "value": "Мотокосилка  —  WASD: езда · Автоматически косит при движении"
+    },
+    {
+      "key": "scythe.tooltip.dull",
+      "value": "Лезвие тупое!  Удерживай [R] для заточки."
+    },
+    {
+      "key": "scythe.tooltip.sharpening",
+      "value": "Заточка...  {0}%"
+    },
+    {
+      "key": "scythe.tooltip.done",
+      "value": "Лезвие заточено!"
+    },
+    {
+      "key": "whetstone.hint.noscythe",
+      "value": "[E]  Точило  (нужна коса)"
+    },
+    {
+      "key": "whetstone.hint.sharp",
+      "value": "[E]  Коса острая"
+    },
+    {
+      "key": "whetstone.hint.worn",
+      "value": "[E]  Заточить косу  —  изношена на {0}%"
+    },
+    {
+      "key": "whetstone.tooltip.noscythe",
+      "value": "Возьми косу, чтобы заточить её здесь."
+    },
+    {
+      "key": "whetstone.tooltip.sharp",
+      "value": "Лезвие ещё острое."
+    },
+    {
+      "key": "journal.sec.session",
+      "value": "Сессия"
+    },
+    {
+      "key": "journal.sec.player",
+      "value": "Игрок {0}"
+    },
+    {
+      "key": "journal.sec.player_you",
+      "value": "Игрок {0}  (Вы)"
+    },
+    {
+      "key": "journal.sec.your_stats",
+      "value": "Ваша статистика"
+    },
+    {
+      "key": "journal.label.bales",
+      "value": "Сделано тюков"
+    },
+    {
+      "key": "journal.rec.sec.throw",
+      "value": "РЕКОРДЫ БРОСКОВ"
+    },
+    {
+      "key": "journal.rec.label.longestthrow",
+      "value": "Самый дальний бросок"
+    },
+    {
+      "key": "journal.rec.label.bestbale",
+      "value": "Лучший единичный тюк"
     }
   ]
 }
