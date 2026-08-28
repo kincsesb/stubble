@@ -53,6 +53,12 @@ namespace Fields.Core
         [Tooltip("Bale prefab used when the round baler upgrade is owned (4× value). Falls back to squareBalePrefab if unassigned.")]
         public GameObject roundBalePrefab;
 
+        [Header("Throw")]
+        [Tooltip("Launch speed of a thrown square bale (m/s)")]
+        public float throwForce = 32f;
+        [Tooltip("Display name shown on the throw billboard")]
+        public string playerDisplayName = "Player 1";
+
         [Header("Haptics")]
         [Tooltip("Duration of swing impact rumble in seconds")]
         public float hapticSwingDuration = 0.12f;
@@ -226,6 +232,24 @@ namespace Fields.Core
         public void OnDrop(InputValue value)
         {
             if (!InputLocked && value.isPressed && _carriedSquareBales.Count > 0) DropSquareBales();
+        }
+
+        public void OnUsePrimary(InputValue value)
+        {
+            if (InputLocked || !value.isPressed) return;
+            if (_carriedSquareBales.Count != 1) return;
+            ThrowBale();
+        }
+
+        void ThrowBale()
+        {
+            var bale = _carriedSquareBales[0];
+            _carriedSquareBales.Clear();
+
+            var throwDir = cameraRoot != null ? cameraRoot.forward : transform.forward;
+            bale.OnThrow(transform.position, playerDisplayName, throwDir * throwForce);
+
+            Fields.Feel.GameFeelController.Instance?.StartShake(0.12f, 0.022f, 18f);
         }
 
         // ------------------------------------------------------------------ //
@@ -694,7 +718,8 @@ namespace Fields.Core
                     return CarriedBaleCount < 3 ? L("hud.pickup_bale") : L("hud.carry_full");
             }
 
-            if (CarriedBaleCount > 0) return L("hud.drop_bales");
+            if (CarriedBaleCount == 1) return "[LMB] Dobj  [G] Ejt";
+            if (CarriedBaleCount > 1) return L("hud.drop_bales");
             return string.Empty;
         }
 

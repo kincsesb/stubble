@@ -112,6 +112,10 @@ namespace Fields.UI
             var ui = UIManager.Instance;
             if (ui == null || journalScreen == null) return;
 
+            // Guard: Journal is only available during active gameplay, not from the main menu.
+            var pc = Fields.Core.PlayerController.Instance;
+            if (pc == null || !pc.gameObject.activeInHierarchy) return;
+
             if (ui.IsTopmost(journalScreen))
             {
                 ui.Pop();

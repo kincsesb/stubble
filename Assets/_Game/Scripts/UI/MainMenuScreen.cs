@@ -42,6 +42,8 @@ namespace Fields.UI
         [Tooltip("Player GO — hidden while the menu is open, enabled on game start.")]
         public GameObject playerRoot;
 
+        public override bool IsEscapable => false;
+
         protected override void Awake()
         {
             base.Awake();

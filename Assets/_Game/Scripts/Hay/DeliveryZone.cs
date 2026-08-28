@@ -28,6 +28,14 @@ namespace Fields.Hay
         [Tooltip("Optional particle effect played on each sale")]
         public ParticleSystem saleEffect;
 
+        [Header("Throw Billboard")]
+        [Tooltip("ThrowedBaleBillboard component on the scene billboard object")]
+        public ThrowedBaleBillboard throwBillboard;
+
+        [Header("Throw bonus pricing")]
+        [Tooltip("Extra price multiplier per meter of throw distance. E.g. 0.05 = +5% per meter, so 8m gives 1.40× base price.")]
+        public float throwBonusPerMeter = 0.05f;
+
         LineRenderer _ring;
         float _pulseTimer;
 
@@ -119,7 +127,15 @@ namespace Fields.Hay
                 return;
             }
 
-            // Square bales carried by player
+            // Thrown square bale arriving on its own (not carried)
+            var squareBale = other.GetComponentInParent<SquareBale>();
+            if (squareBale != null && !squareBale.IsCarried)
+            {
+                SellThrownBale(squareBale);
+                return;
+            }
+
+            // Square bales carried by player walking in
             var player = other.GetComponentInParent<PlayerController>();
             if (player == null) return;
 
@@ -129,18 +145,41 @@ namespace Fields.Hay
             int total = CalcTotal(bales.Count);
             CurrencyManager.Instance?.Earn(total);
             Fields.UI.HUDController.Instance?.TriggerSellFeel(total);
+
+            string delivererName = player.playerDisplayName;
             player.DropSquareBales();
 
-            // Destroy the dropped bales immediately — they were just sold
+            // Destroy the dropped bales immediately — they were just sold.
+            // Skip thrown bales: those are in flight and will be handled by their own trigger.
             var dropped = Object.FindObjectsByType<SquareBale>(FindObjectsSortMode.None);
             foreach (var b in dropped)
             {
+                if (b.WasThrown) continue;
                 float dist = Vector3.Distance(b.transform.position, transform.position);
                 if (dist < 10f) Object.Destroy(b.gameObject);
             }
 
             if (saleEffect != null) saleEffect.Play();
+            throwBillboard?.ReportDelivery(delivererName, 0f);
             Debug.Log($"[DeliveryZone] Sold {bales.Count} square bale(s) for ${total}");
+        }
+
+        void SellThrownBale(SquareBale bale)
+        {
+            float dist = bale.WasThrown
+                ? Vector3.Distance(bale.ThrowOrigin, bale.transform.position)
+                : 0f;
+            string name = bale.WasThrown ? bale.ThrowerName : "?";
+
+            int earned = CalcTotalWithThrowBonus(1, dist);
+            CurrencyManager.Instance?.Earn(earned);
+            Fields.UI.HUDController.Instance?.TriggerSellFeel(earned);
+            if (saleEffect != null) saleEffect.Play();
+
+            throwBillboard?.ReportDelivery(name, dist);
+
+            Debug.Log($"[DeliveryZone] Sold thrown bale for ${earned} ({dist:F1}m by {name})");
+            Object.Destroy(bale.gameObject);
         }
 
         void SellRoundBale(RoundBale bale)
@@ -159,6 +198,14 @@ namespace Fields.Hay
             var bm = Fields.Economy.BalerManager.Instance;
             float mult = bm != null ? bm.HayValueMultiplier : 1f;
             return Mathf.RoundToInt(pricePerBale * baleCount * mult);
+        }
+
+        int CalcTotalWithThrowBonus(int baleCount, float throwDistance)
+        {
+            var bm = Fields.Economy.BalerManager.Instance;
+            float mult = bm != null ? bm.HayValueMultiplier : 1f;
+            float throwMult = 1f + throwDistance * throwBonusPerMeter;
+            return Mathf.RoundToInt(pricePerBale * baleCount * mult * throwMult);
         }
 
         int CalcRoundBaleTotal()

@@ -58,6 +58,11 @@ namespace Fields.UI
             // We only open the pause menu when the stack is empty.
             if (UIManager.Instance.HasAnyOpen) return;
 
+            // Guard: only open pause when the game is actually running.
+            // PlayerController.Instance is null while the player root is inactive (main menu).
+            var pc = Fields.Core.PlayerController.Instance;
+            if (pc == null || !pc.gameObject.activeInHierarchy) return;
+
             UIManager.Instance.Push(pauseScreen);
         }
     }

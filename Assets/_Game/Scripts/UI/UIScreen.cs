@@ -19,6 +19,12 @@ namespace Fields.UI
         CanvasGroup  _group;
         GameObject   _savedFocus;
 
+        /// <summary>
+        /// When false, the ESC/Back button will NOT close this screen.
+        /// Override to false on root screens like MainMenuScreen.
+        /// </summary>
+        public virtual bool IsEscapable => true;
+
         // ------------------------------------------------------------------ //
         // Unity lifecycle
         // ------------------------------------------------------------------ //

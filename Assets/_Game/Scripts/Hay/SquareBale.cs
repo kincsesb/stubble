@@ -26,6 +26,17 @@ namespace Fields.Hay
         [Tooltip("Stack index when player holds multiple (0 = bottom)")]
         public int stackIndex;
 
+        [Header("Throw Physics")]
+        [Tooltip("Tumble spin speed in radians/s when thrown — end-over-end rotation")]
+        public float throwAngularSpeed   = 7f;
+        [Tooltip("Bounciness of the bale after throw (0 = no bounce, 1 = full bounce)")]
+        [Range(0f, 1f)]
+        public float throwBounciness     = 0.35f;
+        [Tooltip("Linear damping after throw (lower = slides/rolls farther)")]
+        public float throwLinearDamping  = 0.2f;
+        [Tooltip("Angular damping after throw (lower = spins longer)")]
+        public float throwAngularDamping = 1.0f;
+
         [Header("Carry offsets")]
         [Tooltip("Forward distance from player root when carried")]
         public float carryForward   = 0.70f;
@@ -42,6 +53,17 @@ namespace Fields.Hay
 
         Rigidbody _rb;
         bool _isCarried;
+
+        static PhysicsMaterial _throwMat;
+
+        // Throw metadata
+        bool    _wasThrown;
+        Vector3 _throwOrigin;
+        string  _throwerName;
+
+        public bool    WasThrown    => _wasThrown;
+        public Vector3 ThrowOrigin  => _throwOrigin;
+        public string  ThrowerName  => _throwerName;
 
         // ── Outline (highlight nearest interactable bale) ───────────────── //
         GameObject   _outlineGO;
@@ -127,6 +149,46 @@ namespace Fields.Hay
             transform.position = worldPosition;
             _rb.isKinematic = false;
             GetComponent<Collider>().enabled = true;
+        }
+
+        public void OnThrow(Vector3 origin, string throwerName, Vector3 velocity)
+        {
+            _wasThrown   = true;
+            _throwOrigin = origin;
+            _throwerName = throwerName;
+
+            _isCarried = false;
+            transform.SetParent(null);
+            _rb.isKinematic = false;
+
+            var col = GetComponent<Collider>();
+            col.enabled = true;
+
+            // Bouncy physics material so the bale rolls and bounces on landing.
+            // Cached as a static to avoid allocating a new material on every throw.
+            if (_throwMat == null)
+            {
+                _throwMat = new PhysicsMaterial("BaleThrow")
+                {
+                    bounciness      = throwBounciness,
+                    dynamicFriction = 0.25f,
+                    staticFriction  = 0.3f,
+                    frictionCombine = PhysicsMaterialCombine.Minimum,
+                    bounceCombine   = PhysicsMaterialCombine.Maximum
+                };
+            }
+            col.sharedMaterial = _throwMat;
+
+            // Low drag so it keeps momentum and rolls out after landing.
+            _rb.linearDamping  = throwLinearDamping;
+            _rb.angularDamping = throwAngularDamping;
+
+            _rb.linearVelocity = velocity;
+
+            // Tumbling spin: end-over-end around the lateral axis of the throw direction.
+            var spinAxis = Vector3.Cross(velocity.normalized, Vector3.up);
+            if (spinAxis.sqrMagnitude < 0.01f) spinAxis = Vector3.right;
+            _rb.angularVelocity = spinAxis.normalized * throwAngularSpeed;
         }
 
         // ------------------------------------------------------------------ //

@@ -85,9 +85,9 @@ namespace Fields.UI
                     return;
                 }
 
-                if (_stack.Count > 0)
+                if (_stack.Count > 0 && _stack.Peek().IsEscapable)
                     Pop();
-                else if (cancelOrPause && pauseScreen != null)
+                else if (cancelOrPause && pauseScreen != null && IsGameRunning())
                     Push(pauseScreen);
             }
         }
@@ -170,6 +170,12 @@ namespace Fields.UI
             bool uiOpen = _stack.Count > 0;
             Cursor.lockState = uiOpen ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible   = uiOpen;
+        }
+
+        static bool IsGameRunning()
+        {
+            var pc = Fields.Core.PlayerController.Instance;
+            return pc != null && pc.gameObject.activeInHierarchy;
         }
     }
 }
