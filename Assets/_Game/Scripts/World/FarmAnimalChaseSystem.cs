@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Fields.Core;
 
 public class FarmAnimalChaseSystem : MonoBehaviour
 {
@@ -95,6 +96,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     AudioSource _afterAttackSrc;
     AudioSource _catAttackSrc;
     float _purrTimer = -1f; // seconds remaining; -1 = inactive
+    Transform _crateTransform;
 
     // ---------------------------------------------------------------------------
     // Lifecycle
@@ -116,6 +118,8 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         SpreadAngles();
         TriggerPhase(0);
         SetupAudio();
+        var crateGo = GameObject.Find("Props_CrateOpen");
+        if (crateGo != null) _crateTransform = crateGo.transform;
     }
 
     void AutoLocateSilos()
@@ -153,7 +157,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
         _catAttackSrc = gameObject.AddComponent<AudioSource>();
         _catAttackSrc.spatialBlend = 0f;
-        _catAttackSrc.volume       = sfxVolume * 3f;
+        _catAttackSrc.volume       = sfxVolume * 0.9f;
     }
 
     static GameObject FindAnimatedRoot(string name)
@@ -385,7 +389,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
             if (_chkRunSfxTimer <= 0f)
             {
                 var chk = runChickens[0];
-                PlayOneShotPitched(sfxChickenRunning, Random.Range(0.95f, 1.05f), 1.2f,
+                PlayOneShotPitched(sfxChickenRunning, Random.Range(0.95f, 1.05f), 0.36f,
                                    chk.go != null ? chk.go.transform.position : (Vector3?)null,
                                    spatialBlend: 1f, maxDist: 40f, minDist: 1f);
                 _chkRunSfxTimer = sfxChickenRunning.length * 0.85f;
@@ -401,6 +405,14 @@ public class FarmAnimalChaseSystem : MonoBehaviour
     {
         var cam = Camera.main;
         if (cam == null) return false;
+
+        if (_crateTransform != null)
+        {
+            var pc = PlayerController.Instance;
+            if (pc == null) return false;
+            if (Vector3.Distance(pc.transform.position, _crateTransform.position) > 3f) return false;
+        }
+
         var planes  = GeometryUtility.CalculateFrustumPlanes(cam);
         bool catSeen = false, chickenSeen = false;
         foreach (var a in _all)
@@ -487,7 +499,7 @@ public class FarmAnimalChaseSystem : MonoBehaviour
                 _chickenAttackedSrc = go.AddComponent<AudioSource>();
                 _chickenAttackedSrc.clip         = sfxChickenAttacked;
                 _chickenAttackedSrc.pitch         = 1.35f;
-                _chickenAttackedSrc.volume        = sfxVolume * 3f * 0.35f;
+                _chickenAttackedSrc.volume        = sfxVolume * 3f * 0.105f;
                 _chickenAttackedSrc.spatialBlend  = 0f;
                 _chickenAttackedSrc.Play();
                 Destroy(go, sfxChickenAttacked.length / 1.35f + 0.2f);
