@@ -403,26 +403,11 @@ public class FarmAnimalChaseSystem : MonoBehaviour
 
     bool AreBothAnimalsVisible()
     {
-        var cam = Camera.main;
-        if (cam == null) return false;
-
-        if (_crateTransform != null)
-        {
-            var pc = PlayerController.Instance;
-            if (pc == null) return false;
-            if (Vector3.Distance(pc.transform.position, _crateTransform.position) > 3f) return false;
-        }
-
-        var planes  = GeometryUtility.CalculateFrustumPlanes(cam);
-        bool catSeen = false, chickenSeen = false;
-        foreach (var a in _all)
-        {
-            if (a.go == null) continue;
-            if (!GeometryUtility.TestPlanesAABB(planes, new Bounds(a.go.transform.position, Vector3.one * 3f))) continue;
-            if (a.isChicken) chickenSeen = true;
-            else             catSeen     = true;
-        }
-        return catSeen && chickenSeen;
+        if (_crateTransform == null) return false;
+        var pc = PlayerController.Instance;
+        if (pc == null) return false;
+        if (Vector3.Distance(pc.transform.position, _crateTransform.position) > 3f) return false;
+        return Cats().Count > 0 && Chickens().Count > 0;
     }
 
     void TriggerCapture()
