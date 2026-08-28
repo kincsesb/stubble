@@ -257,6 +257,20 @@ namespace Fields.Core
             { "journal.rec.streak",        "Longest Streak" },
             { "journal.rec.fullgame",      "Full Game Completion" },
 
+            // Journal records section headers (dynamic content)
+            { "journal.rec.sec.parcels",         "Fastest Parcels" },
+            { "journal.rec.sec.session",         "All-Time Records" },
+            { "journal.rec.sec.fullgame",        "Full Game" },
+            { "journal.rec.sec.throw",           "Throw Records" },
+
+            // Journal records row labels (dynamic content)
+            { "journal.rec.label.largest",       "Largest Area" },
+            { "journal.rec.label.bales",         "Most Bales Delivered" },
+            { "journal.rec.label.streak",        "Longest Streak" },
+            { "journal.rec.label.time",          "Best Time" },
+            { "journal.rec.label.longestthrow",  "Longest Throw" },
+            { "journal.rec.label.bestbale",      "Best Single Bale" },
+
             // Settings display labels
             { "settings.display.fov",      "Field of View" },
             { "settings.display.wm",       "Window Mode" },

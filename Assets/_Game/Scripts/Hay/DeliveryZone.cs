@@ -161,6 +161,8 @@ namespace Fields.Hay
 
             if (saleEffect != null) saleEffect.Play();
             throwBillboard?.ReportDelivery(delivererName, 0f);
+            if (bales.Count == 1)
+                Fields.Core.RecordsManager.Instance?.ReportSingleBaleEarning(total);
             Debug.Log($"[DeliveryZone] Sold {bales.Count} square bale(s) for ${total}");
         }
 
@@ -177,6 +179,8 @@ namespace Fields.Hay
             if (saleEffect != null) saleEffect.Play();
 
             throwBillboard?.ReportDelivery(name, dist);
+            Fields.Core.RecordsManager.Instance?.ReportThrowDelivery(name, dist);
+            Fields.Core.RecordsManager.Instance?.ReportSingleBaleEarning(earned);
 
             Debug.Log($"[DeliveryZone] Sold thrown bale for ${earned} ({dist:F1}m by {name})");
             Object.Destroy(bale.gameObject);
@@ -188,6 +192,7 @@ namespace Fields.Hay
             CurrencyManager.Instance?.Earn(earned);
             Fields.UI.HUDController.Instance?.TriggerSellFeel(earned);
             if (saleEffect != null) saleEffect.Play();
+            Fields.Core.RecordsManager.Instance?.ReportSingleBaleEarning(earned);
             Debug.Log($"[DeliveryZone] Sold round bale for ${earned}");
             bale.StopPush();
             Object.Destroy(bale.gameObject);

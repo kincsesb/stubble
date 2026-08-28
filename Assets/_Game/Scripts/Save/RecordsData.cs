@@ -24,5 +24,13 @@ namespace Fields.Save
 
         // Total time from first cell cut to 4th parcel completion. -1 = not yet achieved.
         public float fullGameCompletionSeconds = -1f;
+
+        // Longest square bale throw distance (meters). -1 = not yet achieved.
+        public float longestThrowMeters = -1f;
+        // Player name that set the throw record.
+        public string longestThrowPlayerName = "";
+
+        // Highest money earned in a single bale delivery (square thrown, round bale, or 1-bale carry).
+        public int bestSingleBaleEarnings;
     }
 }

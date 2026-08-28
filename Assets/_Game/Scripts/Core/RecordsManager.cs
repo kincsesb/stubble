@@ -123,6 +123,29 @@ namespace Fields.Core
         // Public — called from game-start flow
         // ================================================================== //
 
+        /// <summary>
+        /// Called by DeliveryZone when a thrown bale is sold.
+        /// Updates the longest throw record if distance exceeds the current best.
+        /// </summary>
+        public void ReportThrowDelivery(string playerName, float distanceM)
+        {
+            if (distanceM <= 0f || distanceM <= Data.longestThrowMeters) return;
+            Data.longestThrowMeters    = distanceM;
+            Data.longestThrowPlayerName = playerName;
+            MarkDirty();
+        }
+
+        /// <summary>
+        /// Called by DeliveryZone for any single-bale sale (thrown, round, or 1-bale carry).
+        /// Updates the best single bale earnings record.
+        /// </summary>
+        public void ReportSingleBaleEarning(int amount)
+        {
+            if (amount <= Data.bestSingleBaleEarnings) return;
+            Data.bestSingleBaleEarnings = amount;
+            MarkDirty();
+        }
+
         /// <summary>Reset session-only counters when a new game or Continue starts.</summary>
         public void ResetSessionState()
         {

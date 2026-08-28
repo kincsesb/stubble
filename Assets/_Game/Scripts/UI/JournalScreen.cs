@@ -265,6 +265,21 @@ namespace Fields.UI
             AddSectionHeader(recordsContent, Loc("journal.rec.sec.fullgame"));
             float fg = rec?.fullGameCompletionSeconds ?? -1f;
             AddStatRow(recordsContent, Loc("journal.rec.label.time"), fg >= 0f ? FormatTime(fg) : "--");
+
+            AddSectionHeader(recordsContent, Loc("journal.rec.sec.throw"));
+
+            float throwM = rec?.longestThrowMeters ?? -1f;
+            string throwVal = throwM >= 0f
+                ? $"{(string.IsNullOrEmpty(rec.longestThrowPlayerName) ? "?" : rec.longestThrowPlayerName)}  —  {Mathf.RoundToInt(throwM)}m"
+                : "--";
+            AddStatRow(recordsContent, Loc("journal.rec.label.longestthrow"), throwVal);
+
+            int bestBale = rec?.bestSingleBaleEarnings ?? 0;
+            var moneyLoc = Fields.Core.LocalizationManager.Instance;
+            string bestBaleVal = bestBale > 0
+                ? (moneyLoc != null ? moneyLoc.FormatMoney(bestBale) : $"${bestBale}")
+                : "--";
+            AddStatRow(recordsContent, Loc("journal.rec.label.bestbale"), bestBaleVal);
         }
 
         static string FormatParcelTime(float seconds) =>
