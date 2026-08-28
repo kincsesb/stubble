@@ -8,6 +8,8 @@ namespace Fields.Tools
     public class BareHand : BaseTool
     {
         public override void OnUsePrimary(bool pressed) { }
-        public override string ToolTip => "Üres kéz  —  Bálák felvétele [E] · Lerakás [G]";
+        public override string ToolTip =>
+            Fields.Core.LocalizationManager.Instance?.Get("tool.barehand.tooltip")
+            ?? "Empty hand  —  Pick up bales [E] · Drop [G]";
     }
 }

@@ -363,7 +363,9 @@ namespace Fields.UI
             }
 
             if (wearBarLabel != null)
-                wearBarLabel.text = $"Kasza  {Mathf.RoundToInt(sharpness * 100)}%";
+                wearBarLabel.text = Fields.Core.LocalizationManager.Instance != null
+                    ? Fields.Core.LocalizationManager.Instance.Get("hud.wear.label", Mathf.RoundToInt(sharpness * 100))
+                    : $"Scythe  {Mathf.RoundToInt(sharpness * 100)}%";
         }
 
         void OnDestroy()

@@ -49,9 +49,11 @@ namespace Fields.UI
                 if (p == null) continue;
 
                 bool isLocal = ss.LocalPlayerId == i;
+                var loc = LocalizationManager.Instance;
                 string header = multi
-                    ? (isLocal ? L("journal.sec.player_you", $"Player {i + 1}  (You)")
-                               : L("journal.sec.player",     $"Player {i + 1}"))
+                    ? (isLocal
+                        ? (loc?.Get("journal.sec.player_you", i + 1) ?? $"Player {i + 1}  (You)")
+                        : (loc?.Get("journal.sec.player",     i + 1) ?? $"Player {i + 1}"))
                     : L("journal.sec.your_stats", "Your Stats");
 
                 AddHeader(container, header, isLocal ? new Color(0.32f, 0.47f, 0.25f) : new Color(0.25f, 0.40f, 0.60f));

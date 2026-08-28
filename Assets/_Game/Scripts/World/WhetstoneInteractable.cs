@@ -29,9 +29,9 @@ namespace Fields.World
         public string GetHint(PlayerController player)
         {
             var scythe = GetEquippedScythe(player);
-            if (scythe == null)          return "[E]  Fenőkő  (kasza szükséges)";
-            if (scythe.WearNormalized < 0.05f) return "[E]  Kasza éles";
-            return $"[E]  Kasza élezése  —  {Mathf.RoundToInt(scythe.WearNormalized * 100)}% kopott";
+            if (scythe == null)               return Loc("whetstone.hint.noscythe");
+            if (scythe.WearNormalized < 0.05f) return Loc("whetstone.hint.sharp");
+            return Loc("whetstone.hint.worn", Mathf.RoundToInt(scythe.WearNormalized * 100));
         }
 
         // ------------------------------------------------------------------ //
@@ -45,18 +45,25 @@ namespace Fields.World
             var scythe = GetEquippedScythe(player);
             if (scythe == null)
             {
-                HUDController.Instance?.ShowToolTip("Csak kaszával élezhetod.", 2f);
+                HUDController.Instance?.ShowToolTip(Loc("whetstone.tooltip.noscythe"), 2f);
                 return;
             }
             if (scythe.WearNormalized < 0.05f)
             {
-                HUDController.Instance?.ShowToolTip("A kasza még éles.", 1.5f);
+                HUDController.Instance?.ShowToolTip(Loc("whetstone.tooltip.sharp"), 1.5f);
                 return;
             }
             StartCoroutine(SharpenRoutine(scythe));
         }
 
         // ------------------------------------------------------------------ //
+
+        static string Loc(string key, object arg = null)
+        {
+            var loc = Fields.Core.LocalizationManager.Instance;
+            string raw = loc != null ? loc.Get(key) : key;
+            return arg != null ? raw.Replace("{0}", arg.ToString()) : raw;
+        }
 
         LongScythe GetEquippedScythe(PlayerController player)
         {
@@ -87,14 +94,14 @@ namespace Fields.World
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / sharpenDuration);
                 scythe.SetWear(Mathf.Lerp(startWear, 0f, t));
-                HUDController.Instance?.ShowToolTip($"Élezés...  {Mathf.RoundToInt(t * 100)}%", 0.12f);
+                HUDController.Instance?.ShowToolTip(Loc("scythe.tooltip.sharpening", Mathf.RoundToInt(t * 100)), 0.12f);
                 yield return null;
             }
 
             scythe.SetWear(0f);
 
             if (audio != null) Destroy(audio);
-            HUDController.Instance?.ShowToolTip("Kasza megélesítve!", 2.5f);
+            HUDController.Instance?.ShowToolTip(Loc("scythe.tooltip.done"), 2.5f);
             _isBusy = false;
         }
     }

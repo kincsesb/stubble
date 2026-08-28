@@ -140,7 +140,9 @@ namespace Fields.Tools
             return best;
         }
 
-        public override string ToolTip => "Fűkasza  —  Tartsd nyomva az LMB-t · Lassul vastag fűben";
+        public override string ToolTip =>
+            Fields.Core.LocalizationManager.Instance?.Get("tool.stringtrimmer.tooltip")
+            ?? "String Trimmer  —  Hold LMB · Slower in thick grass";
 
         public float RPM => _rpm;
         public float BogFactor => _bogFactor;

@@ -705,7 +705,7 @@ namespace Fields.Core
                 if (hit.collider.GetComponentInParent<Fields.Hay.SquareBale>() != null)
                     return CarriedBaleCount < 3 ? L("hud.pickup_bale") : L("hud.carry_full");
                 if (hit.collider.GetComponentInParent<Fields.World.CheatCodeTerminal>() != null)
-                    return "[E]  Use Computer";
+                    return L("hud.computer");
                 var hitIa = hit.collider.GetComponentInParent<IInteractable>();
                 if (hitIa != null)
                     return hitIa is IHintProvider hp ? hp.GetHint(this) : L("hud.interact");
@@ -718,7 +718,7 @@ namespace Fields.Core
                     return CarriedBaleCount < 3 ? L("hud.pickup_bale") : L("hud.carry_full");
             }
 
-            if (CarriedBaleCount == 1) return "[LMB] Dobj  [G] Ejt";
+            if (CarriedBaleCount == 1) return L("hud.throw_or_drop");
             if (CarriedBaleCount > 1) return L("hud.drop_bales");
             return string.Empty;
         }

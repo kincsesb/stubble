@@ -129,6 +129,9 @@ namespace Fields.Core
         {
             // HUD
             { "hud.money",        "$ {0}" },
+            { "hud.wear.label",   "Scythe  {0}%" },
+            { "hud.computer",     "[E]  Use Computer" },
+            { "hud.throw_or_drop","[LMB] Throw  [G] Drop" },
             { "hud.completion",   "{0}%" },
             { "hud.bales",        "[{0}]" },
             { "hud.baling_progress",  "Baling...  {0}%" },
@@ -159,6 +162,25 @@ namespace Fields.Core
             { "shop.notenough",   "Not enough money" },
             { "shop.upgrades.empty", "No tools owned yet. Buy one in the Tools tab." },
             { "shop.unlocks.empty",  "No content available." },
+
+            // Tool tooltips (shown in HUD when switching tools)
+            { "tool.barehand.tooltip",      "Empty hand  —  Pick up bales [E] · Drop [G]" },
+            { "tool.longscythe.tooltip",    "Long Scythe  —  LMB: sweep arc · Stamina required" },
+            { "tool.stringtrimmer.tooltip", "String Trimmer  —  Hold LMB · Slower in thick grass" },
+            { "tool.pushmower.tooltip",     "Push Mower  —  LMB: engine · Wide cut, slower in deep grass" },
+            { "tool.rideon.tooltip",        "Ride-On Mower  —  WASD: drive · Cuts automatically while moving" },
+
+            // Scythe blade wear & sharpening
+            { "scythe.tooltip.dull",        "Scythe dull!  Hold [R] to sharpen." },
+            { "scythe.tooltip.sharpening",  "Sharpening...  {0}%" },
+            { "scythe.tooltip.done",        "Scythe sharpened!" },
+
+            // Whetstone interaction hints and feedback
+            { "whetstone.hint.noscythe",    "[E]  Whetstone  (scythe required)" },
+            { "whetstone.hint.sharp",       "[E]  Scythe is sharp" },
+            { "whetstone.hint.worn",        "[E]  Sharpen scythe  —  {0}% worn" },
+            { "whetstone.tooltip.noscythe", "Can only sharpen with a scythe." },
+            { "whetstone.tooltip.sharp",    "Scythe is still sharp." },
 
             // Tool names
             { "tool.handsickle",   "Hand Sickle" },
@@ -256,6 +278,21 @@ namespace Fields.Core
             { "journal.rec.bales",         "Most Bales Delivered" },
             { "journal.rec.streak",        "Longest Streak" },
             { "journal.rec.fullgame",      "Full Game Completion" },
+
+            // Journal statistics section headers and row labels (StatsRenderer dynamic content)
+            { "journal.sec.session",        "Session" },
+            { "journal.sec.player",         "Player {0}" },
+            { "journal.sec.player_you",     "Player {0}  (You)" },
+            { "journal.sec.your_stats",     "Your Stats" },
+            { "journal.label.wallet",       "Wallet" },
+            { "journal.label.overall",      "Completion" },
+            { "journal.label.totaltime",    "Total Time" },
+            { "journal.label.areacut",      "Grass Cut" },
+            { "journal.label.swings",       "Swings" },
+            { "journal.label.distance",     "Distance" },
+            { "journal.label.bales",        "Bales Made" },
+            { "journal.label.earned",       "Earned" },
+            { "journal.label.playtime",     "Playtime" },
 
             // Journal records section headers (dynamic content)
             { "journal.rec.sec.parcels",         "Fastest Parcels" },

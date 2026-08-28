@@ -86,7 +86,7 @@ namespace Fields.Tools
                 _sharpenHoldTimer += Time.deltaTime;
                 float pct = Mathf.Clamp01(_sharpenHoldTimer / sharpenDuration);
                 Fields.UI.HUDController.Instance?.ShowToolTip(
-                    $"Élezés... {Mathf.RoundToInt(pct * 100)}%", 0.12f);
+                    Loc("scythe.tooltip.sharpening", $"{Mathf.RoundToInt(pct * 100)}%"), 0.12f);
 
                 if (_sharpenHoldTimer >= sharpenDuration)
                 {
@@ -94,7 +94,7 @@ namespace Fields.Tools
                     _sharpenHoldTimer = 0f;
                     SetWear(0f);
                     _sparklePS?.Play();
-                    Fields.UI.HUDController.Instance?.ShowToolTip("Kasza megélesítve!", 2.5f);
+                    Fields.UI.HUDController.Instance?.ShowToolTip(Loc("scythe.tooltip.done"), 2.5f);
                     if (_owner != null) _owner.InputLocked = false;
                 }
                 return;
@@ -149,6 +149,14 @@ namespace Fields.Tools
             renderer.renderMode = ParticleSystemRenderMode.Billboard;
         }
 
+        static string Loc(string key, string arg = null)
+        {
+            var loc = Fields.Core.LocalizationManager.Instance;
+            if (loc == null) return arg ?? key;
+            string raw = loc.Get(key);
+            return arg != null ? raw.Replace("{0}", arg) : raw;
+        }
+
         // ------------------------------------------------------------------ //
 
         const float WINDUP_END = 0.25f;
@@ -175,7 +183,7 @@ namespace Fields.Tools
             if (_wear >= 0.8f && !_warnedDull)
             {
                 _warnedDull = true;
-                Fields.UI.HUDController.Instance?.ShowToolTip("Kasza tompa!  Tartsd [R] az élezéshez.", 3f);
+                Fields.UI.HUDController.Instance?.ShowToolTip(Loc("scythe.tooltip.dull"), 3f);
             }
         }
 
@@ -208,7 +216,9 @@ namespace Fields.Tools
             _targetField = null;
         }
 
-        public override string ToolTip => "Hosszú kasza  —  LMB: ívelt kaszálás · Stamina szükséges";
+        public override string ToolTip =>
+            Fields.Core.LocalizationManager.Instance?.Get("tool.longscythe.tooltip")
+            ?? "Long Scythe  —  LMB: sweep arc · Stamina required";
 
         // sweepT 0..1 maps left edge to right edge of fan
         Vector3 CalcFanTip(float sweepT)

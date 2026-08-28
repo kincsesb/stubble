@@ -289,7 +289,9 @@ namespace Fields.Tools
 
         // ------------------------------------------------------------------ //
 
-        public override string ToolTip => "Ülős fűnyíró  —  WASD: vezérlés · Automatikusan vág haladás közben";
+        public override string ToolTip =>
+            Fields.Core.LocalizationManager.Instance?.Get("tool.rideon.tooltip")
+            ?? "Ride-On Mower  —  WASD: drive · Cuts automatically while moving";
 
         public float CurrentSpeedNormalized => topSpeed > 0 ? _currentSpeed / topSpeed : 0f;
         public bool DeckEngaged => _deckEngaged;

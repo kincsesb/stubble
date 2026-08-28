@@ -132,7 +132,9 @@ namespace Fields.Tools
             return best;
         }
 
-        public override string ToolTip => "Tolható fűnyíró  —  LMB: motor · Szélesebb sáv, lassabb mély fűben";
+        public override string ToolTip =>
+            Fields.Core.LocalizationManager.Instance?.Get("tool.pushmower.tooltip")
+            ?? "Push Mower  —  LMB: engine · Wide cut, slower in deep grass";
 
         /// <summary>Returns the move speed multiplier to apply when pushing this mower.</summary>
         public float GetMovementMultiplier(bool inUncutGrass) =>
