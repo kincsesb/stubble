@@ -16,6 +16,8 @@ Shader "Fields/GrassBlade"
         _StubbleFraction("Stubble Height Fraction", Range(0.01, 0.15)) = 0.05
         _WindStrength("Wind Strength", Float)   = 0.04
         _WindSpeed   ("Wind Speed", Float)      = 1.3
+        _TrampleRadius  ("Trample Radius", Float)        = 1.8
+        _TrampleStrength("Trample Strength", Float)      = 1.2
     }
 
     SubShader
@@ -53,7 +55,12 @@ Shader "Fields/GrassBlade"
                 float  _WindStrength;
                 float  _WindSpeed;
                 float  _Cutoff;
+                float  _TrampleRadius;
+                float  _TrampleStrength;
             CBUFFER_END
+
+            // Global uniform set each frame by PlayerController
+            float3 _PlayerFeetWS;
 
             struct Attributes
             {
@@ -95,6 +102,19 @@ Shader "Fields/GrassBlade"
                 float windOffset = sin(_Time.y * _WindSpeed + pos.x * 3.1 + pos.z * 2.7)
                                    * _WindStrength * tipFrac;
                 pos.x += windOffset;
+
+                // Trampling: bend uncut blade tips away from the player's feet.
+                // Base stays anchored (tipFrac=0), tip bends outward (tipFrac=1).
+                // Spring-back is free — as player moves away dist grows and falloff→0.
+                float3 bladeBaseWS = TransformObjectToWorld(float3(IN.positionOS.x, groundY, IN.positionOS.z));
+                float2 trampleDiff = bladeBaseWS.xz - _PlayerFeetWS.xz;
+                float  trampleDist = length(trampleDiff);
+                float  trampleFalloff = saturate(1.0 - trampleDist / max(_TrampleRadius, 0.001));
+                trampleFalloff = trampleFalloff * trampleFalloff; // quadratic — sharp near feet, soft at edge
+                float2 pushDir = trampleDist > 0.001 ? (trampleDiff / trampleDist) : float2(1.0, 0.0);
+                float  bendAmount = _TrampleStrength * trampleFalloff * tipFrac * maskVal;
+                pos.x += pushDir.x * bendAmount;
+                pos.z += pushDir.y * bendAmount;
 
                 OUT.positionHCS = TransformObjectToHClip(pos);
                 OUT.uv          = IN.uv;

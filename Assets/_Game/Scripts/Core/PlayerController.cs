@@ -166,6 +166,7 @@ namespace Fields.Core
             HandleHaptics();
             RegenStamina();
             HandleBaling();
+            Shader.SetGlobalVector("_PlayerFeetWS", transform.position);
         }
 
         // ------------------------------------------------------------------ //
