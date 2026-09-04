@@ -97,7 +97,7 @@
 - [ ] Ha a játékos mozdul → madár elrepül (animáció), FP kamera visszavált
 - [ ] Co-op: mindenki látja a madarat a saját karakterén (NetworkBehaviour spawn)
 - [ ] `PlayerController.cs`-be: mozgás/input event → `AFKDetector.ResetTimer()`
-
+- Találni kell egy jó assetset!
 ---
 
 ## PHASE 6 — Vicces Achievementek & Easter Eggek
@@ -376,15 +376,6 @@ Az összes achievement a meglévő `SteamManager.UnlockAchievement(string id)` A
 
 > Ezek a mechanikák co-op stream-content generátorok. Minden egyes mechanika egy potenciális clip. Prioritás: alacsony kód-cost, magas vicc-sűrűség.
 
----
-
-### V7-00 | Bála Outline — Sárga highlight interaktálható bálákhoz
-**Status:** ✅ KÉSZ
-
-Inverted-hull sárga outline (URP Unlit, front-cull, 1.07× scale) a legközelebbi felvehető square bálán. `PlayerController.ScanNearestSquareBale()` kezeli a raycast + proximity detektálást, `SquareBale.SetHighlighted()` kapcsolja. Co-op: lokális, nincs szinkron.
-
----
-
 ### V7-01 | WC Buff — "Porcelain Throne"
 **Status:** ⏳ PENDING
 
@@ -542,8 +533,6 @@ Inverted-hull sárga outline (URP Unlit, front-cull, 1.07× scale) a legközeleb
 **Logika — szorzók stackelnek, egyszerre több feltétel is aktív lehet:**
 
 - Bárki ül a WC-n (V7-01): **+10%**
-- Macska követ egy játékost (simogatás után): **+5%**
-- Macska nézi miközben bálázol (5m-en belül, szemben áll): **+15%**
 - Macska veled szemben ül és nyalogatja magát, miközben te a WC-n ülsz: **+20%**
 
 A WC-n ülés bónusza (+10%) és a macska WC-s bónusza (+20%) egymásra rakódik — tehát a WC + macska kombó önmagában **+30%** a csapatnak.
@@ -608,64 +597,18 @@ A WC-n ülés bónusza (+10%) és a macska WC-s bónusza (+20%) egymásra rakód
 
 ---
 
-## UI Polish — Kért, de még nem implementált
-
-> Ezek mind a legutóbbi session(ök)ben lettek kérve, de MCP megszakítás vagy prioritás miatt nem lettek befejezve.
-
-### Struktúra / Layout
-
-| Feladat | Státusz | Megjegyzés |
-|---------|---------|-----------|
-| **Pause menu — notebook tab arány** | ✅ KÉSZ | PPU=3 ellenőrizve, sprite border=(120,100,120,200) helyes; tab vizuálisan OK |
-| **Pause menu — gombok keskenyebbek** | ✅ KÉSZ | 600px → 200px, VLG childControlWidth=false, UpperCenter alignment, center-anchored |
-| **Shop — üres notebook panel méretezés** | ✅ KÉSZ | ShopPanel (700×520), empty-notebook-1 PPU=3 border ellenőrizve; arány helyes |
-| **Shop — buy button tagLabel sprite** | ✅ KÉSZ | UITheme.asset tagLabel=tag-empty-1 assign-olva; UIThemeApplier hozzáadva _UI root-ra → runtime betöltés garantált |
-| **HUD — MoneyBG nem illeszkedik** | ✅ KÉSZ | pos (-112,-24)→(-112,-40), size (224×56)→(240×60); MoneyText (+10px jobb) → tag content area centrálva |
-| **HUD — Stamina bar háttér hiányzik** | ✅ KÉSZ | type=Sliced, fillCenter=True, sprite=progress-bar-empty-1, PPU=100 — ellenőrizve, helyes |
-| **HUD — Progress/Fuel bar háttér hiányzik** | ✅ KÉSZ | FuelBar_BG: type=Sliced, fillCenter=True, sprite=progress-bar-empty-1 — ellenőrizve, helyes |
-
-### Look & Feel
-
-| Feladat | Státusz | Megjegyzés |
-|---------|---------|-----------|
-| **UIHoverScale script alkalmazása** | ✅ KÉSZ | 55 gombhoz hozzáadva (összes Button a scene-ben) |
-| **Drop shadow panelek mögé** | ✅ KÉSZ | Shadow(4,-4, alpha=0.45) hozzáadva: Pause, Shop, MainMenu, Journal, Settings, ConfirmModal, Coop panel |
-| **Outline gombokon** | ✅ KÉSZ | Outline(1px, dark ink rgba(0.18,0.12,0.08,0.7)) minden Button Image-re (55 db) |
-| **Shop — price tag vizuál** | ✅ KÉSZ | UITheme.tagLabel (tag-empty-1) runtime betöltve via UIThemeApplier; ShopUI.BuildDefaultRow() alkalmazza a buy gombra |
-
-### Bugs (nem bugfixek, hanem hiányzó funkciók)
-
-| Feladat | Státusz | Megjegyzés |
-|---------|---------|-----------|
-| **Shop_Canvas inaktív volt** | ✅ KÉSZ | ShopPanel aktív az Editor-ban; Awake()-ban SetActive(false) hívódik → runtime OK; tesztelni kell E-vel SaleStand-nél |
-
----
-
 ## Apró TODO-k & Polish
 
 | Feladat | Státusz |
 |---------|---------|
-| UI komponens lista + image prompt stílus megalkotása | ✅ KÉSZ — `Assets/_Game/UI_COMPONENTS.md` |
-| Kínai, Japán karakter készlet nem jelenik meg | ✅ KÉSZ — Arial Unicode MS TMP fallback font |
-| Egységes image prompt stílus shop-hoz, journalhoz | ✅ KÉSZ — `UI_COMPONENTS.md` tartalmazza |
-| Hover állapot minden interaktálható UI elemre | ✅ KÉSZ — `UIButtonHoverStyle.cs`, 39 gomb frissítve |
-| EndScreen szövegek language file-ba | ✅ KÉSZ — `end.*` kulcsok a `LocalizationManager`-ben |
-| Loop ending szöveg (Mezők frissültek) eltávolítva | ✅ KÉSZ — `ShowLoopTitleCard()` hívás törölve |
 | Currency Image — pénznem ikon a HUD-ba | ⏳ PENDING |
 | Tutorial tipp az első indításkor (game loop magyarázat) | ⏳ PENDING |
 | Jobb betűtípus kiválasztása (fő UI font) | ⏳ PENDING |
+| BUG: Bála spawn SFX hiányzik — `CompleteBaling()` után nincs hang amikor a bála előbukkan | ✅ KÉSZ |
+| BUG: Élezésnél dupla `%%` ikon jelenik meg a UI-ban | ✅ KÉSZ |
+| BUG: Macska state mentve, csirke nélkül is aktív és körbe fut — csak akkor fusson ha van élő csirke (`FarmAnimalChaseSystem`) | ✅ KÉSZ |
 ---
 
-## Bugs:
-- Élezésnél ne lehessen menni, mozogni, forogni és a kasza maradjon kézben
-- Az élezés ne folyamatos gombnyomasra menjen, hanem egyszeri megnyomasra
-- Glowing effect v outer line nem mukodik jol, el van csuszva a bala poziciojahoz kepest
-- Balazasnal azt irja az "E betut tartsd nyomva", mikor kozben eleg, ha csak megnyomom es elengedem (Az elvárt az legyen hogy csak egyszeri megnyomás is elég. Ugyan ez érvényes az élezésre.)
-- Ha már egy levagott terulet fele fordul és kaszál, ne legyen kaszalo hang (Mivel nincs mit kaszálni.)
-- A local currency change nem lett implementalva a shopban, a shop meg mindig a korabbi dollar alapu koltest koveti
-- Folytatás lenyomásakor a karakter poziciója nincs elmentve, hanem az új játék poziciójával folytatva. A karakter poziciója is legyen elmentve, és a folytatás onnan töltse be a játékot.
-- Journal: Maradék számítása nem jó, Spawn szám nem kell, Összegyüjtött széna nem kell, Keresett pénz nincs jól számolva.
-- Bála lerakása nem működik a "G" lenyoműsra
-- A felső progress bar-nak a teljes területet kell nézni valamiért még mindig 4 parcellára szedi viszont lett kérve hogy ne legyen.
-- Csirke macska state legyen elmentve (Ha a macska megette a csirkét akkor ne jelenjen meg a Folytatásnál)
-- 
+## CR:
+- Currency Image nincs benne a UI briefben ezt pótolni kell!
+- Traktoros vezetésnél legyen valami

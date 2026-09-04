@@ -655,6 +655,7 @@ namespace Fields.Core
                     bale.OriginParcelIndex = CurrentParcelIndex;
                     bale.IsRound = makeRound;
                 }
+                Fields.Audio.ToolAudioManager.Instance?.PlayBalePop();
                 Fields.Core.GameEvents.FireBaleCreated(CurrentParcelIndex, 0, isRound: makeRound);
                 Fields.Core.GameEvents.FireHayConsumed(CurrentParcelIndex, 0);
                 Debug.Log($"[Baling] COMPLETE — {(makeRound ? "RoundBale" : "SquareBale")} spawned at {spawnPos} (parcel {CurrentParcelIndex})");

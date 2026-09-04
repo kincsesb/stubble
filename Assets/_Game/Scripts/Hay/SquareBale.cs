@@ -45,6 +45,24 @@ namespace Fields.Hay
         [Tooltip("Height added per additional bale in the stack")]
         public float carryStackStep  = 0.55f;
 
+        [Header("Throw Audio")]
+        public AudioClip throwClip;
+        public AudioClip landClip;
+        [Range(0f, 1f)]
+        public float throwVolume = 0.8f;
+        [Range(0f, 1f)]
+        public float landVolume  = 0.9f;
+        [Tooltip("Impact speed (m/s) below which the land sound is skipped")]
+        public float landMinSpeed       = 0.8f;
+        [Tooltip("Impact speed (m/s) at which landVolume is fully reached")]
+        public float landFullVolumeSpeed = 6f;
+        [Range(0.5f, 2f)]
+        public float landPitchMin = 0.85f;
+        [Range(0.5f, 2f)]
+        public float landPitchMax = 1.15f;
+        [Tooltip("Min seconds between successive bounce sounds")]
+        public float landCooldown = 0.08f;
+
         /// <summary>Parcel where the hay was cut. Set by PlayerController on spawn.</summary>
         public int OriginParcelIndex { get; set; } = 0;
 
@@ -53,6 +71,8 @@ namespace Fields.Hay
 
         Rigidbody _rb;
         bool _isCarried;
+        AudioSource _audioSource;
+        float _lastLandTime = -999f;
 
         static PhysicsMaterial _throwMat;
 
@@ -72,6 +92,9 @@ namespace Fields.Hay
         void Awake()
         {
             _rb = GetComponent<Rigidbody>();
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.spatialBlend = 1f;
+            _audioSource.playOnAwake  = false;
             BuildOutline();
         }
 
@@ -185,10 +208,29 @@ namespace Fields.Hay
 
             _rb.linearVelocity = velocity;
 
+            if (throwClip != null) _audioSource.PlayOneShot(throwClip, throwVolume);
+
             // Tumbling spin: end-over-end around the lateral axis of the throw direction.
             var spinAxis = Vector3.Cross(velocity.normalized, Vector3.up);
             if (spinAxis.sqrMagnitude < 0.01f) spinAxis = Vector3.right;
             _rb.angularVelocity = spinAxis.normalized * throwAngularSpeed;
+        }
+
+        // ------------------------------------------------------------------ //
+
+        void OnCollisionEnter(Collision col)
+        {
+            if (!_wasThrown || landClip == null) return;
+            if (col.gameObject.GetComponentInParent<SquareBale>() != null) return;
+
+            float impactSpeed = col.relativeVelocity.magnitude;
+            if (impactSpeed < landMinSpeed) return;
+            if (Time.time - _lastLandTime < landCooldown) return;
+
+            float vol = Mathf.Clamp01(impactSpeed / Mathf.Max(0.001f, landFullVolumeSpeed)) * landVolume;
+            _audioSource.pitch = Random.Range(landPitchMin, landPitchMax);
+            _audioSource.PlayOneShot(landClip, vol);
+            _lastLandTime = Time.time;
         }
 
         // ------------------------------------------------------------------ //

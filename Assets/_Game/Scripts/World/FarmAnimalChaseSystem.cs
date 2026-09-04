@@ -116,7 +116,9 @@ public class FarmAnimalChaseSystem : MonoBehaviour
         }
         if (cat != null) AddAnimal(cat, false, playSpawn: false);
         SpreadAngles();
-        TriggerPhase(0);
+        // If chicken was eaten in a prior session, jump straight to idle — cat must not run alone
+        if (ChickenWasEaten) _elapsed = idleAfterSeconds;
+        TriggerPhase(CurrentPhaseIndex());
         SetupAudio();
         var crateGo = GameObject.Find("Props_CrateOpen");
         if (crateGo != null) _crateTransform = crateGo.transform;

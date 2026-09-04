@@ -99,6 +99,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Fields.Hay.SquareBale
   hayUnits: 60
   stackIndex: 0
+  throwAngularSpeed: 7
+  throwBounciness: 0.35
+  throwLinearDamping: 0.2
+  throwAngularDamping: 1
+  carryForward: 0.7
+  carryBaseHeight: 1.3
+  carryStackStep: 0.55
+  throwClip: {fileID: 8300000, guid: d2f8c3910967d4db981968e57f2402f7, type: 3}
+  landClip: {fileID: 8300000, guid: e793dd9f237dc41c695bce1cf1c7b237, type: 3}
+  throwVolume: 0.8
+  landVolume: 0.9
 --- !u!114 &3689661208456076955
 MonoBehaviour:
   m_ObjectHideFlags: 0

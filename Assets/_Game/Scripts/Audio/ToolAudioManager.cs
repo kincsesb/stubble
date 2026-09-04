@@ -30,6 +30,11 @@ namespace Fields.Audio
         public AudioSource footstepsWalk;
         public AudioSource footstepsRun;
 
+        [Header("Baling")]
+        public AudioClip balePopClip;
+        [Range(0f, 1f)]
+        public float balePopVolume = 0.85f;
+
         [Header("Economy")]
         public AudioSource moneyCollect;
 
@@ -110,6 +115,13 @@ namespace Fields.Audio
 
         public void StartFootstepsRun()   => StartLoop(footstepsRun);
         public void StopFootstepsRun()    => StopLoop(footstepsRun);
+
+        public void PlayBalePop()
+        {
+            if (balePopClip == null) return;
+            var pos = Camera.main != null ? Camera.main.transform.position : Vector3.zero;
+            AudioSource.PlayClipAtPoint(balePopClip, pos, balePopVolume * masterVolume);
+        }
 
         public void PlayMoney()
         {

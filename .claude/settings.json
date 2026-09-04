@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__unity-mcp__Unity_RunCommand",
+      "mcp__unity-mcp__Unity_GetConsoleLogs",
+      "mcp__unity-mcp__Unity_Camera_Capture",
+      "mcp__unity-mcp__Unity_SceneView_CaptureMultiAngleSceneView",
+      "mcp__unity-mcp__Unity_SceneView_Capture2DScene",
+      "mcp__unity-mcp__Unity_AssetGeneration_GetModels"
+    ]
+  }
+}

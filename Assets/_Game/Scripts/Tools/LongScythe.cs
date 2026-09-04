@@ -86,7 +86,7 @@ namespace Fields.Tools
                 _sharpenHoldTimer += Time.deltaTime;
                 float pct = Mathf.Clamp01(_sharpenHoldTimer / sharpenDuration);
                 Fields.UI.HUDController.Instance?.ShowToolTip(
-                    Loc("scythe.tooltip.sharpening", $"{Mathf.RoundToInt(pct * 100)}%"), 0.12f);
+                    Loc("scythe.tooltip.sharpening", $"{Mathf.RoundToInt(pct * 100)}"), 0.12f);
 
                 if (_sharpenHoldTimer >= sharpenDuration)
                 {
